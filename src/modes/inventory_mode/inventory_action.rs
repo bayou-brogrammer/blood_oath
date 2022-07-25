@@ -94,7 +94,7 @@ impl InventoryActionMode {
         }
     }
 
-    fn confirm_action(&self, world: &World) -> (ModeControl, ModeUpdate) {
+    fn confirm_action(&self, ctx: &mut BTerm, world: &World) -> (ModeControl, ModeUpdate) {
         let result = match self.subsection {
             SubSection::Cancel => InventoryActionModeResult::Cancelled,
             SubSection::Actions => match self.actions[self.selection as usize] {
@@ -102,7 +102,9 @@ impl InventoryActionMode {
                 InventoryAction::UseItem => {
                     if let Some(Ranged { range }) = world.read_storage::<Ranged>().get(self.item_id) {
                         return (
-                            ModeControl::Push(TargetingMode::new(world, self.item_id, *range, true).into()),
+                            ModeControl::Push(
+                                TargetingMode::new(ctx, world, self.item_id, *range, true).into(),
+                            ),
                             ModeUpdate::Update,
                         );
                     } else {
@@ -173,7 +175,7 @@ impl InventoryActionMode {
                     }
                 },
                 VirtualKeyCode::Return => {
-                    return self.confirm_action(world);
+                    return self.confirm_action(ctx, world);
                 }
 
                 key @ VirtualKeyCode::D | key @ VirtualKeyCode::A => {
@@ -181,7 +183,7 @@ impl InventoryActionMode {
                         if let Some(action_pos) = self.actions.iter().position(|a| *a == inv_action) {
                             if matches!(self.subsection, SubSection::Actions) && self.selection == action_pos
                             {
-                                return self.confirm_action(world);
+                                return self.confirm_action(ctx, world);
                             } else {
                                 self.subsection = SubSection::Actions;
                                 self.selection = action_pos;

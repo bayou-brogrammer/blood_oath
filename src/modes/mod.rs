@@ -6,12 +6,14 @@ pub mod inventory_mode;
 pub mod main_menu_mode;
 pub mod menu_memory;
 pub mod targeting_mode;
+pub mod yes_no_dialog;
 
 use dungeon_mode::{DungeonMode, DungeonModeResult};
 use game_over_mode::{GameOverMode, GameOverModeResult};
 use inventory_mode::{InventoryActionMode, InventoryActionModeResult, InventoryMode, InventoryModeResult};
 use main_menu_mode::{MainMenuMode, MainMenuModeResult};
 use targeting_mode::{TargetingMode, TargetingModeResult};
+use yes_no_dialog::{YesNoDialogMode, YesNoDialogModeResult};
 
 pub use menu_memory::MenuMemory;
 
@@ -43,6 +45,7 @@ pub enum Mode {
     GameOverMode(GameOverMode),
     InventoryMode(InventoryMode),
     TargetingMode(TargetingMode),
+    YesNoDialogMode(YesNoDialogMode),
     InventoryActionMode(InventoryActionMode),
 }
 
@@ -51,6 +54,7 @@ impl_from!(Mode, MainMenuMode);
 impl_from!(Mode, GameOverMode);
 impl_from!(Mode, InventoryMode);
 impl_from!(Mode, TargetingMode);
+impl_from!(Mode, YesNoDialogMode);
 impl_from!(Mode, InventoryActionMode);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,6 +66,7 @@ pub enum ModeResult {
     GameOverModeResult(GameOverModeResult),
     InventoryModeResult(InventoryModeResult),
     TargetingModeResult(TargetingModeResult),
+    YesNoDialogModeResult(YesNoDialogModeResult),
     InventoryActionModeResult(InventoryActionModeResult),
 }
 
@@ -70,10 +75,12 @@ impl_from!(ModeResult, MainMenuModeResult);
 impl_from!(ModeResult, GameOverModeResult);
 impl_from!(ModeResult, InventoryModeResult);
 impl_from!(ModeResult, TargetingModeResult);
+impl_from!(ModeResult, YesNoDialogModeResult);
 impl_from!(ModeResult, InventoryActionModeResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#[derive(Debug)]
 pub enum ModeControl {
     /// Keep the stack as-is.
     Stay,
@@ -88,7 +95,7 @@ pub enum ModeControl {
 }
 
 /// Desired behavior for the next update, to be returned from an `update` call.
-#[allow(dead_code)]
+#[derive(Debug)]
 pub enum ModeUpdate {
     /// Run the next update immediately, without waiting for the next frame.
     Immediate,
@@ -112,6 +119,7 @@ impl Mode {
             Mode::GameOverMode(x) => x.tick(ctx, world, pop_result),
             Mode::InventoryMode(x) => x.tick(ctx, world, pop_result),
             Mode::TargetingMode(x) => x.tick(ctx, world, pop_result),
+            Mode::YesNoDialogMode(x) => x.tick(ctx, world, pop_result),
             Mode::InventoryActionMode(x) => x.tick(ctx, world, pop_result),
         }
     }
@@ -123,6 +131,7 @@ impl Mode {
             Mode::GameOverMode(x) => x.draw(ctx, world, active),
             Mode::InventoryMode(x) => x.draw(ctx, world, active),
             Mode::TargetingMode(x) => x.draw(ctx, world, active),
+            Mode::YesNoDialogMode(x) => x.draw(ctx, world, active),
             Mode::InventoryActionMode(x) => x.draw(ctx, world, active),
         }
     }
@@ -130,12 +139,13 @@ impl Mode {
     /// Should the current mode draw modes behind it in the stack?
     fn draw_behind(&self) -> bool {
         match self {
+            Mode::DungeonMode(_) => false,
             Mode::GameOverMode(_) => false,
             Mode::MainMenuMode(_) => false,
-            Mode::DungeonMode(_) => false,
             Mode::InventoryMode(_) => true,
-            Mode::InventoryActionMode(_) => true,
             Mode::TargetingMode(_) => false,
+            Mode::YesNoDialogMode(_) => true,
+            Mode::InventoryActionMode(_) => true,
         }
     }
 }

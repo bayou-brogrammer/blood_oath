@@ -14,6 +14,7 @@ impl<'a> System<'a> for MonsterAISystem {
         ReadStorage<'a, Monster>,
         WriteStorage<'a, Position>,
         WriteStorage<'a, WantsToMelee>,
+        WriteStorage<'a, Confusion>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -27,6 +28,7 @@ impl<'a> System<'a> for MonsterAISystem {
             monster,
             mut position,
             mut wants_to_melee,
+            mut confused,
         ) = data;
 
         if *runstate != TurnState::MonsterTurn {
@@ -36,29 +38,42 @@ impl<'a> System<'a> for MonsterAISystem {
         for (entity, mut fov, _monster, mut pos) in
             (&entities, &mut fov_storage, &monster, &mut position).join()
         {
-            let distance = DistanceAlg::Pythagoras.distance2d(pos.0, *player_pos);
+            let can_act = if let Some(i_am_confused) = confused.get_mut(entity) {
+                i_am_confused.turns -= 1;
 
-            if distance < 1.5 {
-                wants_to_melee
-                    .insert(entity, WantsToMelee { target: *player_entity })
-                    .expect("Unable to insert attack");
-            } else if fov.visible_tiles.contains(&*player_pos) {
-                let old_idx = map.point2d_to_index(pos.0);
-                let new_idx = map.point2d_to_index(*player_pos);
+                if i_am_confused.turns < 1 {
+                    confused.remove(entity);
+                }
 
-                // Path to the player
-                let path = a_star_search(old_idx, new_idx, &mut *map);
+                false
+            } else {
+                true
+            };
 
-                if path.success && path.steps.len() > 1 {
-                    let destination = map.index_to_point2d(path.steps[1]);
-                    crate::spatial::move_entity(
-                        entity,
-                        map.point2d_to_index(pos.0),
-                        map.point2d_to_index(destination),
-                    );
+            if can_act {
+                let distance = DistanceAlg::Pythagoras.distance2d(pos.0, *player_pos);
+                if distance < 1.5 {
+                    wants_to_melee
+                        .insert(entity, WantsToMelee { target: *player_entity })
+                        .expect("Unable to insert attack");
+                } else if fov.visible_tiles.contains(&*player_pos) {
+                    let old_idx = map.point2d_to_index(pos.0);
+                    let new_idx = map.point2d_to_index(*player_pos);
 
-                    pos.0 = destination;
-                    fov.is_dirty = true;
+                    // Path to the player
+                    let path = a_star_search(old_idx, new_idx, &mut *map);
+
+                    if path.success && path.steps.len() > 1 {
+                        let destination = map.index_to_point2d(path.steps[1]);
+                        crate::spatial::move_entity(
+                            entity,
+                            map.point2d_to_index(pos.0),
+                            map.point2d_to_index(destination),
+                        );
+
+                        pos.0 = destination;
+                        fov.is_dirty = true;
+                    }
                 }
             }
         }
