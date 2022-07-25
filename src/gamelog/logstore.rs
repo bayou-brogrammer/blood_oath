@@ -13,31 +13,30 @@ pub fn clear_log() {
     LOG.lock().clear();
 }
 
-pub fn print_log(console: &mut Box<dyn Console>, pos: Point) {
+pub fn print_log(console: usize, pos: Point) {
+    let mut batch = DrawBatch::new();
+    batch.target(console);
+
     let mut y = pos.y;
     let mut x = pos.x;
     LOG.lock().iter().rev().take(6).for_each(|log| {
         log.iter().for_each(|frag| {
-            console.print_color(
-                x,
-                y,
-                frag.color.to_rgba(1.0),
-                RGBA::named(BLACK),
-                &frag.text,
-            );
+            batch.print_color(Point::new(x, y), &frag.text, ColorPair::new(frag.color.to_rgba(1.0), BLACK));
             x += frag.text.len() as i32;
             x += 1;
         });
         y += 1;
         x = pos.x;
     });
+
+    batch.submit(5000).expect("Batch error");
 }
 
-pub fn clone_log() -> Vec<Vec<crate::gamelog::LogFragment>> {
+pub fn clone_log() -> Vec<Vec<LogFragment>> {
     LOG.lock().clone()
 }
 
-pub fn restore_log(log: &mut Vec<Vec<crate::gamelog::LogFragment>>) {
+pub fn restore_log(log: &mut Vec<Vec<LogFragment>>) {
     LOG.lock().clear();
     LOG.lock().append(log);
 }

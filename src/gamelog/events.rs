@@ -1,4 +1,4 @@
-use super::*;
+use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 
@@ -13,7 +13,6 @@ pub fn clear_events() {
 pub fn record_event<T: ToString>(event: T, n: i32) {
     let event_name = event.to_string();
     let mut events = EVENTS.lock();
-
     if let Some(e) = events.get_mut(&event_name) {
         *e += n;
     } else {

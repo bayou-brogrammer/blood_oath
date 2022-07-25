@@ -1,0 +1,14 @@
+[package]
+name = "bo_ecs"
+version = "0.1.0"
+authors = ["Jacob LeCoq <lecoqjacob@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+bo_utils = { path = "../bo_utils" }
+
+bracket-terminal = "^0.8.5"
+specs = { version = "^0.18.0", default_features = false, features = [
+  "parallel",
+  "derive",
+] }

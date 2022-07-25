@@ -1,16 +1,6 @@
-#![feature(decl_macro)]
-#![feature(is_some_with)]
-
-pub mod render;
-pub mod spawner;
-pub mod systems;
-
-mod components;
-mod game;
 mod gamelog;
-mod map;
+mod modes;
 mod rng;
-mod turn;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -20,48 +10,107 @@ mod prelude {
     pub use specs::prelude::*;
     pub use specs::Component;
 
-    pub use crate::render;
-    pub use crate::spawner;
-    pub use crate::systems;
+    pub use bo_ecs::prelude::*;
+    pub use bo_map::prelude::*;
+    pub use bo_utils::prelude::*;
 
-    pub use crate::components::*;
-    pub use crate::game::*;
-    pub use crate::map::*;
+    pub use crate::modes::*;
     pub use crate::rng::*;
-    pub use crate::systems::*;
-    pub use crate::turn::*;
+
+    pub const SCREEN_WIDTH: i32 = 80;
+    pub const SCREEN_HEIGHT: i32 = 60;
+
+    pub const UI_WIDTH: i32 = 80;
+    pub const UI_HEIGHT: i32 = 30;
 
     pub const LAYER_MAP: usize = 0;
-    pub const LAYER_DECOR: usize = 1;
-    pub const LAYER_ITEMS: usize = 2;
-    pub const LAYER_CHR: usize = 3;
-    pub const LAYER_TEXT: usize = 4;
+    pub const LAYER_LOG: usize = 1;
+
+    pub const BATCH_ZERO: usize = 0;
+    pub const BATCH_CHARS: usize = 1000;
+    pub const BATCH_PARTICLES: usize = 2000;
+    pub const BATCH_UI: usize = 10_000;
+    pub const BATCH_UI_INV: usize = 15_000;
+    pub const BATCH_TOOLTIPS: usize = 100_000; // Over everything
 }
 
 pub use prelude::*;
 
-embedded_resource!(TILE_FONT, "../resources/terminal8x8.png");
-embedded_resource!(VGA_FONT, "../resources/vga.png");
+pub struct GameWorld {
+    pub mode_stack: ModeStack,
+    pub world: World,
+}
+
+impl GameWorld {
+    pub fn new() -> Self {
+        let mut world = World::new();
+
+        GameWorld::register_components(&mut world);
+        world.insert(modes::MenuMemory::new());
+        world.insert(ParticleBuilder::new());
+
+        Self { world, mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]) }
+    }
+
+    pub fn register_components(world: &mut World) {
+        // Tags
+        world.register::<Player>();
+        world.register::<Monster>();
+        world.register::<BlocksTile>();
+        world.register::<Item>();
+
+        // Generics
+        world.register::<Position>();
+        world.register::<Glyph>();
+        world.register::<FieldOfView>();
+        world.register::<Description>();
+        world.register::<Name>();
+        world.register::<CombatStats>();
+
+        // Intent
+        world.register::<SufferDamage>();
+        world.register::<WantsToMelee>();
+        world.register::<WantsToPickupItem>();
+        world.register::<WantsToUseItem>();
+        world.register::<WantsToDropItem>();
+
+        // Items
+        world.register::<InBackpack>();
+        world.register::<Consumable>();
+        world.register::<ProvidesHealing>();
+        world.register::<InflictsDamage>();
+        world.register::<Confusion>();
+
+        // Ranged
+        world.register::<Ranged>();
+        world.register::<AreaOfEffect>();
+    }
+}
+
+impl GameState for GameWorld {
+    fn tick(&mut self, ctx: &mut BTerm) {
+        match self.mode_stack.tick(ctx, &mut self.world) {
+            RunControl::Quit => {
+                ctx.quit();
+            }
+            RunControl::Update => {}
+        }
+
+        render_draw_buffer(ctx).expect("Render error");
+    }
+}
 
 fn main() -> BError {
-    link_resource!(TILE_FONT, "resources/terminal8x8.png");
-    link_resource!(VGA_FONT, "resources/vga.png");
-
-    let context = BTermBuilder::new()
-        .with_title("Secbot - 2022")
-        .with_tile_dimensions(16, 16) // Calculate window size with this...
-        .with_dimensions(56, 31) // ..Assuming a console of this size
+    let context = BTermBuilder::simple(80, 60)
+        .unwrap()
+        .with_title("BloodOath")
         .with_fps_cap(60.0)
+        .with_tile_dimensions(12, 12)
+        .with_dimensions(80, 60)
         .with_font("terminal8x8.png", 8, 8)
         .with_font("vga.png", 8, 16) // Load easy-to-read font
-        .with_simple_console(56, 31, "terminal8x8.png") // Console 0: Base map
-        .with_sparse_console_no_bg(56, 31, "terminal8x8.png") // Console 1: Decorations
-        .with_sparse_console_no_bg(56, 31, "terminal8x8.png") // Console 2: Items
-        .with_sparse_console_no_bg(56, 31, "terminal8x8.png") // Console 3: Characters
-        .with_sparse_console(112, 31, "vga.png") // Console 4: User Interface
+        .with_sparse_console(80, 30, "vga.png") // Console 2: Log
         .build()?;
 
-    let mut state = State::new();
-    state.new_game();
-    main_loop(context, state)
+    main_loop(context, GameWorld::new())
 }

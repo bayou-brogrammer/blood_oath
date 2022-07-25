@@ -1,5 +1,4 @@
-use super::{append_entry, LogFragment};
-use crate::prelude::*;
+use super::*;
 
 pub struct Logger {
     current_color: RGB,
@@ -8,10 +7,7 @@ pub struct Logger {
 
 impl Logger {
     pub fn new() -> Self {
-        Logger {
-            current_color: RGB::named(WHITE),
-            fragments: Vec::new(),
-        }
+        Logger { current_color: RGB::named(WHITE), fragments: Vec::new() }
     }
 
     pub fn log(self) {
@@ -24,42 +20,33 @@ impl Logger {
     }
 
     pub fn append<T: ToString>(mut self, text: T) -> Self {
-        self.fragments.push(LogFragment {
-            color: self.current_color,
-            text: text.to_string(),
-        });
+        self.fragments.push(LogFragment { color: self.current_color, text: text.to_string() });
         self
     }
 
     pub fn append_with_color<T: ToString>(mut self, text: T, color: (u8, u8, u8)) -> Self {
-        self.fragments.push(LogFragment {
-            text: text.to_string(),
-            color: RGB::named(color),
-        });
+        self.fragments.push(LogFragment { text: text.to_string(), color: RGB::named(color) });
         self
     }
 
     pub fn npc_name<T: ToString>(mut self, text: T) -> Self {
-        self.fragments.push(LogFragment {
-            text: text.to_string(),
-            color: RGB::named(YELLOW),
-        });
+        self.fragments.push(LogFragment { text: text.to_string(), color: RGB::named(YELLOW) });
         self
     }
 
     pub fn item_name<T: ToString>(mut self, text: T) -> Self {
-        self.fragments.push(LogFragment {
-            color: RGB::named(CYAN),
-            text: text.to_string(),
-        });
+        self.fragments.push(LogFragment { color: RGB::named(CYAN), text: text.to_string() });
         self
     }
 
     pub fn damage(mut self, damage: i32) -> Self {
-        self.fragments.push(LogFragment {
-            color: RGB::named(RED),
-            text: format!("{}", damage).to_string(),
-        });
+        self.fragments.push(LogFragment { color: RGB::named(RED), text: format!("{}", damage).to_string() });
+        self
+    }
+
+    pub fn healing(mut self, heal_amount: i32) -> Self {
+        self.fragments
+            .push(LogFragment { color: RGB::named(GREEN), text: format!("{}", heal_amount).to_string() });
         self
     }
 }
