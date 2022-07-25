@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use bo_ecs::prelude::TurnState;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use specs::Entity;
@@ -66,9 +65,9 @@ where
     }
 }
 
-pub fn for_each_tile_content_with_gamemode<F>(idx: usize, mut f: F) -> TurnState
+pub fn for_each_tile_content_with_gamemode<F, S>(idx: usize, default: S, mut f: F) -> S
 where
-    F: FnMut(Entity) -> Option<TurnState>,
+    F: FnMut(Entity) -> Option<S>,
 {
     let lock = SPATIAL_MAP.lock();
     for entity in lock.tile_content[idx].iter() {
@@ -77,7 +76,7 @@ where
         }
     }
 
-    TurnState::AwaitingInput
+    default
 }
 
 pub fn get_tile_content_clone(idx: usize) -> Vec<Entity> {

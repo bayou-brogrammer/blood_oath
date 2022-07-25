@@ -16,6 +16,7 @@ mod prelude {
 
     pub use crate::modes::*;
     pub use crate::rng::*;
+    pub use crate::TurnState;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -35,6 +36,15 @@ mod prelude {
 }
 
 pub use prelude::*;
+
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+pub enum TurnState {
+    PreRun,
+    // Actor States
+    AwaitingInput,
+    PlayerTurn,
+    MonsterTurn,
+}
 
 pub struct GameWorld {
     pub mode_stack: ModeStack,
@@ -89,7 +99,11 @@ impl GameWorld {
 
 impl GameState for GameWorld {
     fn tick(&mut self, ctx: &mut BTerm) {
-        match self.mode_stack.tick(ctx, &mut self.world) {
+        // bo_utils::prelude::clear_all_consoles(ctx, [LAYER_MAP, LAYER_LOG]);
+
+        self.world.insert(ctx.frame_time_ms);
+
+        match self.mode_stack.update(ctx, &mut self.world) {
             RunControl::Quit => {
                 ctx.quit();
             }
@@ -101,7 +115,7 @@ impl GameState for GameWorld {
 }
 
 fn main() -> BError {
-    let context = BTermBuilder::simple(80, 60)
+    let mut context = BTermBuilder::simple(80, 60)
         .unwrap()
         .with_title("BloodOath")
         .with_fps_cap(60.0)
@@ -109,8 +123,10 @@ fn main() -> BError {
         .with_dimensions(80, 60)
         .with_font("terminal8x8.png", 8, 8)
         .with_font("vga.png", 8, 16) // Load easy-to-read font
-        .with_sparse_console(80, 30, "vga.png") // Console 2: Log
+        .with_sparse_console_no_bg(80, 30, "vga.png") // Console 2: Log
         .build()?;
+
+    context.with_post_scanlines(true);
 
     main_loop(context, GameWorld::new())
 }

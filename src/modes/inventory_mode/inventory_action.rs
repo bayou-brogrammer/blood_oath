@@ -4,11 +4,9 @@ const CANCEL: &str = "[ Cancel ]";
 
 #[derive(Debug)]
 pub enum InventoryActionModeResult {
-    AppQuit,
     Cancelled,
     DropItem(Entity),
-    // EquipItem(Entity),
-    UseItem(Entity),
+    UseItem(Entity, Option<Point>),
 }
 
 #[derive(Debug)]
@@ -20,7 +18,6 @@ enum SubSection {
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum InventoryAction {
-    // EquipItem,
     UseItem,
     DropItem,
 }
@@ -36,7 +33,6 @@ impl InventoryAction {
 
     pub fn item_supports_action(world: &World, item: Entity, action: InventoryAction) -> bool {
         match action {
-            // InventoryAction::EquipItem => world.borrow::<View<EquipSlot>>().contains(item),
             InventoryAction::DropItem => true,
             InventoryAction::UseItem => world.read_storage::<Consumable>().contains(item),
         }
@@ -44,7 +40,6 @@ impl InventoryAction {
 
     pub fn name(&self) -> &'static str {
         match self {
-            // InventoryAction::EquipItem => "Equip",
             InventoryAction::UseItem => "Apply",
             InventoryAction::DropItem => "Drop",
         }
@@ -52,7 +47,6 @@ impl InventoryAction {
 
     fn label(&self) -> &'static str {
         match self {
-            // InventoryAction::EquipItem => "[ Equip ]",
             InventoryAction::UseItem => "[ Apply ]",
             InventoryAction::DropItem => "[ Drop ]",
         }
@@ -100,45 +94,53 @@ impl InventoryActionMode {
         }
     }
 
-    fn confirm_action(&self, world: &World) -> ModeControl {
+    fn confirm_action(&self, world: &World) -> (ModeControl, ModeUpdate) {
         let result = match self.subsection {
             SubSection::Cancel => InventoryActionModeResult::Cancelled,
             SubSection::Actions => match self.actions[self.selection as usize] {
                 InventoryAction::DropItem => InventoryActionModeResult::DropItem(self.item_id),
                 InventoryAction::UseItem => {
-                    if let Some(ranged) = world.read_storage::<Ranged>().get(self.item_id) {
-                        let item_name = world.read_storage::<Name>().get(self.item_id).unwrap().0.clone();
-
-                        let radius = world
-                            .read_storage::<AreaOfEffect>()
-                            .get(self.item_id)
-                            .map_or(0, |aoe| aoe.radius);
-
-                        // return ModeControl::Pop(
-                        //     TargetingMode::new(world, item_name, *range, radius, true).into(),
-                        // );
-                        // return ModeControl::Pop(InventoryActionModeResult::Targeting().into());
-                        // return InventoryActionModeResult::UseItem(self.item_id);
+                    if let Some(Ranged { range }) = world.read_storage::<Ranged>().get(self.item_id) {
+                        return (
+                            ModeControl::Push(TargetingMode::new(world, self.item_id, *range, true).into()),
+                            ModeUpdate::Update,
+                        );
+                    } else {
+                        InventoryActionModeResult::UseItem(self.item_id, None)
                     }
-
-                    InventoryActionModeResult::UseItem(self.item_id)
                 }
             },
         };
 
-        ModeControl::Pop(result.into())
+        (ModeControl::Pop(result.into()), ModeUpdate::Immediate)
     }
 
     pub fn tick(
         &mut self,
         ctx: &mut BTerm,
         world: &mut World,
-        _pop_result: &Option<ModeResult>,
-    ) -> ModeControl {
+        pop_result: &Option<ModeResult>,
+    ) -> (ModeControl, ModeUpdate) {
+        if let Some(result) = pop_result {
+            return match result {
+                ModeResult::TargetingModeResult(result) => match result {
+                    TargetingModeResult::Cancelled => (ModeControl::Stay, ModeUpdate::Update),
+                    TargetingModeResult::Target(item, pt) => (
+                        ModeControl::Pop(InventoryActionModeResult::UseItem(*item, Some(*pt)).into()),
+                        ModeUpdate::Immediate,
+                    ),
+                },
+                _ => (ModeControl::Stay, ModeUpdate::Update),
+            };
+        }
+
         if let Some(key) = ctx.key {
             match key {
                 VirtualKeyCode::Escape => {
-                    return ModeControl::Pop(InventoryActionModeResult::Cancelled.into())
+                    return (
+                        ModeControl::Pop(InventoryActionModeResult::Cancelled.into()),
+                        ModeUpdate::Immediate,
+                    )
                 }
                 VirtualKeyCode::Down => match self.subsection {
                     SubSection::Actions => {
@@ -191,7 +193,7 @@ impl InventoryActionMode {
             }
         }
 
-        ModeControl::Stay
+        (ModeControl::Stay, ModeUpdate::Update)
     }
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &mut World, _active: bool) {

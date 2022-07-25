@@ -5,13 +5,12 @@ pub use inventory_action::*;
 
 #[derive(Debug)]
 pub enum InventoryModeResult {
-    AppQuit,
     DoNothing,
     DropItem(Entity),
     // EquipItem(Entity),
     // DropEquipment(Entity),
     // RemoveEquipment(Entity),
-    UseItem(Entity),
+    UseItem(Entity, Option<Point>),
 }
 
 #[derive(Debug)]
@@ -63,20 +62,24 @@ impl InventoryMode {
         }
     }
 
-    pub fn tick(&mut self, ctx: &mut BTerm, world: &World, pop_result: &Option<ModeResult>) -> ModeControl {
+    pub fn tick(
+        &mut self,
+        ctx: &mut BTerm,
+        world: &World,
+        pop_result: &Option<ModeResult>,
+    ) -> (ModeControl, ModeUpdate) {
         if let Some(result) = pop_result {
             return match result {
                 ModeResult::InventoryActionModeResult(result) => match result {
-                    InventoryActionModeResult::Cancelled => ModeControl::Stay,
-                    InventoryActionModeResult::AppQuit => {
-                        ModeControl::Pop(InventoryModeResult::AppQuit.into())
-                    }
-                    InventoryActionModeResult::UseItem(item_id) => {
-                        ModeControl::Pop(InventoryModeResult::UseItem(*item_id).into())
-                    }
-                    InventoryActionModeResult::DropItem(item_id) => {
-                        ModeControl::Pop(InventoryModeResult::DropItem(*item_id).into())
-                    }
+                    InventoryActionModeResult::Cancelled => (ModeControl::Stay, ModeUpdate::Update),
+                    InventoryActionModeResult::UseItem(item_id, pt) => (
+                        ModeControl::Pop(InventoryModeResult::UseItem(*item_id, *pt).into()),
+                        ModeUpdate::Immediate,
+                    ),
+                    InventoryActionModeResult::DropItem(item_id) => (
+                        ModeControl::Pop(InventoryModeResult::DropItem(*item_id).into()),
+                        ModeUpdate::Immediate,
+                    ),
                 },
                 _ => unreachable!(),
             };
@@ -85,7 +88,7 @@ impl InventoryMode {
         if let Some(key) = ctx.key {
             match (&self.subsection, key) {
                 (_, VirtualKeyCode::Escape) => {
-                    return ModeControl::Pop(InventoryModeResult::DoNothing.into())
+                    return (ModeControl::Pop(InventoryModeResult::DoNothing.into()), ModeUpdate::Update)
                 }
                 (SubSection::Inventory, VirtualKeyCode::Up) => {
                     if self.inv_selection > 0 {
@@ -102,16 +105,19 @@ impl InventoryMode {
                     }
                 }
                 (SubSection::Inventory, VirtualKeyCode::Return) => {
-                    return ModeControl::Push(
-                        InventoryActionMode::new(world, self.inventory[self.inv_selection as usize].0, None)
-                            .into(),
-                    )
+                    if !self.inventory.is_empty() {
+                        let item = self.inventory[self.inv_selection as usize].0;
+                        return (
+                            ModeControl::Push(InventoryActionMode::new(world, item, None).into()),
+                            ModeUpdate::Immediate,
+                        );
+                    }
                 }
                 _ => {}
             }
         }
 
-        ModeControl::Stay
+        (ModeControl::Stay, ModeUpdate::Update)
     }
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {

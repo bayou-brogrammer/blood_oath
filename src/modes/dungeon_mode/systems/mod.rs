@@ -8,6 +8,7 @@ mod inventory;
 mod map_indexing_system;
 mod melee_combat_system;
 mod monster_ai_system;
+mod particle_system;
 
 use damage_system::{DamageSystem, DeleteDeadSystem};
 use end_turn::EndTurnSystem;
@@ -16,8 +17,9 @@ use inventory::*;
 use map_indexing_system::MapIndexingSystem;
 use melee_combat_system::MeleeCombatSystem;
 use monster_ai_system::MonsterAISystem;
+use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
 
-pub fn new_ticking_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
+pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
         (FovSystem, "fov", &[]),
         (MonsterAISystem, "ai_system", &[]),
@@ -28,6 +30,15 @@ pub fn new_ticking_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
         (ItemUseSystem, "use", &[]),
         (ItemDropSystem, "drop", &[]),
         (DeleteDeadSystem, "delete_dead", &[]),
-        (EndTurnSystem, "end_turn", &[])
+        (EndTurnSystem, "end_turn", &[]),
+        (ParticleSpawnSystem, "particle_spawn", &[]),
+        (ParticleUpdateSystem, "particle_update", &[])
+    );
+}
+
+pub fn new_ticking_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
+    construct_dispatcher!(
+        (DeleteDeadSystem, "delete_dead", &[]),
+        (ParticleUpdateSystem, "particle_update", &[])
     );
 }

@@ -87,8 +87,25 @@ pub enum ModeControl {
     Terminate(ModeResult),
 }
 
+/// Desired behavior for the next update, to be returned from an `update` call.
+#[allow(dead_code)]
+pub enum ModeUpdate {
+    /// Run the next update immediately, without waiting for the next frame.
+    Immediate,
+    /// Wait a frame before the next update; this will likely draw the mode for a frame.
+    Update,
+    /// Wait for an input event before the next update; this will likely draw the mode before
+    /// waiting.
+    WaitForEvent,
+}
+
 impl Mode {
-    fn tick(&mut self, ctx: &mut BTerm, world: &mut World, pop_result: &Option<ModeResult>) -> ModeControl {
+    fn tick(
+        &mut self,
+        ctx: &mut BTerm,
+        world: &mut World,
+        pop_result: &Option<ModeResult>,
+    ) -> (ModeControl, ModeUpdate) {
         match self {
             Mode::DungeonMode(x) => x.tick(ctx, world, pop_result),
             Mode::MainMenuMode(x) => x.tick(ctx, world, pop_result),
@@ -144,10 +161,10 @@ impl ModeStack {
     ///
     /// This also converts [ModeUpdate] values into [ruggrogue::RunControl] values to control the
     /// behavior of the next update.
-    pub fn tick(&mut self, ctx: &mut BTerm, world: &mut World) -> RunControl {
+    pub fn update(&mut self, ctx: &mut BTerm, world: &mut World) -> RunControl {
         while !self.stack.is_empty() {
             // Update the top mode.
-            let mode_control = {
+            let (mode_control, mode_update) = {
                 let top_mode = self.stack.last_mut().unwrap();
                 top_mode.tick(ctx, world, &self.pop_result)
             };
@@ -175,12 +192,19 @@ impl ModeStack {
             }
 
             // Draw modes in the stack from the bottom-up.
-            if !self.stack.is_empty() {
+            if !self.stack.is_empty() && !matches!(mode_update, ModeUpdate::Immediate) {
                 let draw_from = self.stack.iter().rposition(|mode| !mode.draw_behind()).unwrap_or(0);
                 let top = self.stack.len().saturating_sub(1);
 
+                bo_utils::prelude::clear_all_consoles(ctx, [LAYER_MAP, LAYER_LOG]);
+
+                // always draw dungeon
+                if top > 0 {
+                    self.stack[0].draw(ctx, world, false)
+                }
+
                 // Draw non-top modes with `active` set to `false`.
-                for mode in self.stack.iter_mut().skip(draw_from) {
+                for mode in self.stack.iter_mut().skip(usize::max(draw_from, 1)) {
                     mode.draw(ctx, world, false);
                 }
 
@@ -188,7 +212,11 @@ impl ModeStack {
                 self.stack[top].draw(ctx, world, true);
             }
 
-            return RunControl::Update;
+            match mode_update {
+                ModeUpdate::Immediate => (),
+                ModeUpdate::Update => return RunControl::Update,
+                ModeUpdate::WaitForEvent => return RunControl::Update,
+            }
         }
 
         RunControl::Quit

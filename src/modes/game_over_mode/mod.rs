@@ -45,10 +45,12 @@ impl GameOverMode {
         ctx: &mut BTerm,
         world: &mut World,
         _pop_result: &Option<ModeResult>,
-    ) -> ModeControl {
+    ) -> (ModeControl, ModeUpdate) {
         if let Some(key) = ctx.key {
             match key {
-                VirtualKeyCode::Escape => return ModeControl::Pop(GameOverModeResult::AppQuit.into()),
+                VirtualKeyCode::Escape => {
+                    return (ModeControl::Pop(GameOverModeResult::AppQuit.into()), ModeUpdate::Immediate)
+                }
                 VirtualKeyCode::Down => {
                     if self.selection < self.actions.len().saturating_sub(1) {
                         self.selection += 1;
@@ -68,16 +70,24 @@ impl GameOverMode {
 
                     match self.actions[self.selection] {
                         MenuAction::NewGame => {
-                            return ModeControl::Switch(DungeonMode::new(world).into());
+                            return (
+                                ModeControl::Switch(DungeonMode::new(world).into()),
+                                ModeUpdate::Immediate,
+                            );
                         }
-                        MenuAction::Quit => return ModeControl::Pop(GameOverModeResult::AppQuit.into()),
+                        MenuAction::Quit => {
+                            return (
+                                ModeControl::Pop(GameOverModeResult::AppQuit.into()),
+                                ModeUpdate::Immediate,
+                            )
+                        }
                     }
                 }
                 _ => {}
             }
         }
 
-        ModeControl::Stay
+        (ModeControl::Stay, ModeUpdate::Update)
     }
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {

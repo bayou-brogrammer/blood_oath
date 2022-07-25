@@ -1,4 +1,4 @@
-use super::{particles::add_damage_particle, *};
+use super::*;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     if let Some(stats) = ecs.write_storage::<CombatStats>().get_mut(target) {
@@ -30,17 +30,7 @@ pub fn heal_damage(ecs: &mut World, heal: &EffectSpawner, target: Entity) {
     if let Some(stats) = ecs.write_storage::<CombatStats>().get_mut(target) {
         if let EffectType::Healing { amount } = heal.effect_type {
             stats.hp = i32::min(stats.max_hp, stats.hp + amount);
-
-            // add_effect(
-            //     None,
-            //     EffectType::Particle {
-            //         glyph: rltk::to_cp437('‼'),
-            //         fg: rltk::RGB::named(rltk::GREEN),
-            //         bg: rltk::RGB::named(rltk::BLACK),
-            //         lifespan: 200.0,
-            //     },
-            //     Targets::Single { target },
-            // );
+            add_heal_particle(target);
         }
     }
 }

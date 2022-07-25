@@ -7,6 +7,7 @@ mod particles;
 mod targeting;
 mod triggers;
 
+pub use particles::*;
 pub use targeting::*;
 
 lazy_static! {

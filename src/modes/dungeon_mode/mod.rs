@@ -28,6 +28,7 @@ pub enum DungeonModeResult {
 ////////////////////////////////////////////////////////////////////////////////
 pub struct DungeonMode {
     dispatcher: Box<dyn UnifiedDispatcher + 'static>,
+    ticking_dispatcher: Box<dyn UnifiedDispatcher + 'static>,
 }
 
 impl std::fmt::Debug for DungeonMode {
@@ -43,40 +44,38 @@ impl std::fmt::Debug for DungeonMode {
 impl DungeonMode {
     pub fn new(world: &mut World) -> Self {
         // Dispatchers
+        let mut dispatcher = systems::new_dispatcher();
         let mut ticking_dispatcher = systems::new_ticking_dispatcher();
+        dispatcher.setup(world);
         ticking_dispatcher.setup(world);
 
         setup::new_game(world);
 
-        Self { dispatcher: ticking_dispatcher }
+        Self { dispatcher, ticking_dispatcher }
     }
 
-    fn run_systems(&mut self, world: &mut World) {
+    fn run_dispatcher(&mut self, world: &mut World) {
         self.dispatcher.run_now(world, Box::new(run_effects_queue));
         world.maintain();
     }
 
-    fn use_item(&self, world: &World, item: &Entity) -> Option<Mode> {
-        if let Some(Ranged { range }) = world.read_storage::<Ranged>().get(*item) {
-            let item_name = world.read_storage::<Name>().get(*item).unwrap().0.clone();
-            let radius = world.read_storage::<AreaOfEffect>().get(*item).map_or(0, |aoe| aoe.radius);
+    fn run_ticking_dispatcher(&mut self, world: &mut World) {
+        self.ticking_dispatcher.run_now(world, Box::new(run_effects_queue));
+        world.maintain();
+    }
 
-            return Some(TargetingMode::new(world, item_name, *range, radius, true).into());
-        }
-
-        let mut intent = world.write_storage::<WantsToUseItem>();
-        intent
-            .insert(*world.fetch::<Entity>(), WantsToUseItem { item: *item, target: None })
-            .expect("Unable to insert intent");
-
-        None
+    fn use_item(&self, world: &World, item: &Entity, pt: Option<Point>) {
+        world
+            .write_storage::<WantsToUseItem>()
+            .insert(*world.fetch::<Entity>(), WantsToUseItem::new(*item, pt))
+            .expect("Failed to insert intent");
     }
 
     fn drop_item(&self, world: &World, item: &Entity) {
-        let mut intent = world.write_storage::<WantsToDropItem>();
-        intent
-            .insert(*world.fetch::<Entity>(), WantsToDropItem { item: *item })
-            .expect("Unable to insert intent");
+        world
+            .write_storage::<WantsToDropItem>()
+            .insert(*world.fetch::<Entity>(), WantsToDropItem::new(*item))
+            .expect("Failed to insert intent");
     }
 
     pub fn tick(
@@ -84,29 +83,30 @@ impl DungeonMode {
         ctx: &mut BTerm,
         world: &mut World,
         pop_result: &Option<ModeResult>,
-    ) -> ModeControl {
+    ) -> (ModeControl, ModeUpdate) {
         if let Some(result) = pop_result {
+            let mut runwriter = world.write_resource::<TurnState>();
+
             match result {
+                // Inventory
                 ModeResult::InventoryModeResult(result) => match result {
-                    InventoryModeResult::AppQuit => ctx.quit(),
                     InventoryModeResult::DoNothing => {}
                     _ => {
                         match result {
                             InventoryModeResult::DropItem(item_id) => self.drop_item(world, item_id),
-                            InventoryModeResult::UseItem(item) => match self.use_item(world, item) {
-                                None => {}
-                                Some(result) => return ModeControl::Push(result),
-                            },
+                            InventoryModeResult::UseItem(item, target) => self.use_item(world, item, *target),
                             _ => {}
                         }
 
-                        let mut runwriter = world.write_resource::<TurnState>();
                         *runwriter = TurnState::PlayerTurn;
                     }
                 },
                 _ => unreachable!("This should not be possible"),
-            }
+            };
         }
+
+        // Ticking dispatcher is for cleanup systems like deleting dead entities or particles
+        self.run_ticking_dispatcher(world);
 
         let runstate;
         {
@@ -122,24 +122,28 @@ impl DungeonMode {
                     *runwriter = TurnState::PlayerTurn;
                 }
                 player::PlayerInputResult::AppQuit => {
-                    return ModeControl::Pop(DungeonModeResult::Done.into())
+                    return (ModeControl::Pop(DungeonModeResult::Done.into()), ModeUpdate::Immediate);
                 }
                 player::PlayerInputResult::ShowInventory => {
-                    return ModeControl::Push(InventoryMode::new(world).into())
+                    return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
                 }
             },
             TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
-                self.run_systems(world);
+                self.run_dispatcher(world);
             }
         }
 
-        ModeControl::Stay
+        (ModeControl::Stay, ModeUpdate::Update)
     }
 
-    pub fn draw(&mut self, ctx: &mut BTerm, world: &mut World, _active: bool) {
-        bo_utils::prelude::clear_all_consoles(ctx, [LAYER_MAP, LAYER_LOG]);
-        render::gui::draw_ui(world, ctx);
+    pub fn draw(&mut self, ctx: &mut BTerm, world: &mut World, active: bool) {
+        match (active, ctx.screen_burn_color == REGULAR_SCREEN_BURN.into()) {
+            (true, false) => ctx.screen_burn_color(REGULAR_SCREEN_BURN.into()),
+            (false, true) => ctx.screen_burn_color(RGB::named(LIGHTGRAY)),
+            _ => {}
+        }
 
+        render::gui::draw_ui(world, ctx);
         draw_map(&world.fetch::<Map>(), ctx);
 
         let positions = world.read_storage::<Position>();

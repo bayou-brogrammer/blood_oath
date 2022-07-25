@@ -17,9 +17,11 @@ pub fn safe_print_color<T: ToString>(batch: &mut DrawBatch, pos: Point, text: T,
 
 pub fn clear_all_consoles<C: Into<Vec<usize>>>(ctx: &mut BTerm, consoles: C) {
     let consoles: Vec<usize> = consoles.into();
+
     for layer in consoles {
         ctx.set_active_console(layer);
         ctx.cls();
     }
+
     ctx.set_active_console(0);
 }

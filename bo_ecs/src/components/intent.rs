@@ -1,3 +1,5 @@
+use bo_utils::impl_new;
+
 use super::*;
 
 #[derive(Component, Debug, Clone)]
@@ -21,3 +23,7 @@ pub struct WantsToUseItem {
 pub struct WantsToDropItem {
     pub item: Entity,
 }
+
+impl_new!(WantsToDropItem, item: Entity);
+impl_new!(WantsToUseItem, item: Entity, target: Option<Point>);
+impl_new!(WantsToPickupItem, item: Entity, collected_by: Entity);
