@@ -1,22 +1,32 @@
 mod gamelog;
 mod modes;
+mod resources;
 mod rng;
 
+pub mod render;
+
 mod prelude {
-    pub use bracket_lib::prelude::*;
     pub use lazy_static::*;
+
+    pub use bracket_color::prelude::*;
+    pub use bracket_geometry::prelude::*;
+    pub use bracket_random::prelude::*;
+    pub use bracket_terminal::prelude::*;
 
     pub use specs::prelude::World;
     pub use specs::prelude::*;
+    pub use specs::saveload::MarkedBuilder;
     pub use specs::Component;
 
     pub use bo_ecs::prelude::*;
     pub use bo_map::prelude::*;
+    pub use bo_pathfinding::prelude::*;
     pub use bo_utils::prelude::*;
 
     pub use crate::modes::*;
+    pub use crate::render;
+    pub use crate::resources::*;
     pub use crate::rng::*;
-    pub use crate::TurnState;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -37,15 +47,6 @@ mod prelude {
 
 pub use prelude::*;
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
-pub enum TurnState {
-    PreRun,
-    // Actor States
-    AwaitingInput,
-    PlayerTurn,
-    MonsterTurn,
-}
-
 pub struct GameWorld {
     pub mode_stack: ModeStack,
     pub world: World,
@@ -56,8 +57,11 @@ impl GameWorld {
         let mut world = World::new();
 
         GameWorld::register_components(&mut world);
-        world.insert(modes::MenuMemory::new());
+
+        // Resources
+        world.insert(TurnState::PreRun);
         world.insert(ParticleBuilder::new());
+        world.insert(modes::MenuMemory::new());
 
         Self { world, mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]) }
     }
@@ -68,6 +72,7 @@ impl GameWorld {
         world.register::<Monster>();
         world.register::<BlocksTile>();
         world.register::<Item>();
+        world.register::<SimpleMarker<SerializeMe>>();
 
         // Generics
         world.register::<Position>();
@@ -94,13 +99,15 @@ impl GameWorld {
         // Ranged
         world.register::<Ranged>();
         world.register::<AreaOfEffect>();
+
+        // Serialization
+        world.register::<SerializationHelper<Map>>();
+        world.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     }
 }
 
 impl GameState for GameWorld {
     fn tick(&mut self, ctx: &mut BTerm) {
-        // bo_utils::prelude::clear_all_consoles(ctx, [LAYER_MAP, LAYER_LOG]);
-
         self.world.insert(ctx.frame_time_ms);
 
         match self.mode_stack.update(ctx, &mut self.world) {

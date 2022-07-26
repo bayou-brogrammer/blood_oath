@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Component)]
+#[derive(Debug, Component, ConvertSaveload)]
 pub struct Name(pub String);
 
 impl Name {

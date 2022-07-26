@@ -1,18 +1,13 @@
-use self::effects::run_effects_queue;
 use super::*;
-use crate::inventory_mode::InventoryMode;
+use super::{AppQuitDialogMode, InventoryMode};
 
 pub mod spawner;
 
 mod effects;
 mod player;
-mod render;
-mod setup;
 mod systems;
 
 pub use effects::*;
-pub use render::{gui, *};
-
 use player::player_input;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,10 +41,9 @@ impl DungeonMode {
         // Dispatchers
         let mut dispatcher = systems::new_dispatcher();
         let mut ticking_dispatcher = systems::new_ticking_dispatcher();
+
         dispatcher.setup(world);
         ticking_dispatcher.setup(world);
-
-        setup::new_game(world);
 
         Self { dispatcher, ticking_dispatcher }
     }
@@ -78,6 +72,10 @@ impl DungeonMode {
             .expect("Failed to insert intent");
     }
 
+    fn app_quit_dialog(&self) -> (ModeControl, ModeUpdate) {
+        (ModeControl::Push(AppQuitDialogMode::new().into()), ModeUpdate::Update)
+    }
+
     pub fn tick(
         &mut self,
         ctx: &mut BTerm,
@@ -85,9 +83,18 @@ impl DungeonMode {
         pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
         if let Some(result) = pop_result {
-            let mut runwriter = world.write_resource::<TurnState>();
-
             match result {
+                // App Quit
+                ModeResult::AppQuitDialogModeResult(result) => match result {
+                    AppQuitDialogModeResult::Cancelled => {}
+                    AppQuitDialogModeResult::Confirmed => {
+                        if let Err(e) = bo_saveload::save_game(world) {
+                            eprintln!("Warning: bo_saveload::save_game: {}", e);
+                        }
+                        return (ModeControl::Pop(DungeonModeResult::Done.into()), ModeUpdate::Immediate);
+                    }
+                },
+
                 // Inventory
                 ModeResult::InventoryModeResult(result) => match result {
                     InventoryModeResult::DoNothing => {}
@@ -98,10 +105,11 @@ impl DungeonMode {
                             _ => {}
                         }
 
+                        let mut runwriter = world.write_resource::<TurnState>();
                         *runwriter = TurnState::PlayerTurn;
                     }
                 },
-                _ => unreachable!("This should not be possible"),
+                _ => unreachable!("Unknown popped dungeon result: [{:?}]", result),
             };
         }
 
@@ -121,9 +129,7 @@ impl DungeonMode {
                     let mut runwriter = world.write_resource::<TurnState>();
                     *runwriter = TurnState::PlayerTurn;
                 }
-                player::PlayerInputResult::AppQuit => {
-                    return (ModeControl::Pop(DungeonModeResult::Done.into()), ModeUpdate::Immediate);
-                }
+                player::PlayerInputResult::AppQuit => return self.app_quit_dialog(),
                 player::PlayerInputResult::ShowInventory => {
                     return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
                 }

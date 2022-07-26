@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum RenderOrder {
     Particle, // Top
     Actor,
@@ -8,7 +8,7 @@ pub enum RenderOrder {
     Corpse, // Last
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Clone, Copy, PartialEq, Component, ConvertSaveload)]
 #[storage(DenseVecStorage)]
 pub struct Glyph {
     pub glyph: FontCharType,

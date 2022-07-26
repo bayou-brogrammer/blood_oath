@@ -14,25 +14,41 @@ codegen-units = 1
 lto = true
 
 [features]
-default = ["debug", "parallel"]
+default = ["parallel"]
 parallel = ["rayon"]
-debug = []
 
 [dependencies]
+# Internal Crates
 bo_ecs = { path = "bo_ecs/" }
 bo_map = { path = "bo_map/" }
 bo_utils = { path = "bo_utils/" }
+bo_saveload = { path = "bo_saveload/" }
+bo_pathfinding = { path = "bo_pathfinding/" }
 
-bracket-lib = { version = "^0.8.1", features = ["serde"] }
+# Core Crates
+# bracket-lib = { version = "^0.8.1", features = ["serde"] }
+bracket-terminal = { version = "^0.8.5" }
+bracket-geometry = { version = "^0.8.3", features = ['serde'] }
+bracket-color = { version = "^0.8.2", features = ['serde'] }
+bracket-random = { version = "^0.8.2", features = ['serde'] }
+
 rayon = { version = "^1.5.3", optional = true }
 specs = { version = "^0.18.0", default_features = false, features = [
   "parallel",
   "derive",
+  "serde",
 ] }
 
+# Utility Crates
 lazy_static = "1.4.0"
 parking_lot = { version = "^0.12.1", features = ["nightly"] }
 bitvec = "^1.0.1"
+textwrap = "^0.15.0"
+
+# Serde
+serde = { version = "^1.0.140", features = ["derive"] }
+serde_json = "^1.0.82"
+
 
 [build-dependencies]
 embed-resource = "1.7.3"
@@ -40,4 +56,4 @@ embed-resource = "1.7.3"
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
-members = ["bo_utils", "bo_ecs", "bo_map"]
+members = ["bo_utils", "bo_ecs", "bo_map", "bo_saveload", "bo_pathfinding"]

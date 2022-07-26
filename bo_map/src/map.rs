@@ -1,4 +1,6 @@
 use crate::prelude::*;
+use bo_ecs::prelude::{Deserialize, Serialize};
+
 use bracket_geometry::prelude::*;
 use bracket_pathfinding::prelude::*;
 use bracket_random::prelude::RandomNumberGenerator;
@@ -9,6 +11,7 @@ use std::{
     collections::HashSet,
 };
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Map {
     pub width: i32,
     pub height: i32,
@@ -18,7 +21,6 @@ pub struct Map {
     pub visible: BitGrid,
     pub revealed: BitGrid,
     pub tiles: Vec<TileType>,
-    pub starting_point: Point,
     pub view_blocked: HashSet<usize>,
 }
 
@@ -83,7 +85,6 @@ impl Map {
             visible: BitGrid::new(width, height),
             revealed: BitGrid::new(width, height),
             tiles: vec![TileType::Wall; map_tile_count],
-            starting_point: Point::new(width / 2, height / 2),
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -116,8 +117,6 @@ impl Map {
                         map.apply_vertical_tunnel(prev_y, new_y, prev_x);
                         map.apply_horizontal_tunnel(prev_x, new_x, new_y);
                     }
-                } else {
-                    map.starting_point = new_room.center();
                 }
 
                 map.rooms.push(new_room);

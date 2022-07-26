@@ -1,4 +1,6 @@
-#[derive(PartialEq, Eq, Hash, Copy, Clone)]
+use bo_ecs::prelude::{Deserialize, Serialize};
+
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
     Stalactite,

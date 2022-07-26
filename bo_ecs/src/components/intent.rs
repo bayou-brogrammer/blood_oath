@@ -2,24 +2,24 @@ use bo_utils::impl_new;
 
 use super::*;
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ConvertSaveload)]
 pub struct WantsToMelee {
     pub target: Entity,
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ConvertSaveload)]
 pub struct WantsToPickupItem {
     pub collected_by: Entity,
     pub item: Entity,
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ConvertSaveload)]
 pub struct WantsToUseItem {
     pub item: Entity,
     pub target: Option<Point>,
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ConvertSaveload)]
 pub struct WantsToDropItem {
     pub item: Entity,
 }

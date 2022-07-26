@@ -138,7 +138,7 @@ impl TargetingMode {
             let map = world.fetch::<Map>();
             field_of_view_set(self.active_mouse_pt, self.radius, &*map).iter().for_each(|pt| {
                 if map.visible.get_bit(*pt) {
-                    draw_batch.set_bg(*pt, RED);
+                    draw_batch.set_bg(*pt, LIGHT_RED);
                 }
             });
         }

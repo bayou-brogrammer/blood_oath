@@ -65,6 +65,7 @@ impl<'a> System<'a> for MonsterAISystem {
 
                     if path.success && path.steps.len() > 1 {
                         let destination = map.index_to_point2d(path.steps[1]);
+
                         crate::spatial::move_entity(
                             entity,
                             map.point2d_to_index(pos.0),

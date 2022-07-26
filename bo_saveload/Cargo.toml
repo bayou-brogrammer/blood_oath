@@ -1,16 +1,18 @@
 [package]
-name = "bo_ecs"
+name = "bo_saveload"
 version = "0.1.0"
 authors = ["Jacob LeCoq <lecoqjacob@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-bo_utils = { path = "../bo_utils" }
+bo_ecs = { path = "../bo_ecs" }
+bo_map = { path = "../bo_map" }
 
-bracket-terminal = "^0.8.5"
+bracket-geometry = "^0.8.3"
 specs = { version = "^0.18.0", default_features = false, features = [
-  "parallel",
   "derive",
+  "serde",
 ] }
+
 serde = { version = "^1.0.140", features = ["derive"] }
 serde_json = "^1.0.82"

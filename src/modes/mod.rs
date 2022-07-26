@@ -1,20 +1,21 @@
 use crate::prelude::*;
 
+pub mod dialogs;
 pub mod dungeon_mode;
 pub mod game_over_mode;
 pub mod inventory_mode;
 pub mod main_menu_mode;
 pub mod menu_memory;
 pub mod targeting_mode;
-pub mod yes_no_dialog;
 
+use app_quit_dialog::{AppQuitDialogMode, AppQuitDialogModeResult};
 use dungeon_mode::{DungeonMode, DungeonModeResult};
 use game_over_mode::{GameOverMode, GameOverModeResult};
 use inventory_mode::{InventoryActionMode, InventoryActionModeResult, InventoryMode, InventoryModeResult};
 use main_menu_mode::{MainMenuMode, MainMenuModeResult};
 use targeting_mode::{TargetingMode, TargetingModeResult};
-use yes_no_dialog::{YesNoDialogMode, YesNoDialogModeResult};
 
+use dialogs::*;
 pub use menu_memory::MenuMemory;
 
 /// Return value for `update` callback sent into [run] that controls the main event loop.
@@ -45,7 +46,9 @@ pub enum Mode {
     GameOverMode(GameOverMode),
     InventoryMode(InventoryMode),
     TargetingMode(TargetingMode),
+    MessageBoxMode(MessageBoxMode),
     YesNoDialogMode(YesNoDialogMode),
+    AppQuitDialogMode(AppQuitDialogMode),
     InventoryActionMode(InventoryActionMode),
 }
 
@@ -54,7 +57,9 @@ impl_from!(Mode, MainMenuMode);
 impl_from!(Mode, GameOverMode);
 impl_from!(Mode, InventoryMode);
 impl_from!(Mode, TargetingMode);
+impl_from!(Mode, MessageBoxMode);
 impl_from!(Mode, YesNoDialogMode);
+impl_from!(Mode, AppQuitDialogMode);
 impl_from!(Mode, InventoryActionMode);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,7 +71,9 @@ pub enum ModeResult {
     GameOverModeResult(GameOverModeResult),
     InventoryModeResult(InventoryModeResult),
     TargetingModeResult(TargetingModeResult),
+    MessageBoxModeResult(MessageBoxModeResult),
     YesNoDialogModeResult(YesNoDialogModeResult),
+    AppQuitDialogModeResult(AppQuitDialogModeResult),
     InventoryActionModeResult(InventoryActionModeResult),
 }
 
@@ -75,7 +82,9 @@ impl_from!(ModeResult, MainMenuModeResult);
 impl_from!(ModeResult, GameOverModeResult);
 impl_from!(ModeResult, InventoryModeResult);
 impl_from!(ModeResult, TargetingModeResult);
+impl_from!(ModeResult, MessageBoxModeResult);
 impl_from!(ModeResult, YesNoDialogModeResult);
+impl_from!(ModeResult, AppQuitDialogModeResult);
 impl_from!(ModeResult, InventoryActionModeResult);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -119,7 +128,9 @@ impl Mode {
             Mode::GameOverMode(x) => x.tick(ctx, world, pop_result),
             Mode::InventoryMode(x) => x.tick(ctx, world, pop_result),
             Mode::TargetingMode(x) => x.tick(ctx, world, pop_result),
+            Mode::MessageBoxMode(x) => x.tick(ctx, world, pop_result),
             Mode::YesNoDialogMode(x) => x.tick(ctx, world, pop_result),
+            Mode::AppQuitDialogMode(x) => x.tick(ctx, world, pop_result),
             Mode::InventoryActionMode(x) => x.tick(ctx, world, pop_result),
         }
     }
@@ -131,7 +142,9 @@ impl Mode {
             Mode::GameOverMode(x) => x.draw(ctx, world, active),
             Mode::InventoryMode(x) => x.draw(ctx, world, active),
             Mode::TargetingMode(x) => x.draw(ctx, world, active),
+            Mode::MessageBoxMode(x) => x.draw(ctx, world, active),
             Mode::YesNoDialogMode(x) => x.draw(ctx, world, active),
+            Mode::AppQuitDialogMode(x) => x.draw(ctx, world, active),
             Mode::InventoryActionMode(x) => x.draw(ctx, world, active),
         }
     }
@@ -144,7 +157,9 @@ impl Mode {
             Mode::MainMenuMode(_) => false,
             Mode::InventoryMode(_) => true,
             Mode::TargetingMode(_) => false,
+            Mode::MessageBoxMode(_) => true,
             Mode::YesNoDialogMode(_) => true,
+            Mode::AppQuitDialogMode(_) => true,
             Mode::InventoryActionMode(_) => true,
         }
     }

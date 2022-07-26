@@ -18,7 +18,7 @@ impl ParticleBuilder {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, ConvertSaveload)]
 pub struct ParticleRequest {
     pub pt: Point,
     pub lifetime: f32,
@@ -26,7 +26,7 @@ pub struct ParticleRequest {
     pub glyph: FontCharType,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ParticleAnimation {
     pub timer: f32,
     pub step_time: f32,
@@ -34,20 +34,20 @@ pub struct ParticleAnimation {
     pub current_step: usize,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, ConvertSaveload)]
 pub struct ParticleLifetime {
     pub lifetime_ms: f32,
     pub animation: Option<ParticleAnimation>,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, ConvertSaveload)]
 pub struct SpawnParticleLine {
     pub color: RGB,
     pub lifetime_ms: f32,
     pub glyph: FontCharType,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, ConvertSaveload)]
 pub struct SpawnParticleBurst {
     pub color: RGB,
     pub lifetime_ms: f32,

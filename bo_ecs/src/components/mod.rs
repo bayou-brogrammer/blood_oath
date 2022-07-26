@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 use specs::Component;
@@ -11,6 +12,7 @@ mod name;
 mod particles;
 mod position;
 mod ranged;
+mod seralize;
 mod stats;
 mod tags;
 
@@ -23,5 +25,6 @@ pub use name::*;
 pub use particles::*;
 pub use position::*;
 pub use ranged::*;
+pub use seralize::*;
 pub use stats::*;
 pub use tags::*;

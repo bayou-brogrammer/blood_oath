@@ -1,5 +1,7 @@
 use super::{dungeon_mode::DungeonMode, ModeControl, ModeResult, *};
 
+mod setup;
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Result
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,6 +18,7 @@ pub enum MainMenuModeResult {
 #[derive(Debug)]
 pub enum MainMenuAction {
     NewGame,
+    LoadGame,
     Quit,
 }
 
@@ -23,6 +26,7 @@ impl MainMenuAction {
     fn label(&self) -> &'static str {
         match self {
             MainMenuAction::NewGame => "New Game",
+            MainMenuAction::LoadGame => "Load Game",
             MainMenuAction::Quit => "Quit",
         }
     }
@@ -41,6 +45,13 @@ impl MainMenuMode {
     pub fn new() -> Self {
         let mut actions = vec![MainMenuAction::NewGame];
 
+        // There's no obvious way to get Emscripten to load the IndexedDB filesystem in time to
+        // realize that a save file exists, so always include the Load Game option for it and just
+        // check if there really is a save file when the option is chosen instead.
+        if cfg!(target_os = "emscripten") || bo_saveload::does_save_exist() {
+            actions.push(MainMenuAction::LoadGame);
+        }
+
         #[cfg(not(target_arch = "wasm32"))]
         actions.push(MainMenuAction::Quit);
 
@@ -51,8 +62,39 @@ impl MainMenuMode {
         &mut self,
         ctx: &mut BTerm,
         world: &mut World,
-        _pop_result: &Option<ModeResult>,
+        pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
+        ///////////////////////////////////////////////////////////////////////////////
+        // Pop Result
+        //////////////////////////////////////////////////////////////////////////////
+
+        if let Some(result) = pop_result {
+            return match result {
+                ModeResult::MessageBoxModeResult(result) => match result {
+                    MessageBoxModeResult::Done => (ModeControl::Stay, ModeUpdate::WaitForEvent),
+                    MessageBoxModeResult::AppQuit => {
+                        (ModeControl::Pop(MainMenuModeResult::AppQuit.into()), ModeUpdate::Immediate)
+                    }
+                },
+                ModeResult::YesNoDialogModeResult(result) => match result {
+                    YesNoDialogModeResult::No => (ModeControl::Stay, ModeUpdate::Update),
+                    YesNoDialogModeResult::Yes => {
+                        bo_saveload::delete_save();
+
+                        // Setup game state
+                        setup::setup_new_game(world);
+
+                        (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Immediate)
+                    }
+                },
+                _ => unreachable!("Unknown popped main_menu result: [{:?}]", result),
+            };
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////
+        // Main Input Handling
+        //////////////////////////////////////////////////////////////////////////////
+
         if let Some(key) = ctx.key {
             match key {
                 VirtualKeyCode::Escape => {
@@ -76,17 +118,68 @@ impl MainMenuMode {
                     assert!(self.selection < self.actions.len());
 
                     match self.actions[self.selection] {
-                        MainMenuAction::NewGame => {
-                            return (
-                                ModeControl::Switch(DungeonMode::new(world).into()),
-                                ModeUpdate::Immediate,
-                            );
-                        }
                         MainMenuAction::Quit => {
                             return (
                                 ModeControl::Pop(MainMenuModeResult::AppQuit.into()),
                                 ModeUpdate::Immediate,
                             )
+                        }
+                        MainMenuAction::NewGame => {
+                            if bo_saveload::does_save_exist() {
+                                return (
+                                    ModeControl::Push(
+                                        YesNoDialogMode::new(
+                                            "Save data already exists.  Delete it?".into(),
+                                            false,
+                                        )
+                                        .into(),
+                                    ),
+                                    ModeUpdate::Update,
+                                );
+                            } else {
+                                setup::setup_new_game(world);
+
+                                return (
+                                    ModeControl::Switch(DungeonMode::new(world).into()),
+                                    ModeUpdate::Immediate,
+                                );
+                            }
+                        }
+                        MainMenuAction::LoadGame => {
+                            if bo_saveload::does_save_exist() {
+                                match bo_saveload::load_game(world) {
+                                    Ok(_) => {
+                                        return (
+                                            ModeControl::Switch(DungeonMode::new(world).into()),
+                                            ModeUpdate::Update,
+                                        );
+                                    }
+                                    Err(e) => {
+                                        println!("Failed to load game: {:?}", e);
+                                        let mut msg =
+                                            vec!["Failed to load game:".to_string(), "".to_string()];
+
+                                        msg.extend(
+                                            textwrap::wrap(&format!("{}", e), 78)
+                                                .iter()
+                                                .map(|s| s.to_string())
+                                                .collect::<Vec<_>>(),
+                                        );
+
+                                        return (
+                                            ModeControl::Push(MessageBoxMode::new(msg).into()),
+                                            ModeUpdate::Update,
+                                        );
+                                    }
+                                }
+                            } else {
+                                return (
+                                    ModeControl::Push(
+                                        MessageBoxMode::new(vec!["No save file found.".to_string()]).into(),
+                                    ),
+                                    ModeUpdate::Immediate,
+                                );
+                            }
                         }
                     }
                 }

@@ -4,7 +4,7 @@ use std::collections::HashSet;
 pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
     world
         .create_entity()
-        .with(Player)
+        .with(Player {})
         .with(Position::new(start_pos))
         .with(Glyph::new(to_cp437('@'), ColorPair::new(YELLOW, BLACK), RenderOrder::Actor))
         .with(Name::new(format!("SecBot")))
@@ -94,6 +94,7 @@ pub fn monster<S: ToString>(
         .with(Name::new(name))
         .with(Description::new(desc))
         .with(CombatStats::new(16, 16, 1, 4))
+        .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
 
@@ -105,6 +106,7 @@ pub fn health_potion(ecs: &mut World, pt: Point) {
         .with(Item)
         .with(Consumable)
         .with(ProvidesHealing { heal_amount: 8 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -117,6 +119,7 @@ pub fn magic_missile_scroll(ecs: &mut World, pt: Point) {
         .with(Consumable)
         .with(Ranged { range: 6 })
         .with(InflictsDamage { damage: 20 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -130,6 +133,7 @@ pub fn fireball_scroll(ecs: &mut World, pt: Point) {
         .with(Ranged { range: 6 })
         .with(InflictsDamage { damage: 20 })
         .with(AreaOfEffect { radius: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -143,5 +147,6 @@ pub fn confusion_scroll(ecs: &mut World, pt: Point) {
         .with(InflictsDamage { damage: 20 })
         .with(Ranged { range: 6 })
         .with(Confusion { turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

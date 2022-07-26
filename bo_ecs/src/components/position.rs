@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component, ConvertSaveload)]
 #[storage(DenseVecStorage)]
 pub struct Position(pub Point);
 

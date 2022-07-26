@@ -1,7 +1,7 @@
 use super::*;
 use std::collections::HashSet;
 
-#[derive(Debug, Clone, PartialEq, Eq, Component)]
+#[derive(Debug, Clone, PartialEq, Eq, Component, ConvertSaveload)]
 #[storage(DenseVecStorage)]
 pub struct FieldOfView {
     pub radius: i32,
@@ -11,10 +11,6 @@ pub struct FieldOfView {
 
 impl FieldOfView {
     pub fn new(radius: i32) -> Self {
-        Self {
-            radius,
-            is_dirty: true,
-            visible_tiles: HashSet::new(),
-        }
+        Self { radius, is_dirty: true, visible_tiles: HashSet::new() }
     }
 }
