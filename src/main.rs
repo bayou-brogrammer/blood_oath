@@ -121,6 +121,12 @@ impl GameState for GameWorld {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct MyStruct {
+    boolean: bool,
+    float: f32,
+}
+
 fn main() -> BError {
     let mut context = BTermBuilder::simple(80, 60)
         .unwrap()

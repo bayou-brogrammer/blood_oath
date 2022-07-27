@@ -1,33 +1,37 @@
+use crate::{BoxedError, SAVE_FILENAME};
+
 use bracket_geometry::prelude::Point;
 use specs::prelude::*;
+use std::convert::Infallible;
 use std::fs;
 
-use crate::BoxedError;
 use bo_ecs::prelude::*;
 use bo_map::prelude::*;
 
 macro_rules! deserialize_individually {
-  ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*)  => {
-      $(
-      DeserializeComponents::<std::convert::Infallible, _>::deserialize(
-          &mut ( &mut $ecs.write_storage::<$type>(), ),
-          &$data.0, // entities
-          &mut $data.1, // marker
-          &mut $data.2, // allocater
-          &mut $de,
-      )?;
-      )*
-  };
+    ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
+        $(
+        DeserializeComponents::<Infallible, _>::deserialize(
+            &mut ( &mut $ecs.write_storage::<$type>(), ),
+            &$data.0, // entities
+            &mut $data.1, // marker
+            &mut $data.2, // allocater
+            &mut $de,
+        )
+        .unwrap();
+        )*
+    };
 }
 
 #[rustfmt::skip]
 pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
+
     // Delete everything
     let to_delete = ecs.entities().par_join().collect::<Vec<_>>();
     ecs.delete_entities(&to_delete)?;
 
-    let data = fs::read_to_string("./savegame.json")?;
-    let mut de = serde_json::Deserializer::from_str(&data);
+    let data = fs::read_to_string(SAVE_FILENAME)?;
+    let mut de = ron::de::Deserializer::from_str(&data).unwrap();
 
     {
         let mut d = (
@@ -56,6 +60,8 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
         let position = ecs.read_storage::<Position>();
         let helper = ecs.read_storage::<SerializationHelper<Map>>();
 
+        println!("{:?}", player.count());
+
         for (e, h) in (&entities, &helper).join() {
             deleteme = Some(e);
 
@@ -64,7 +70,6 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             loaded_map = Some(local_map);
         }
 
-        println!("{:?}", player.count());
 
         for (e, _p, pos) in (&entities, &player, &position).join() {
             println!("Player is at {:?}", pos.0);

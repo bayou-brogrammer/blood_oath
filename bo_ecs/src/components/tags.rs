@@ -1,9 +1,5 @@
 use super::*;
 
-// #[derive(Component, Default, Clone, Serialize, Deserialize)]
-// #[storage(NullStorage)]
-// pub struct Player;
-
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Player {}
 

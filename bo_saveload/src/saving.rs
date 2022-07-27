@@ -5,10 +5,10 @@ use std::fs::File;
 use std::path::Path;
 
 #[cfg(target_os = "emscripten")]
-const SAVE_FILENAME: &str = "/ruggrogue/savegame.json";
+pub const SAVE_FILENAME: &str = "/ruggrogue/savegame.ron";
 
 #[cfg(not(target_os = "emscripten"))]
-const SAVE_FILENAME: &str = "savegame.json";
+pub const SAVE_FILENAME: &str = "savegame.ron";
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Utility
@@ -27,17 +27,17 @@ pub fn does_save_exist() -> bool {
 }
 
 macro_rules! serialize_individually {
-  ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
-      $(
-      SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
-          &( $ecs.read_storage::<$type>(), ),
-          &$data.0,
-          &$data.1,
-          &mut $ser,
-      )
-      .unwrap();
-      )*
-  };
+    ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
+        $(
+        SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
+            &( $ecs.read_storage::<$type>(), ),
+            &$data.0,
+            &$data.1,
+            &mut $ser,
+        )
+        .unwrap();
+        )*
+    };
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,9 +50,12 @@ pub fn save_game(_ecs: &mut World) {}
 #[cfg(not(target_arch = "wasm32"))]
 #[rustfmt::skip]
 pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
+    use std::convert::Infallible;
+    use ron::Options;
+    use specs::saveload::MarkedBuilder;
+
     use bo_ecs::prelude::*;
     use bo_map::prelude::*;
-    use specs::saveload::MarkedBuilder;
 
     // Create helper
     let mapcopy = ecs.fetch_mut::<Map>().clone();
@@ -64,20 +67,15 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
         let data = ( ecs.entities(), ecs.read_storage::<SimpleMarker<SerializeMe>>() );
 
         let writer = File::create(SAVE_FILENAME)?;
-        let mut serializer = serde_json::Serializer::new(writer);
-        
-        // serialize_individually!(ecs, serializer, data, 
-        //     Player, Monster, Item, Consumable, BlocksTile, 
-        //     Position, Glyph, FieldOfView, Name, Description, CombatStats,
-        //     SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
-        //     InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-        //     SerializationHelper<Map>
-        // );
+        let mut serializer = ron::ser::Serializer::with_options(writer, Default::default(), Options::default()).unwrap();
 
         serialize_individually!(ecs, serializer, data, 
-            Player
+            Player, Monster, Item, Consumable, BlocksTile, 
+            Position, Glyph, FieldOfView, Name, Description, CombatStats,
+            SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
+            InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
+            SerializationHelper<Map>
         );
-
     }
 
     // Clean up
