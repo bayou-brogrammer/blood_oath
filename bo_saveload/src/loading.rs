@@ -31,7 +31,8 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
     ecs.delete_entities(&to_delete)?;
 
     let data = fs::read_to_string(SAVE_FILENAME)?;
-    let mut de = ron::de::Deserializer::from_str(&data).unwrap();
+    // let mut de = ron::de::Deserializer::from_str(&data).unwrap();
+    let mut de = serde_json::Deserializer::from_str(&data);
 
     {
         let mut d = (
@@ -40,13 +41,18 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>(),
         );
 
+        // deserialize_individually!(
+        //     ecs, de, d,
+        //     Player, Monster, Item, Consumable, BlocksTile, 
+        //     Position, Glyph, FieldOfView, Name, Description, CombatStats,
+        //     SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
+        //     InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
+        //     SerializationHelper<Map>
+        // );
+
         deserialize_individually!(
             ecs, de, d,
-            Player, Monster, Item, Consumable, BlocksTile, 
-            Position, Glyph, FieldOfView, Name, Description, CombatStats,
-            SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
-            InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            SerializationHelper<Map>
+            Player
         );
     }
 

@@ -1,22 +1,23 @@
 use super::*;
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, Default, Serialize, Deserialize, Clone)]
+#[storage(NullStorage)]
 pub struct Player {}
 
 #[derive(Component, Default, Clone, Serialize, Deserialize)]
 #[storage(NullStorage)]
-pub struct Monster;
+pub struct Monster {}
 
 #[derive(Component, Default, Clone, Serialize, Deserialize)]
 #[storage(NullStorage)]
-pub struct BlocksTile;
+pub struct BlocksTile {}
 
 #[derive(Component, Default, Clone, Serialize, Deserialize)]
 #[storage(NullStorage)]
-pub struct Item;
+pub struct Item {}
 
 #[derive(Component, Default, Clone, Serialize, Deserialize)]
 #[storage(NullStorage)]
-pub struct Consumable;
+pub struct Consumable {}
 
-pub struct SerializeMe;
+pub struct SerializeMe {}
