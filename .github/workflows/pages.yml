@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: 'wasm_help/staging'
+          path: 'wasm_help/'
 
       - name: Deploy to GitHub Pages
         id: deployment
