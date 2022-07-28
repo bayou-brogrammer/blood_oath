@@ -7,7 +7,7 @@ pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
         .with(Player {})
         .with(Position::new(start_pos))
         .with(Glyph::new(to_cp437('@'), ColorPair::new(YELLOW, BLACK), RenderOrder::Actor))
-        .with(Name::new(format!("SecBot")))
+        .with(Name::new("SecBot".to_string()))
         .with(Description::new("Everybody's favorite Bracket Corp SecBot"))
         .with(FieldOfView::new(8))
         .with(CombatStats::new(30, 30, 2, 5))

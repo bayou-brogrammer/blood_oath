@@ -34,7 +34,7 @@ impl MainMenuAction {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MainMenuMode {
     selection: usize,
     actions: Vec<MainMenuAction>,

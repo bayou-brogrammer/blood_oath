@@ -53,6 +53,12 @@ pub struct GameWorld {
     pub world: World,
 }
 
+impl Default for GameWorld {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameWorld {
     pub fn new() -> Self {
         let mut world = World::new();

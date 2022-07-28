@@ -23,7 +23,7 @@ impl MenuAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct GameOverMode {
     selection: usize,
     actions: Vec<MenuAction>,

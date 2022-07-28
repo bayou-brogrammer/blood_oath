@@ -4,6 +4,12 @@ use super::*;
 #[storage(DenseVecStorage)]
 pub struct Position(pub Point);
 
+impl Default for Position {
+    fn default() -> Self {
+        Self(Point::zero())
+    }
+}
+
 impl Position {
     pub fn new(pt: Point) -> Self {
         Self(pt)

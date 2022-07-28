@@ -81,17 +81,10 @@ impl InventoryActionMode {
             3 + item_width.max(CANCEL.len()).max(actions.iter().map(|a| a.label().len()).max().unwrap_or(0))
                 as i32;
 
-        let item_glyph = world.read_storage::<Glyph>().get(item_id).unwrap().clone();
+        let item_glyph = *world.read_storage::<Glyph>().get(item_id).unwrap();
         let item_name = world.read_storage::<Name>().get(item_id).unwrap().0.clone();
 
-        Self {
-            item_id,
-            actions,
-            subsection,
-            selection: selection,
-            inner_width,
-            item_desc: (item_glyph, item_name),
-        }
+        Self { item_id, actions, subsection, selection, inner_width, item_desc: (item_glyph, item_name) }
     }
 
     fn confirm_action(&self, ctx: &mut BTerm, world: &World) -> (ModeControl, ModeUpdate) {

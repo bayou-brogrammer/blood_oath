@@ -184,7 +184,7 @@ impl BaseMap for Map {
 pub fn draw_map(map: &Map, ctx: &mut BTerm) {
     let mut y = 0;
     let mut x = 0;
-    for (idx, tile) in map.tiles.iter().enumerate() {
+    for (idx, _tile) in map.tiles.iter().enumerate() {
         // Render a tile depending upon the tile type
         let pt = map.index_to_point2d(idx);
         if map.revealed.get_bit(pt) {

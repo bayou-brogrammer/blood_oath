@@ -6,7 +6,7 @@ pub enum MessageBoxModeResult {
     AppQuit,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MessageBoxMode {
     inner_width: i32,
     msg: Vec<String>,

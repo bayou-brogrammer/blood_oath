@@ -32,10 +32,11 @@ pub struct MultiThreadedDispatcher {
     pub dispatcher: specs::Dispatcher<'static, 'static>,
 }
 
-impl<'a> UnifiedDispatcher for MultiThreadedDispatcher {
+impl UnifiedDispatcher for MultiThreadedDispatcher {
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn run_now(&mut self, ecs: *mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
         unsafe {
-            self.dispatcher.dispatch(&mut *ecs);
+            self.dispatcher.dispatch(&*ecs);
             effects_queue(&mut *ecs);
         }
     }

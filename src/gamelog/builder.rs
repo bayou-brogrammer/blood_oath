@@ -40,13 +40,12 @@ impl Logger {
     }
 
     pub fn damage(mut self, damage: i32) -> Self {
-        self.fragments.push(LogFragment { color: RGB::named(RED), text: format!("{}", damage).to_string() });
+        self.fragments.push(LogFragment { color: RGB::named(RED), text: format!("{}", damage) });
         self
     }
 
     pub fn healing(mut self, heal_amount: i32) -> Self {
-        self.fragments
-            .push(LogFragment { color: RGB::named(GREEN), text: format!("{}", heal_amount).to_string() });
+        self.fragments.push(LogFragment { color: RGB::named(GREEN), text: format!("{}", heal_amount) });
         self
     }
 }

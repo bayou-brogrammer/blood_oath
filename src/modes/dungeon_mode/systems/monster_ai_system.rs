@@ -6,7 +6,7 @@ impl<'a> System<'a> for MonsterAISystem {
     #[allow(clippy::type_complexity)]
     type SystemData = (
         Entities<'a>,
-        WriteExpect<'a, Map>,
+        ReadExpect<'a, Map>,
         ReadExpect<'a, Point>,
         ReadExpect<'a, Entity>,
         ReadExpect<'a, TurnState>,
@@ -20,7 +20,7 @@ impl<'a> System<'a> for MonsterAISystem {
     fn run(&mut self, data: Self::SystemData) {
         let (
             entities,
-            mut map,
+            map,
             player_pos,
             player_entity,
             runstate,
@@ -61,7 +61,7 @@ impl<'a> System<'a> for MonsterAISystem {
                     let new_idx = map.point2d_to_index(*player_pos);
 
                     // Path to the player
-                    let path = a_star_search(old_idx, new_idx, &mut *map);
+                    let path = a_star_search(old_idx, new_idx, &*map);
 
                     if path.success && path.steps.len() > 1 {
                         let destination = map.index_to_point2d(path.steps[1]);

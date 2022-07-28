@@ -1,6 +1,7 @@
 use super::*;
 use std::ops::{Index, IndexMut};
 
+#[derive(Default)]
 pub struct MenuMemory {
     menu: [usize; 7],
     pub pick_up_pos: Position,

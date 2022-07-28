@@ -15,12 +15,12 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     }
 }
 
-pub fn bloodstain(ecs: &mut World, tile_idx: usize) {
-    let mut map = ecs.fetch_mut::<Map>();
+pub fn bloodstain(_ecs: &mut World, _tile_idx: usize) {
+    // let mut map = ecs.fetch_mut::<Map>();
     // map.bloodstains.insert(tile_idx);
 }
 
-pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
+pub fn death(ecs: &mut World, _effect: &EffectSpawner, target: Entity) {
     if let Some(pos) = entity_position(ecs, target) {
         crate::spatial::remove_entity(target, pos as usize);
     }

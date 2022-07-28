@@ -31,6 +31,7 @@ pub struct SingleThreadedDispatcher<'a> {
 impl<'a> UnifiedDispatcher for SingleThreadedDispatcher<'a> {
     fn setup(&mut self, _ecs: &mut World) {}
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn run_now(&mut self, ecs: *mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
         unsafe {
             for sys in self.systems.iter_mut() {

@@ -16,6 +16,12 @@ impl ParticleBuilder {
     }
 }
 
+impl Default for ParticleBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, ConvertSaveload)]

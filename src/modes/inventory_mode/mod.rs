@@ -13,14 +13,15 @@ pub enum InventoryModeResult {
     UseItem(Entity, Option<Point>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 enum SubSection {
+    #[default]
     Inventory,
     // EquipArmor,
     // EquipWeapon,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct InventoryMode {
     inv_selection: usize,
     dimensions: (i32, i32),
@@ -46,13 +47,13 @@ impl InventoryMode {
         let inv_selection =
             world.fetch::<MenuMemory>()[MenuMemory::INVENTORY].min(inventory.len().saturating_sub(1));
 
-        let inv_width = if inventory.len() > 0 {
+        let inv_width = if !inventory.is_empty() {
             (inventory.iter().map(|s| s.1.len()).max().unwrap() + 8) as i32
         } else {
             20 // Base width for empty menu
         };
 
-        let inv_height = if inventory.len() > 0 { inventory.len() + 3 } else { 2 } as i32;
+        let inv_height = if !inventory.is_empty() { inventory.len() + 3 } else { 2 } as i32;
 
         Self {
             inv_selection,
@@ -149,7 +150,7 @@ impl InventoryMode {
         let x = box_rect.x1;
         let mut y = box_rect.y1;
 
-        if self.inventory.len() <= 0 {
+        if self.inventory.is_empty() {
             draw_batch.print_color_centered_at(
                 Point::new(x + box_rect.width() / 2, y + box_rect.height() / 2),
                 "<Empty>",

@@ -68,7 +68,7 @@ fn draw_stats(world: &World, draw_batch: &mut DrawBatch, player_entity: &Entity)
         ColorPair::new(RED, BLACK),
     );
     draw_batch.bar_horizontal(Point::new(64, 2), 14, 0, 0, ColorPair::new(BLUE, BLACK));
-    let xp_level_start = (1 - 1) * 1000;
+    let xp_level_start = 0;
     draw_batch.bar_horizontal(Point::new(64, 3), 14, 0 - xp_level_start, 1000, ColorPair::new(GOLD, BLACK));
 }
 

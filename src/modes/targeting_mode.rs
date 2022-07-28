@@ -36,7 +36,7 @@ impl TargetingMode {
                 .visible_tiles
                 .iter()
                 .filter(|pt| DistanceAlg::Pythagoras.distance2d(player_positon, **pt) < range as f32)
-                .map(|pt| *pt)
+                .copied()
                 .collect::<HashSet<Point>>();
         }
 

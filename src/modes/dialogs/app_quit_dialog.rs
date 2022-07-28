@@ -6,7 +6,7 @@ pub enum AppQuitDialogModeResult {
     Confirmed,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AppQuitDialogMode {
     dialog: YesNoDialogMode,
 }
