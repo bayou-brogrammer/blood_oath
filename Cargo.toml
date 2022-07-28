@@ -14,8 +14,8 @@ codegen-units = 1
 lto = true
 
 [features]
-default = ["parallel"]
-parallel = ["rayon"]
+# default = ["parallel"]
+# parallel = ["rayon"]
 
 [dependencies]
 # Internal Crates
@@ -26,18 +26,17 @@ bo_saveload = { path = "bo_saveload/" }
 bo_pathfinding = { path = "bo_pathfinding/" }
 
 # Core Crates
-# bracket-lib = { version = "^0.8.1", features = ["serde"] }
-bracket-terminal = { version = "^0.8.5" }
+bracket-terminal = "^0.8.5"
 bracket-geometry = { version = "^0.8.3", features = ['serde'] }
 bracket-color = { version = "^0.8.2", features = ['serde'] }
 bracket-random = { version = "^0.8.2", features = ['serde'] }
 
-rayon = { version = "^1.5.3", optional = true }
-specs = { version = "^0.18.0", default_features = false, features = [
-  "parallel",
-  "derive",
-  "serde",
-] }
+# rayon = { version = "^1.5.3", optional = true }
+# specs = { version = "^0.18.0", default_features = false, features = [
+#   "parallel",
+#   "derive",
+#   "serde",
+# ] }
 
 # Utility Crates
 lazy_static = "1.4.0"
@@ -49,6 +48,28 @@ textwrap = "^0.15.0"
 serde = { version = "^1.0.140", features = ["derive"] }
 serde_json = "^1.0.82"
 
+####################
+# Non WASM Building
+####################
+
+[target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
+rayon = { version = "^1.5.3", optional = true }
+specs = { version = "^0.18.0", default_features = false, features = [
+  "parallel",
+  "derive",
+  "serde",
+] }
+
+####################
+# WASM Building
+####################
+
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.2.7", features = ["js"] }
+specs = { version = "^0.18.0", default_features = false, features = [
+  "derive",
+  "serde",
+] }
 
 [build-dependencies]
 embed-resource = "1.7.3"

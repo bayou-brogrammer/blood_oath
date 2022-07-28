@@ -1,6 +1,7 @@
 use super::UnifiedDispatcher;
 use specs::prelude::*;
 
+#[macro_export]
 macro_rules! construct_dispatcher {
     (
         $(
@@ -27,16 +28,15 @@ pub struct SingleThreadedDispatcher<'a> {
     pub systems: Vec<Box<dyn RunNow<'a>>>,
 }
 
-impl UnifiedDispatcher for SingleThreadedDispatcher<'a> {
-    fn setup(&mut self, ecs: &mut World) {
-        self.dispatcher.setup(&mut ecs);
-    }
+impl<'a> UnifiedDispatcher for SingleThreadedDispatcher<'a> {
+    fn setup(&mut self, _ecs: &mut World) {}
 
-    fn run_now(&mut self, ecs: &mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
-        for sys in self.systems.iter_mut() {
-            sys.run_now(&*ecs);
+    fn run_now(&mut self, ecs: *mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
+        unsafe {
+            for sys in self.systems.iter_mut() {
+                sys.run_now(&*ecs);
+            }
+            effects_queue(&mut *ecs);
         }
-
-        effects_queue(&mut *ecs);
     }
 }

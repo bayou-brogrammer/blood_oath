@@ -15,5 +15,10 @@ bracket-random = "^0.8.2"
 bitvec = { version = "^1.0.1", features = ['serde'] }
 lazy_static = "^1.4.0"
 parking_lot = "^0.12.1"
-specs = { version = "0.18.0" }
 serde = { version = "^1.0.140", features = ["derive"] }
+
+[target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
+specs = { version = "^0.18.0" }
+
+[target.wasm32-unknown-unknown.dependencies]
+specs = { version = "^0.18.0", default_features = false }

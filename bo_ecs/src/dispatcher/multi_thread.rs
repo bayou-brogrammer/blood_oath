@@ -32,10 +32,12 @@ pub struct MultiThreadedDispatcher {
     pub dispatcher: specs::Dispatcher<'static, 'static>,
 }
 
-impl UnifiedDispatcher for MultiThreadedDispatcher {
-    fn run_now(&mut self, ecs: &mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
-        self.dispatcher.dispatch(ecs);
-        effects_queue(ecs);
+impl<'a> UnifiedDispatcher for MultiThreadedDispatcher {
+    fn run_now(&mut self, ecs: *mut World, effects_queue: Box<(dyn FnOnce(&mut World) + 'static)>) {
+        unsafe {
+            self.dispatcher.dispatch(&mut *ecs);
+            effects_queue(&mut *ecs);
+        }
     }
 
     fn setup(&mut self, ecs: &mut World) {

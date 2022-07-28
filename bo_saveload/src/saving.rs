@@ -8,8 +8,7 @@ use std::path::Path;
 pub const SAVE_FILENAME: &str = "/ruggrogue/savegame.ron";
 
 #[cfg(not(target_os = "emscripten"))]
-pub const SAVE_FILENAME: &str = "savegame.json";
-// pub const SAVE_FILENAME: &str = "savegame.ron";
+pub const SAVE_FILENAME: &str = "savegame.ron";
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Utility
@@ -46,7 +45,9 @@ macro_rules! serialize_individually {
 ///////////////////////////////////////////////////////////////////////////////
 
 #[cfg(target_arch = "wasm32")]
-pub fn save_game(_ecs: &mut World) {}
+pub fn save_game(_ecs: &mut World) -> Result<(), BoxedError> {
+    Ok(())
+}
 
 #[cfg(not(target_arch = "wasm32"))]
 #[rustfmt::skip]
@@ -68,22 +69,14 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
         let data = ( ecs.entities(), ecs.read_storage::<SimpleMarker<SerializeMe>>() );
 
         let writer = File::create(SAVE_FILENAME)?;
-        let mut serializer = serde_json::Serializer::new(writer);
-
-        println!("{:?}", ecs.read_storage::<Player>().count());
-
-        // let mut serializer = ron::ser::Serializer::with_options(writer, Default::default(), Options::default()).unwrap();
-
-        // serialize_individually!(ecs, serializer, data, 
-        //     Player, Monster, Item, Consumable, BlocksTile, 
-        //     Position, Glyph, FieldOfView, Name, Description, CombatStats,
-        //     SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
-        //     InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-        //     SerializationHelper<Map>
-        // );
+        let mut serializer = ron::ser::Serializer::with_options(writer, Default::default(), Options::default()).unwrap();
 
         serialize_individually!(ecs, serializer, data, 
-            Player
+            Player, Monster, Item, Consumable, BlocksTile, 
+            Position, Glyph, FieldOfView, Name, Description, CombatStats,
+            SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
+            InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
+            SerializationHelper<Map>
         );
     }
 

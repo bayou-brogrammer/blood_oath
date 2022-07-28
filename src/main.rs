@@ -12,6 +12,7 @@ mod prelude {
     pub use bracket_geometry::prelude::*;
     pub use bracket_random::prelude::*;
     pub use bracket_terminal::prelude::*;
+    pub use bracket_terminal::{embedded_resource, link_resource};
 
     pub use specs::prelude::World;
     pub use specs::prelude::*;
@@ -100,6 +101,9 @@ impl GameWorld {
         world.register::<Ranged>();
         world.register::<AreaOfEffect>();
 
+        // Particles
+        world.register::<ParticleLifetime>();
+
         // Serialization
         world.register::<SerializationHelper<Map>>();
         world.insert(SimpleMarkerAllocator::<SerializeMe>::new());
@@ -127,7 +131,13 @@ struct MyStruct {
     float: f32,
 }
 
+embedded_resource!(TERMINAL_FONT, "../resources/terminal8x8.png");
+embedded_resource!(VGA_FONT, "../resources/vga.png");
+
 fn main() -> BError {
+    link_resource!(TERMINAL_FONT, "resources/terminal8x8.png");
+    link_resource!(VGA_FONT, "resources/vga.png");
+
     let mut context = BTermBuilder::simple(80, 60)
         .unwrap()
         .with_title("BloodOath")
