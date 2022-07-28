@@ -1,8 +1,11 @@
 use crate::BoxedError;
 use specs::prelude::*;
-use specs::saveload::SerializeComponents;
-use std::fs::File;
 use std::path::Path;
+
+#[cfg(not(target_arch = "wasm32"))]
+use specs::saveload::SerializeComponents;
+#[cfg(not(target_arch = "wasm32"))]
+use std::fs::File;
 
 #[cfg(target_os = "emscripten")]
 pub const SAVE_FILENAME: &str = "/ruggrogue/savegame.ron";
@@ -26,6 +29,7 @@ pub fn does_save_exist() -> bool {
     Path::new(SAVE_FILENAME).exists()
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
         $(

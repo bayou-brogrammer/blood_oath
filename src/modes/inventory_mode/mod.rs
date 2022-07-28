@@ -13,15 +13,14 @@ pub enum InventoryModeResult {
     UseItem(Entity, Option<Point>),
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 enum SubSection {
-    #[default]
     Inventory,
     // EquipArmor,
     // EquipWeapon,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct InventoryMode {
     inv_selection: usize,
     dimensions: (i32, i32),
