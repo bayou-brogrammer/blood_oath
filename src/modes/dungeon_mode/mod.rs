@@ -23,7 +23,6 @@ pub enum DungeonModeResult {
 ////////////////////////////////////////////////////////////////////////////////
 pub struct DungeonMode {
     dispatcher: Box<dyn UnifiedDispatcher + 'static>,
-    ticking_dispatcher: Box<dyn UnifiedDispatcher + 'static>,
 }
 
 impl std::fmt::Debug for DungeonMode {
@@ -40,21 +39,13 @@ impl DungeonMode {
     pub fn new(world: &mut World) -> Self {
         // Dispatchers
         let mut dispatcher = systems::new_dispatcher();
-        let mut ticking_dispatcher = systems::new_ticking_dispatcher();
-
         dispatcher.setup(world);
-        ticking_dispatcher.setup(world);
 
-        Self { dispatcher, ticking_dispatcher }
+        Self { dispatcher }
     }
 
     fn run_dispatcher(&mut self, world: &mut World) {
         self.dispatcher.run_now(world, Box::new(run_effects_queue));
-        world.maintain();
-    }
-
-    fn run_ticking_dispatcher(&mut self, world: &mut World) {
-        self.ticking_dispatcher.run_now(world, Box::new(run_effects_queue));
         world.maintain();
     }
 
@@ -113,8 +104,8 @@ impl DungeonMode {
             };
         }
 
-        // Ticking dispatcher is for cleanup systems like deleting dead entities or particles
-        self.run_ticking_dispatcher(world);
+        // Run Dispatcher
+        self.run_dispatcher(world);
 
         let runstate;
         {
@@ -122,6 +113,7 @@ impl DungeonMode {
             runstate = *state;
         }
 
+        #[allow(clippy::single_match)]
         match runstate {
             TurnState::AwaitingInput => match player_input(ctx, world) {
                 player::PlayerInputResult::NoResult => {}
@@ -134,9 +126,9 @@ impl DungeonMode {
                     return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
                 }
             },
-            TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
-                self.run_dispatcher(world);
-            }
+            _ => {} // TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
+                    //     self.run_dispatcher(world);
+                    // }
         }
 
         (ModeControl::Stay, ModeUpdate::Update)
@@ -150,18 +142,20 @@ impl DungeonMode {
         }
 
         render::gui::draw_ui(world, ctx);
-        draw_map(&world.fetch::<Map>(), ctx);
-
-        let positions = world.read_storage::<Position>();
-        let renderables = world.read_storage::<Glyph>();
-        let map = world.fetch::<Map>();
-
-        let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
-        data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-        for (pos, render) in data.iter() {
-            if map.visible.get_bit(pos.0) {
-                ctx.set(pos.0.x, pos.0.y, render.color.fg, render.color.bg, render.glyph)
-            }
-        }
     }
+}
+
+pub fn get_screen_bounds(ecs: &World) -> (i32, i32, i32, i32) {
+    let player_pos = ecs.fetch::<Point>();
+    let (x_chars, y_chars) = (48, 44);
+
+    let center_x = (x_chars / 2) as i32;
+    let center_y = (y_chars / 2) as i32;
+
+    let min_x = player_pos.x - center_x;
+    let max_x = min_x + x_chars as i32;
+    let min_y = player_pos.y - center_y;
+    let max_y = min_y + y_chars as i32;
+
+    (min_x, max_x, min_y, max_y)
 }

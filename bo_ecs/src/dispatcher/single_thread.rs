@@ -12,15 +12,17 @@ macro_rules! construct_dispatcher {
             )
         ),*
     ) => {
-        let mut dispatch = SingleThreadedDispatcher {
-            systems: Vec::new(),
-        };
+        fn new_dispatch() -> Box<dyn UnifiedDispatcher + 'static> {
+            let mut dispatch = SingleThreadedDispatcher{
+                systems : Vec::new()
+            };
 
-        $(
-            dispatch.systems.push( Box::new( $type {} ));
-        )*
+            $(
+                dispatch.systems.push( Box::new( $type {} ));
+            )*
 
-        return Box::new(dispatch);
+            return Box::new(dispatch);
+        }
     };
 }
 

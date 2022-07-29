@@ -9,15 +9,17 @@ mod map_indexing_system;
 mod melee_combat_system;
 mod monster_ai_system;
 mod particle_system;
+mod render;
 
-use damage_system::{DamageSystem, DeleteDeadSystem};
-use end_turn::EndTurnSystem;
-use fov_system::FovSystem;
-use inventory::*;
-use map_indexing_system::MapIndexingSystem;
-use melee_combat_system::MeleeCombatSystem;
-use monster_ai_system::MonsterAISystem;
-use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
+pub use damage_system::{DamageSystem, DeleteDeadSystem};
+pub use end_turn::EndTurnSystem;
+pub use fov_system::FovSystem;
+pub use inventory::*;
+pub use map_indexing_system::MapIndexingSystem;
+pub use melee_combat_system::MeleeCombatSystem;
+pub use monster_ai_system::MonsterAISystem;
+pub use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
+pub use render::RenderSystem;
 
 pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
@@ -29,16 +31,11 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
         (ItemCollectionSystem, "pickup", &[]),
         (ItemUseSystem, "use", &[]),
         (ItemDropSystem, "drop", &[]),
-        (DeleteDeadSystem, "delete_dead", &[]),
         (EndTurnSystem, "end_turn", &[]),
         (ParticleSpawnSystem, "particle_spawn", &[]),
-        (ParticleUpdateSystem, "particle_update", &[])
+        (ParticleUpdateSystem, "particle_update", &[]),
+        (DeleteDeadSystem, "delete_dead", &[])
     );
-}
 
-pub fn new_ticking_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
-    construct_dispatcher!(
-        (DeleteDeadSystem, "delete_dead", &[]),
-        (ParticleUpdateSystem, "particle_update", &[])
-    );
+    new_dispatch_with_local(RenderSystem)
 }

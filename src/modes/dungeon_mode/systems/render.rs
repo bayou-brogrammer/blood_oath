@@ -18,6 +18,7 @@ impl<'a> System<'a> for RenderSystem {
         let map_width = map.width - 1;
         let map_height = map.height - 1;
 
+        // Render Map
         for (y, ty) in (min_y..max_y).enumerate() {
             for (x, tx) in (min_x..max_x).enumerate() {
                 if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
@@ -32,18 +33,19 @@ impl<'a> System<'a> for RenderSystem {
             }
         }
 
+        // Render Entities
         let mut data = (&positions, &glyphs).join().collect::<Vec<_>>();
         data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
         for (pos, glyph) in data.iter() {
             if map.visible.get_bit(pos.0) {
-                let entity_screen_pos = camera.screen_to_world(pos.0);
-                if map.in_bounds(entity_screen_pos) {
-                    draw_batch.set(
-                        Point::new(entity_screen_pos.x, entity_screen_pos.y),
-                        glyph.color,
-                        glyph.glyph,
-                    );
-                }
+                let entity_screen_x = pos.0.x - min_x;
+                let entity_screen_y = pos.0.y - min_y;
+
+                draw_batch.set(
+                    Point::new(entity_screen_x + 1, entity_screen_y + 1),
+                    glyph.color,
+                    glyph.glyph,
+                );
             }
         }
 

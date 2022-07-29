@@ -90,7 +90,6 @@ impl GameWorld {
         world.register::<CombatStats>();
 
         // Intent
-        world.register::<WantsToMove>();
         world.register::<SufferDamage>();
         world.register::<WantsToMelee>();
         world.register::<WantsToUseItem>();

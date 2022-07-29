@@ -12,19 +12,31 @@ macro_rules! construct_dispatcher {
             )
         ),*
     ) => {
-        use specs::DispatcherBuilder;
+        fn new_dispatch() -> Box<dyn UnifiedDispatcher + 'static> {
+            use specs::DispatcherBuilder;
 
-        let dispatcher = DispatcherBuilder::new()
-            $(
-                .with($type{}, $name, $deps)
-            )*
-            .build();
+            let dispatcher = DispatcherBuilder::new()
+                $(
+                    .with($type{}, $name, $deps)
+                )*
+                .build();
 
-        let dispatch = MultiThreadedDispatcher{
-            dispatcher
-        };
+            return Box::new(MultiThreadedDispatcher{ dispatcher });
+        }
 
-        return Box::new(dispatch);
+        fn new_dispatch_with_local<'b, T>(local_thread: T) -> Box<dyn UnifiedDispatcher + 'static>
+            where T: for<'c> RunNow<'c> + 'b + 'static, {
+            use specs::DispatcherBuilder;
+
+            let dispatcher = DispatcherBuilder::new()
+                $(
+                    .with($type{}, $name, $deps)
+                )*
+                .with_thread_local(local_thread)
+                .build();
+
+            return Box::new(MultiThreadedDispatcher{ dispatcher });
+        }
     };
 }
 

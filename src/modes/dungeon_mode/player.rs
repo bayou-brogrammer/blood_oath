@@ -1,3 +1,5 @@
+use crate::render::GameCamera;
+
 use super::*;
 
 pub enum PlayerInputResult {
@@ -35,6 +37,9 @@ pub fn try_move_player(delta_pt: Point, ecs: &mut World) {
 
             pos.0 = destination;
             fov.is_dirty = true;
+
+            let mut camera = ecs.write_resource::<GameCamera>();
+            camera.on_player_move(destination);
 
             let mut ppos = ecs.write_resource::<Point>();
             *ppos = pos.0;
