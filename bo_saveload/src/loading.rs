@@ -1,5 +1,6 @@
 use crate::{BoxedError, SAVE_FILENAME};
 
+use super::*;
 use bracket_geometry::prelude::Point;
 use specs::prelude::*;
 use std::convert::Infallible;
@@ -33,7 +34,6 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
     #[cfg(not(target_arch = "wasm32"))]
     let to_delete = ecs.entities().par_join().collect::<Vec<_>>();
 
-
     ecs.delete_entities(&to_delete)?;
 
     let data = fs::read_to_string(SAVE_FILENAME)?;
@@ -52,22 +52,26 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             Position, Glyph, FieldOfView, Name, Description, CombatStats,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            SerializationHelper<Map>
+            SerializationHelper
         );
     }
 
     let mut deleteme: Option<Entity> = None;
+    let mut deleteme2: Option<Entity> = None;
+    
     let mut loaded_map: Option<Map> = None;
     let mut loaded_point: Option<Point> = None;
     let mut loaded_player: Option<Entity> = None;
+    let mut loaded_dm: Option<MasterDungeonMap> = None;
     {
         let entities = ecs.entities();
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
-        let helper = ecs.read_storage::<SerializationHelper<Map>>();
 
-        println!("{:?}", player.count());
+        let helper = ecs.read_storage::<SerializationHelper>();
+        let helper2 = ecs.read_storage::<DMSerializationHelper>();
 
+        // Load the map
         for (e, h) in (&entities, &helper).join() {
             deleteme = Some(e);
 
@@ -76,27 +80,31 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             loaded_map = Some(local_map);
         }
 
+        // Load Master Dungeon Map
+        for (e, h) in (&entities, &helper2).join() {
+            deleteme2 = Some(e);
+            loaded_dm = Some(h.map.clone());
+            bo_logging::restore_log(&mut h.log.clone());
+            bo_logging::load_events(h.events.clone());
+        }
 
+        // Load player + position
         for (e, _p, pos) in (&entities, &player, &position).join() {
-            println!("Player is at {:?}", pos.0);
-        //   let mut ppos = ecs.write_resource::<Point>();
-        //   *ppos = pos.0;
-          
-        //   let mut player_resource = ecs.write_resource::<Entity>();
-        //   *player_resource = e;
-            // ecs.insert(e);
             loaded_player = Some(e);
             loaded_point = Some(pos.0);
         }
 
     }
 
+    ecs.insert(loaded_dm.unwrap());  // This should panic if the dm is not loaded.
     ecs.insert(loaded_map.unwrap());  // This should panic if the map is not loaded.
     ecs.insert(loaded_point.unwrap());  // This should panic if the point is not loaded
+    ecs.insert(loaded_player.unwrap());  // This should panic if the player is not loaded.
     ecs.insert(loaded_player.unwrap());  // This should panic if the player is not loaded.
 
     // Cleanup serialization helper
     ecs.delete_entity(deleteme.unwrap())?;
+    ecs.delete_entity(deleteme2.unwrap())?;
 
     Ok(())
 }

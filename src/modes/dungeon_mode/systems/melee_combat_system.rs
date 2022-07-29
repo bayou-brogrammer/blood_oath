@@ -18,7 +18,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                     if damage == 0 {
                         // Miss
-                        crate::gamelog::Logger::new()
+                        bo_logging::Logger::new()
                             .color(CYAN)
                             .append(&name.0)
                             .color(WHITE)
@@ -31,7 +31,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                         add_hit_miss_particle(wants_melee.target);
                     } else {
-                        crate::gamelog::Logger::new()
+                        bo_logging::Logger::new()
                             .npc_name(&name.0)
                             .append("hits")
                             .npc_name(&target_name.0)

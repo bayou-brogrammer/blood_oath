@@ -101,7 +101,7 @@ fn get_item(world: &mut World) {
     }
 
     match target_item {
-        None => crate::gamelog::Logger::new().append("There is nothing here to pick up.").log(),
+        None => bo_logging::Logger::new().append("There is nothing here to pick up.").log(),
         Some(item) => {
             let mut pickup = world.write_storage::<WantsToPickupItem>();
             pickup
@@ -119,7 +119,7 @@ pub fn try_next_level(world: &mut World) -> bool {
     if map.tiles[player_idx].tile_type == TileType::DownStairs {
         true
     } else {
-        crate::gamelog::Logger::new().append("There is no way down from here.").log();
+        bo_logging::Logger::new().append("There is no way down from here.").log();
         false
     }
 }

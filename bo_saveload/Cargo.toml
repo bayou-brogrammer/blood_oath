@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 bo_ecs = { path = "../bo_ecs" }
 bo_map = { path = "../bo_map" }
+bo_logging = { path = "../bo_logging" }
 
 bracket-geometry = "^0.8.3"
 serde = { version = "^1.0.140", features = ["derive"] }

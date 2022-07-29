@@ -1,3 +1,4 @@
+use super::*;
 use crate::BoxedError;
 use specs::prelude::*;
 use std::path::Path;
@@ -80,7 +81,7 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
             Position, Glyph, FieldOfView, Name, Description, CombatStats,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            SerializationHelper<Map>
+            SerializationHelper
         );
     }
 

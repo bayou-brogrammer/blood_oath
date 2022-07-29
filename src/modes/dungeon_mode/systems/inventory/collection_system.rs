@@ -24,7 +24,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
 
             if pickup.collected_by == *player_entity {
                 let item_name = names.get(pickup.item).unwrap().0.clone();
-                crate::gamelog::Logger::new().append("You pick up the").item_name(item_name).log();
+                bo_logging::Logger::new().append("You pick up the").item_name(item_name).log();
             }
         }
 

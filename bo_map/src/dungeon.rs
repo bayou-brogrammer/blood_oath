@@ -181,7 +181,6 @@ impl MasterDungeonMap {
 
     fn transition_to_new_map(_ecs: &mut World, new_depth: i32) -> Vec<Map> {
         let map = Map::new(new_depth, 80, 50, "Test Map");
-
         vec![map]
     }
 

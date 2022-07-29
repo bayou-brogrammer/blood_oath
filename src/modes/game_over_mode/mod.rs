@@ -91,10 +91,10 @@ impl GameOverMode {
     }
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
-        let mut batch = DrawBatch::new();
+        let mut draw_batch = DrawBatch::new();
 
         let box_rect = center_box_with_title(
-            &mut batch,
+            &mut draw_batch,
             (SCREEN_WIDTH, SCREEN_HEIGHT),
             BoxConfigWithTitle {
                 box_config: BoxConfig::new((30, 20), ColorPair::new(WHITE, BLACK), true, false),
@@ -102,20 +102,54 @@ impl GameOverMode {
             },
         );
 
-        let mut y = MAIN_MENU_SCREEN_HEIGHT / 2 - 10;
-        batch.print_color_centered(
-            y + 1,
-            "Use Up/Down Arrows and Enter",
-            ColorPair::new(RGB::named(GRAY), RGB::named(BLACK)),
+        // let mut y = MAIN_MENU_SCREEN_HEIGHT / 2 - 10;
+        // batch.print_color_centered(
+        //     y + 1,
+        //     "Use Up/Down Arrows and Enter",
+        //     ColorPair::new(RGB::named(GRAY), BLACK),
+        // );
+
+        // y = box_rect.center().y as usize - 2;
+        // for (i, action) in self.actions.iter().enumerate() {
+        //     let color = if i == self.selection { RGB::named(MAGENTA) } else { RGB::named(GRAY) };
+
+        //     batch.print_color_centered(y + i, action.label(), ColorPair::new(color, BLACK));
+        // }
+
+        draw_batch.print_color_centered(15, "Your journey has ended!", ColorPair::new(YELLOW, BLACK));
+        draw_batch.print_color_centered(
+            17,
+            "One day, we'll tell you all about how you did.",
+            ColorPair::new(WHITE, BLACK),
+        );
+        draw_batch.print_color_centered(
+            18,
+            "That day, sadly, is not in this chapter..",
+            ColorPair::new(WHITE, BLACK),
         );
 
-        y = box_rect.center().y as usize - 2;
-        for (i, action) in self.actions.iter().enumerate() {
-            let color = if i == self.selection { RGB::named(MAGENTA) } else { RGB::named(GRAY) };
+        draw_batch.print_color_centered(
+            19,
+            &format!("You lived for {} turns.", bo_logging::get_event_count(TURN_DONE_EVENT)),
+            ColorPair::new(WHITE, BLACK),
+        );
+        draw_batch.print_color_centered(
+            20,
+            &format!("You suffered {} points of damage.", bo_logging::get_event_count(DAMAGE_TAKE_EVENT)),
+            ColorPair::new(RED, BLACK),
+        );
+        draw_batch.print_color_centered(
+            21,
+            &format!("You inflicted {} points of damage.", bo_logging::get_event_count(DAMAGE_INFLICT_EVENT)),
+            ColorPair::new(RED, BLACK),
+        );
 
-            batch.print_color_centered(y + i, action.label(), ColorPair::new(color, RGB::named(BLACK)));
-        }
+        draw_batch.print_color_centered(
+            23,
+            "Press any key to return to the menu.",
+            ColorPair::new(MAGENTA, BLACK),
+        );
 
-        batch.submit(BATCH_ZERO).expect("Error batching title");
+        draw_batch.submit(BATCH_ZERO).expect("Error batching title");
     }
 }

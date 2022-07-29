@@ -25,7 +25,7 @@ pub struct MapGenMode {
     mapgen_index: usize,
     action: MapGenAction,
     mapgen_history: Vec<Map>,
-    mapgen_next_state: Option<TurnState>,
+    // mapgen_next_state: Option<TurnState>,
 }
 
 /// Show the title screen of the game with a menu that leads into the game proper.
@@ -36,7 +36,7 @@ impl MapGenMode {
             mapgen_timer: 0.0,
             mapgen_history: Vec::new(),
             action: MapGenAction::NewGame,
-            mapgen_next_state: Some(TurnState::AwaitingInput),
+            // mapgen_next_state: Some(TurnState::AwaitingInput),
         }
     }
 
@@ -46,7 +46,7 @@ impl MapGenMode {
             mapgen_timer: 0.0,
             mapgen_history: Vec::new(),
             action: MapGenAction::NextLevel,
-            mapgen_next_state: Some(TurnState::AwaitingInput),
+            // mapgen_next_state: Some(TurnState::AwaitingInput),
         }
     }
 
@@ -60,14 +60,14 @@ impl MapGenMode {
         // Main Input Handling
         //////////////////////////////////////////////////////////////////////////////
         if self.action == MapGenAction::NewGame {
-            MapGenMode::setup_new_game(world);
+            self.setup_new_game(world);
             return (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Immediate);
         }
 
-        // match self.action {
-        //     MapGenAction::NewGame => self.generate_world_map(world, 1, 0),
-        //     MapGenAction::NextLevel => self.goto_level(world, 1),
-        // }
+        match self.action {
+            MapGenAction::NewGame => self.generate_world_map(world, 1, 0),
+            MapGenAction::NextLevel => self.goto_level(world, 1),
+        }
 
         (ModeControl::Stay, ModeUpdate::Update)
     }
@@ -76,8 +76,10 @@ impl MapGenMode {
 }
 
 impl MapGenMode {
-    fn setup_new_game(world: &mut World) {
-        let map = Map::new(0, 80, 50, "Test Map");
+    fn setup_new_game(&mut self, world: &mut World) {
+        self.generate_world_map(world, 1, 0);
+        let map = self.mapgen_history[self.mapgen_index].clone();
+
         let start_pos = map.rooms[0].center();
         let player = dungeon_mode::spawner::spawn_player(world, start_pos);
 
@@ -92,7 +94,7 @@ impl MapGenMode {
         world.insert(start_pos);
         world.insert(TurnState::PreRun);
         world.insert(GameCamera::new(start_pos));
-        crate::gamelog::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
+        bo_logging::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
     }
 
     fn goto_level(&mut self, world: &mut World, offset: i32) {
@@ -103,7 +105,7 @@ impl MapGenMode {
         self.generate_world_map(world, current_depth + offset, offset);
 
         // Notify the player
-        crate::gamelog::Logger::new().append("You change level.").log();
+        bo_logging::Logger::new().append("You change level.").log();
     }
 
     fn generate_world_map(&mut self, world: &mut World, new_depth: i32, offset: i32) {
@@ -117,8 +119,8 @@ impl MapGenMode {
             None => MasterDungeonMap::thaw_level_entities(world),
         }
 
-        crate::gamelog::clear_log();
-        crate::gamelog::clear_events();
-        crate::gamelog::Logger::new().append("Welcome to").color(CYAN).append("Rusty Roguelike").log();
+        bo_logging::clear_log();
+        bo_logging::clear_events();
+        bo_logging::Logger::new().append("Welcome to").color(CYAN).append("Rusty Roguelike").log();
     }
 }

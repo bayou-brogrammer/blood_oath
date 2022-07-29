@@ -1,4 +1,4 @@
-mod gamelog;
+mod events;
 mod modes;
 mod resources;
 
@@ -19,10 +19,12 @@ mod prelude {
     pub use specs::Component;
 
     pub use bo_ecs::prelude::*;
+    pub use bo_logging::*;
     pub use bo_map::prelude::*;
     pub use bo_pathfinding::prelude::*;
     pub use bo_utils::prelude::*;
 
+    pub use crate::events::*;
     pub use crate::modes::*;
     pub use crate::render;
     pub use crate::resources::*;
@@ -45,6 +47,7 @@ mod prelude {
     pub const BATCH_TOOLTIPS: usize = 100_000; // Over everything
 }
 
+use bo_saveload::{DMSerializationHelper, SerializationHelper};
 pub use prelude::*;
 
 pub struct GameWorld {
@@ -110,7 +113,8 @@ impl GameWorld {
         world.register::<ParticleLifetime>();
 
         // Serialization
-        world.register::<SerializationHelper<Map>>();
+        world.register::<SerializationHelper>();
+        world.register::<DMSerializationHelper>();
         world.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     }
 }

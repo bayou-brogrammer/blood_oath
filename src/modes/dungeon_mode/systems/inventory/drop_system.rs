@@ -24,7 +24,7 @@ impl<'a> System<'a> for ItemDropSystem {
 
             if entity == *player_entity {
                 let item_name = names.get(to_drop.item).unwrap().0.clone();
-                crate::gamelog::Logger::new().append("You drop the").item_name(item_name).log();
+                bo_logging::Logger::new().append("You drop the").item_name(item_name).log();
             }
         }
 

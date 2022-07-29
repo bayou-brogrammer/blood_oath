@@ -13,15 +13,13 @@ opt-level = 1
 codegen-units = 1
 lto = true
 
-[features]
-# default = ["parallel"]
-# parallel = ["rayon"]
 
 [dependencies]
 # Internal Crates
 bo_ecs = { path = "bo_ecs/" }
 bo_map = { path = "bo_map/" }
 bo_utils = { path = "bo_utils/" }
+bo_logging = { path = "bo_logging/" }
 bo_saveload = { path = "bo_saveload/" }
 bo_pathfinding = { path = "bo_pathfinding/" }
 
@@ -30,13 +28,6 @@ bracket-terminal = "^0.8.5"
 bracket-geometry = { version = "^0.8.3", features = ['serde'] }
 bracket-color = { version = "^0.8.2", features = ['serde'] }
 bracket-random = { version = "^0.8.2", features = ['serde'] }
-
-# rayon = { version = "^1.5.3", optional = true }
-# specs = { version = "^0.18.0", default_features = false, features = [
-#   "parallel",
-#   "derive",
-#   "serde",
-# ] }
 
 # Utility Crates
 lazy_static = "1.4.0"
@@ -53,7 +44,7 @@ serde_json = "^1.0.82"
 ####################
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
-rayon = { version = "^1.5.3", optional = true }
+rayon = { version = "^1.5.3" }
 specs = { version = "^0.18.0", default_features = false, features = [
   "parallel",
   "derive",
@@ -77,4 +68,11 @@ embed-resource = "1.7.3"
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
-members = ["bo_utils", "bo_ecs", "bo_map", "bo_saveload", "bo_pathfinding"]
+members = [
+  "bo_map",
+  "bo_ecs",
+  "bo_utils",
+  "bo_logging",
+  "bo_saveload",
+  "bo_pathfinding",
+]

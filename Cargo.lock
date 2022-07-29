@@ -114,6 +114,7 @@ version = "0.1.0"
 dependencies = [
  "bitvec",
  "bo_ecs",
+ "bo_logging",
  "bo_map",
  "bo_pathfinding",
  "bo_saveload",
@@ -151,6 +152,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bo_logging"
+version = "0.1.0"
+dependencies = [
+ "bracket-terminal",
+ "lazy_static",
+ "parking_lot 0.12.1",
+ "serde",
+]
+
+[[package]]
 name = "bo_map"
 version = "0.1.0"
 dependencies = [
@@ -181,6 +192,7 @@ name = "bo_saveload"
 version = "0.1.0"
 dependencies = [
  "bo_ecs",
+ "bo_logging",
  "bo_map",
  "bracket-geometry",
  "ron",

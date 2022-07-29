@@ -127,6 +127,7 @@ impl DungeonMode {
                 player::PlayerInputResult::NoResult => {}
                 player::PlayerInputResult::AppQuit => return self.app_quit_dialog(),
                 player::PlayerInputResult::TurnDone => {
+                    bo_logging::record_event(TURN_DONE_EVENT, 1);
                     let mut runwriter = world.write_resource::<TurnState>();
                     *runwriter = TurnState::PlayerTurn;
                 }

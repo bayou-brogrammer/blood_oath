@@ -1,6 +1,8 @@
 #![allow(dead_code)] //TODO: remove this
 
 use super::*;
+use bracket_terminal::prelude::*;
+use lazy_static::lazy_static;
 use parking_lot::Mutex;
 
 lazy_static! {
@@ -23,7 +25,7 @@ pub fn print_log(console: usize, pos: Point) {
     let mut x = pos.x;
     LOG.lock().iter().rev().take(6).for_each(|log| {
         log.iter().for_each(|frag| {
-            batch.print_color(Point::new(x, y), &frag.text, ColorPair::new(frag.color.to_rgba(1.0), BLACK));
+            batch.print_color(Point::new(x, y), &frag.text, ColorPair::new(frag.color, BLACK));
             x += frag.text.len() as i32;
             x += 1;
         });
