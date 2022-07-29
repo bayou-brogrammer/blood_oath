@@ -21,7 +21,6 @@ pub use monster_ai_system::MonsterAISystem;
 pub use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
 pub use render::RenderSystem;
 
-#[cfg(not(target_arch = "wasm32"))]
 pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
         (FovSystem, "fov", &[]),
@@ -39,25 +38,4 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     );
 
     new_dispatch_with_local(RenderSystem)
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
-    construct_dispatcher!(
-        (FovSystem, "fov", &[]),
-        (MonsterAISystem, "ai_system", &[]),
-        (MapIndexingSystem, "map_indexing", &[]),
-        (MeleeCombatSystem, "melee_combat", &[]),
-        (DamageSystem, "damage", &[]),
-        (ItemCollectionSystem, "pickup", &[]),
-        (ItemUseSystem, "use", &[]),
-        (ItemDropSystem, "drop", &[]),
-        (EndTurnSystem, "end_turn", &[]),
-        (ParticleSpawnSystem, "particle_spawn", &[]),
-        (ParticleUpdateSystem, "particle_update", &[]),
-        (DeleteDeadSystem, "delete_dead", &[]),
-        (RenderSystem, "render", &[])
-    );
-
-    new_dispatch()
 }
