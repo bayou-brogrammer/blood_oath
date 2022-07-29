@@ -5,6 +5,7 @@ pub mod dungeon_mode;
 pub mod game_over_mode;
 pub mod inventory_mode;
 pub mod main_menu_mode;
+pub mod map_gen;
 pub mod menu_memory;
 pub mod targeting_mode;
 
@@ -13,6 +14,7 @@ use dungeon_mode::{DungeonMode, DungeonModeResult};
 use game_over_mode::{GameOverMode, GameOverModeResult};
 use inventory_mode::{InventoryActionMode, InventoryActionModeResult, InventoryMode, InventoryModeResult};
 use main_menu_mode::{MainMenuMode, MainMenuModeResult};
+use map_gen::{MapGenMode, MapGenModeResult};
 use targeting_mode::{TargetingMode, TargetingModeResult};
 
 use dialogs::*;
@@ -41,6 +43,7 @@ macro_rules! impl_from {
 
 #[derive(Debug)]
 pub enum Mode {
+    MapGenMode(MapGenMode),
     DungeonMode(DungeonMode),
     MainMenuMode(MainMenuMode),
     GameOverMode(GameOverMode),
@@ -52,6 +55,7 @@ pub enum Mode {
     InventoryActionMode(InventoryActionMode),
 }
 
+impl_from!(Mode, MapGenMode);
 impl_from!(Mode, DungeonMode);
 impl_from!(Mode, MainMenuMode);
 impl_from!(Mode, GameOverMode);
@@ -66,6 +70,7 @@ impl_from!(Mode, InventoryActionMode);
 
 #[derive(Debug)]
 pub enum ModeResult {
+    MapGenModeResult(MapGenModeResult),
     DungeonModeResult(DungeonModeResult),
     MainMenuModeResult(MainMenuModeResult),
     GameOverModeResult(GameOverModeResult),
@@ -77,6 +82,7 @@ pub enum ModeResult {
     InventoryActionModeResult(InventoryActionModeResult),
 }
 
+impl_from!(ModeResult, MapGenModeResult);
 impl_from!(ModeResult, DungeonModeResult);
 impl_from!(ModeResult, MainMenuModeResult);
 impl_from!(ModeResult, GameOverModeResult);
@@ -123,6 +129,7 @@ impl Mode {
         pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
         match self {
+            Mode::MapGenMode(x) => x.tick(ctx, world, pop_result),
             Mode::DungeonMode(x) => x.tick(ctx, world, pop_result),
             Mode::MainMenuMode(x) => x.tick(ctx, world, pop_result),
             Mode::GameOverMode(x) => x.tick(ctx, world, pop_result),
@@ -137,6 +144,7 @@ impl Mode {
 
     fn draw(&mut self, ctx: &mut BTerm, world: &mut World, active: bool) {
         match self {
+            Mode::MapGenMode(x) => x.draw(ctx, world, active),
             Mode::DungeonMode(x) => x.draw(ctx, world, active),
             Mode::MainMenuMode(x) => x.draw(ctx, world, active),
             Mode::GameOverMode(x) => x.draw(ctx, world, active),
@@ -152,6 +160,7 @@ impl Mode {
     /// Should the current mode draw modes behind it in the stack?
     fn draw_behind(&self) -> bool {
         match self {
+            Mode::MapGenMode(_) => false,
             Mode::DungeonMode(_) => false,
             Mode::GameOverMode(_) => false,
             Mode::MainMenuMode(_) => false,

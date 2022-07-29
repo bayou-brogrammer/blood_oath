@@ -30,6 +30,7 @@ pub fn clear() {
         b.0 = false;
         b.1 = false;
     });
+
     for content in lock.tile_content.iter_mut() {
         content.clear();
     }

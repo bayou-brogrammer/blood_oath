@@ -11,7 +11,7 @@ mod monster_ai_system;
 mod particle_system;
 mod render;
 
-pub use damage_system::{DamageSystem, DeleteDeadSystem};
+pub use damage_system::DeleteDeadSystem;
 pub use end_turn::EndTurnSystem;
 pub use fov_system::FovSystem;
 pub use inventory::*;
@@ -26,11 +26,9 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
         (FovSystem, "fov", &[]),
         (MapIndexingSystem, "map_indexing", &[]),
         (MeleeCombatSystem, "melee_combat", &[]),
-        (DamageSystem, "damage", &[]),
         (ItemCollectionSystem, "pickup", &[]),
         (ItemUseSystem, "use", &[]),
-        (ItemDropSystem, "drop", &[]),
-        (ParticleSpawnSystem, "particle_spawn", &[])
+        (ItemDropSystem, "drop", &[])
     );
 
     new_dispatch()
@@ -40,9 +38,10 @@ pub fn new_ticking() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
         (EndTurnSystem, "end_turn", &[]),
         (MonsterAISystem, "ai_system", &[]),
+        (ParticleSpawnSystem, "particle_spawn", &[]),
         (ParticleUpdateSystem, "particle_update", &[]),
         (DeleteDeadSystem, "delete_dead", &[])
     );
 
-    new_dispatch_with_local(RenderSystem)
+    new_dispatch()
 }

@@ -3,14 +3,13 @@ use bo_ecs::prelude::{Deserialize, Serialize};
 
 use bracket_geometry::prelude::*;
 use bracket_pathfinding::prelude::*;
-use bracket_random::prelude::RandomNumberGenerator;
 
 use std::{
     cmp::{max, min},
     collections::HashSet,
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Map {
     pub width: i32,
     pub height: i32,
@@ -47,6 +46,10 @@ impl Map {
                 self.tiles[idx as usize] = GameTile::floor();
             }
         }
+    }
+
+    pub fn get_tile_type(&self, tt: TileType) -> Vec<GameTile> {
+        self.tiles.iter().filter(|t| t.tile_type == tt).cloned().collect::<Vec<_>>()
     }
 
     pub fn clear_content_index(&mut self) {
@@ -94,14 +97,11 @@ impl Map {
         const MIN_SIZE: i32 = 6;
         const MAX_SIZE: i32 = 10;
 
-        // let mut rng = crate::rng::RNG.lock();
-        let mut rng = RandomNumberGenerator::new();
-
         for _i in 0..MAX_ROOMS {
-            let w = rng.range(MIN_SIZE, MAX_SIZE);
-            let h = rng.range(MIN_SIZE, MAX_SIZE);
-            let x = rng.roll_dice(1, map.width - w - 1) - 1;
-            let y = rng.roll_dice(1, map.height - h - 1) - 1;
+            let w = bo_utils::rng::range(MIN_SIZE, MAX_SIZE);
+            let h = bo_utils::rng::range(MIN_SIZE, MAX_SIZE);
+            let x = bo_utils::rng::roll_dice(1, map.width - w - 1) - 1;
+            let y = bo_utils::rng::roll_dice(1, map.height - h - 1) - 1;
             let new_room = Rect::with_size(x, y, w, h);
 
             let ok = map.rooms.iter().all(|room| !new_room.intersect(room));
@@ -113,7 +113,7 @@ impl Map {
                     let Point { x: new_x, y: new_y } = new_room.center();
                     let Point { x: prev_x, y: prev_y } = map.rooms[map.rooms.len() - 1].center();
 
-                    if rng.range(0, 2) == 1 {
+                    if bo_utils::rng::range(0, 2) == 1 {
                         map.apply_horizontal_tunnel(prev_x, new_x, prev_y);
                         map.apply_vertical_tunnel(prev_y, new_y, new_x);
                     } else {

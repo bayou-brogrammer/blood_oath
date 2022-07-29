@@ -1,7 +1,5 @@
 use super::{dungeon_mode::DungeonMode, ModeControl, ModeResult, *};
 
-mod setup;
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Result
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +78,7 @@ impl MainMenuMode {
                     YesNoDialogModeResult::No => (ModeControl::Stay, ModeUpdate::Update),
                     YesNoDialogModeResult::Yes => {
                         bo_saveload::delete_save();
-
-                        // Setup game state
-                        setup::setup_new_game(world);
-
-                        (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Immediate)
+                        (ModeControl::Switch(MapGenMode::new_game().into()), ModeUpdate::Immediate)
                     }
                 },
                 _ => unreachable!("Unknown popped main_menu result: [{:?}]", result),
@@ -137,10 +131,8 @@ impl MainMenuMode {
                                     ModeUpdate::Update,
                                 );
                             } else {
-                                setup::setup_new_game(world);
-
                                 return (
-                                    ModeControl::Switch(DungeonMode::new(world).into()),
+                                    ModeControl::Switch(MapGenMode::new_game().into()),
                                     ModeUpdate::Immediate,
                                 );
                             }

@@ -6,11 +6,11 @@ edition = "2021"
 
 [dependencies]
 bo_ecs = { path = "../bo_ecs" }
+bo_utils = { path = "../bo_utils" }
 
 bracket-geometry = "^0.8.3"
 bracket-terminal = "^0.8.5"
 bracket-pathfinding = "^0.8.4"
-bracket-random = "^0.8.2"
 
 bitvec = { version = "^1.0.1", features = ['serde'] }
 lazy_static = "^1.4.0"

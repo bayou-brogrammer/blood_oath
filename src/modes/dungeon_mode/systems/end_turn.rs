@@ -8,13 +8,11 @@ impl<'a> System<'a> for EndTurnSystem {
     fn run(&mut self, data: Self::SystemData) {
         let mut state = data;
 
-        let next_state = match *state {
-            TurnState::PreRun => TurnState::AwaitingInput,
-            TurnState::PlayerTurn => TurnState::MonsterTurn,
-            TurnState::MonsterTurn => TurnState::AwaitingInput,
-            _ => *state,
-        };
-
-        *state = next_state;
+        match *state {
+            TurnState::PreRun => *state = TurnState::AwaitingInput,
+            TurnState::PlayerTurn => *state = TurnState::MonsterTurn,
+            TurnState::MonsterTurn => *state = TurnState::AwaitingInput,
+            _ => {}
+        }
     }
 }

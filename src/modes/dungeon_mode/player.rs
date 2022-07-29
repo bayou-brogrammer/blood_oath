@@ -4,6 +4,7 @@ use super::*;
 
 pub enum PlayerInputResult {
     AppQuit,
+    Descend,
     TurnDone,
     NoResult,
     ShowInventory,
@@ -71,6 +72,11 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
             VirtualKeyCode::I => return PlayerInputResult::ShowInventory,
             VirtualKeyCode::D => return PlayerInputResult::ShowInventory,
 
+            // Stairs
+            VirtualKeyCode::Period | VirtualKeyCode::Return => {
+                if try_next_level(world) { return PlayerInputResult::Descend; }
+            },
+
             _ => { return PlayerInputResult::NoResult }
         },
     }
@@ -102,5 +108,18 @@ fn get_item(world: &mut World) {
                 .insert(*player_entity, WantsToPickupItem { collected_by: *player_entity, item })
                 .expect("Unable to insert want to pickup");
         }
+    }
+}
+
+pub fn try_next_level(world: &mut World) -> bool {
+    let player_pos = world.fetch::<Point>();
+    let map = world.fetch::<Map>();
+    let player_idx = map.point2d_to_index(*player_pos);
+
+    if map.tiles[player_idx].tile_type == TileType::DownStairs {
+        true
+    } else {
+        crate::gamelog::Logger::new().append("There is no way down from here.").log();
+        false
     }
 }

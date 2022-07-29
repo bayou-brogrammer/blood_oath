@@ -1,7 +1,7 @@
 use bo_ecs::prelude::{Deserialize, Serialize};
 use bracket_terminal::prelude::*;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GameTile {
     pub opaque: bool,
     pub walkable: bool,
@@ -42,7 +42,7 @@ impl GameTile {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum TileType {
     Wall,
     Stalactite,

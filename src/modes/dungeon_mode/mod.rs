@@ -1,3 +1,5 @@
+use self::systems::RenderSystem;
+
 use super::*;
 use super::{AppQuitDialogMode, InventoryMode};
 
@@ -36,6 +38,8 @@ impl std::fmt::Debug for DungeonMode {
 
 /// The main gameplay mode.  The player can move around and explore the map, fight monsters and
 /// perform other actions while alive, directly or indirectly.
+///
+
 impl DungeonMode {
     pub fn new(world: &mut World) -> Self {
         // Dispatchers
@@ -58,26 +62,9 @@ impl DungeonMode {
         world.maintain();
     }
 
-    fn use_item(&self, world: &World, item: &Entity, pt: Option<Point>) {
-        world
-            .write_storage::<WantsToUseItem>()
-            .insert(*world.fetch::<Entity>(), WantsToUseItem::new(*item, pt))
-            .expect("Failed to insert intent");
-    }
-
-    fn drop_item(&self, world: &World, item: &Entity) {
-        world
-            .write_storage::<WantsToDropItem>()
-            .insert(*world.fetch::<Entity>(), WantsToDropItem::new(*item))
-            .expect("Failed to insert intent");
-    }
-
-    fn app_quit_dialog(&self) -> (ModeControl, ModeUpdate) {
-        #[cfg(not(target_arch = "wasm32"))]
-        return (ModeControl::Push(AppQuitDialogMode::new().into()), ModeUpdate::Update);
-
-        #[cfg(target_arch = "wasm32")]
-        return (ModeControl::Stay, ModeUpdate::Update);
+    fn run_rendering(&mut self, world: &mut World) {
+        RenderSystem {}.run_now(world);
+        world.maintain();
     }
 
     pub fn tick(
@@ -97,6 +84,14 @@ impl DungeonMode {
                         }
                         return (ModeControl::Pop(DungeonModeResult::Done.into()), ModeUpdate::Immediate);
                     }
+                },
+
+                // Yes / No Dialog
+                ModeResult::YesNoDialogModeResult(result) => match result {
+                    YesNoDialogModeResult::Yes => {
+                        return (ModeControl::Switch(MapGenMode::next_level().into()), ModeUpdate::Immediate);
+                    }
+                    YesNoDialogModeResult::No => {}
                 },
 
                 // Inventory
@@ -125,20 +120,28 @@ impl DungeonMode {
 
         #[allow(clippy::single_match)]
         match runstate {
+            TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
+                self.run_dispatcher(world);
+            }
             TurnState::AwaitingInput => match player_input(ctx, world) {
                 player::PlayerInputResult::NoResult => {}
+                player::PlayerInputResult::AppQuit => return self.app_quit_dialog(),
                 player::PlayerInputResult::TurnDone => {
                     let mut runwriter = world.write_resource::<TurnState>();
                     *runwriter = TurnState::PlayerTurn;
                 }
-                player::PlayerInputResult::AppQuit => return self.app_quit_dialog(),
                 player::PlayerInputResult::ShowInventory => {
                     return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
                 }
+                player::PlayerInputResult::Descend => {
+                    return (
+                        ModeControl::Push(
+                            YesNoDialogMode::new("Descend to the next level?".to_string(), false).into(),
+                        ),
+                        ModeUpdate::Immediate,
+                    );
+                }
             },
-            TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
-                self.run_dispatcher(world);
-            }
         }
 
         // Run Dispatcher
@@ -155,5 +158,30 @@ impl DungeonMode {
         }
 
         render::gui::draw_ui(world, ctx);
+        self.run_rendering(world);
+    }
+}
+
+impl DungeonMode {
+    fn app_quit_dialog(&self) -> (ModeControl, ModeUpdate) {
+        #[cfg(not(target_arch = "wasm32"))]
+        return (ModeControl::Push(AppQuitDialogMode::new().into()), ModeUpdate::Update);
+
+        #[cfg(target_arch = "wasm32")]
+        return (ModeControl::Stay, ModeUpdate::Update);
+    }
+
+    fn use_item(&self, world: &World, item: &Entity, pt: Option<Point>) {
+        world
+            .write_storage::<WantsToUseItem>()
+            .insert(*world.fetch::<Entity>(), WantsToUseItem::new(*item, pt))
+            .expect("Failed to insert intent");
+    }
+
+    fn drop_item(&self, world: &World, item: &Entity) {
+        world
+            .write_storage::<WantsToDropItem>()
+            .insert(*world.fetch::<Entity>(), WantsToDropItem::new(*item))
+            .expect("Failed to insert intent");
     }
 }

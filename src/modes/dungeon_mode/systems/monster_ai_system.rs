@@ -56,9 +56,7 @@ impl<'a> System<'a> for MonsterAISystem {
                     wants_to_melee
                         .insert(entity, WantsToMelee { target: *player_entity })
                         .expect("Unable to insert attack");
-                }
-                // else if fov.visible_tiles.contains(&*player_pos) {
-                else {
+                } else if fov.visible_tiles.contains(&*player_pos) {
                     let old_idx = map.point2d_to_index(pos.0);
                     let new_idx = map.point2d_to_index(*player_pos);
 

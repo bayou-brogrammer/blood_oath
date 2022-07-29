@@ -78,7 +78,7 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
         serialize_individually!(ecs, serializer, data, 
             Player, Monster, Item, Consumable, BlocksTile, 
             Position, Glyph, FieldOfView, Name, Description, CombatStats,
-            SufferDamage, WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
+            WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
             SerializationHelper<Map>
         );

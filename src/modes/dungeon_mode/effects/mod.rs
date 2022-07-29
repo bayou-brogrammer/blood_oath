@@ -14,6 +14,7 @@ lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
 }
 
+#[derive(Debug)]
 pub enum EffectType {
     // WellFed,
     Bloodstain,
@@ -27,6 +28,12 @@ pub enum EffectType {
     Particle { glyph: FontCharType, color: ColorPair, lifespan: f32 },
 }
 
+impl EffectType {
+    pub fn new_particle(glyph: FontCharType, color: ColorPair, lifespan: f32) -> Self {
+        EffectType::Particle { glyph, color, lifespan }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Targets {
     Single { target: Entity },
@@ -35,6 +42,7 @@ pub enum Targets {
     Tiles { tiles: Vec<usize> },
 }
 
+#[derive(Debug)]
 pub struct EffectSpawner {
     pub creator: Option<Entity>,
     pub effect_type: EffectType,

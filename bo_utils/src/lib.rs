@@ -2,6 +2,7 @@ mod bterm;
 mod macros;
 mod menus;
 mod render;
+pub mod rng;
 
 pub use crate::render::SELECTED_BG;
 

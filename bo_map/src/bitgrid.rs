@@ -5,7 +5,7 @@ use bracket_geometry::prelude::Point;
 use bracket_pathfinding::prelude::*;
 
 /// A width-by-height&-sized BitVec for convenient handling of a grid of boolean values.
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
 pub struct BitGrid {
     width: i32,
     height: i32,

@@ -22,7 +22,7 @@ const MAX_ITEMS: i32 = 2;
 
 /// Fills a room with stuff!
 pub fn spawn_room(world: &mut World, room: &Rect) {
-    let mut rng = crate::rng::RNG.lock();
+    let mut rng = bo_utils::rng::RNG.lock();
 
     let num_monsters = i32::max(0, rng.roll_dice(1, MAX_MONSTERS + 2) - 3);
     let mut monster_spawn_points: HashSet<Point> = HashSet::new();

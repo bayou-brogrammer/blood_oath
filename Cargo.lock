@@ -156,9 +156,9 @@ version = "0.1.0"
 dependencies = [
  "bitvec",
  "bo_ecs",
+ "bo_utils",
  "bracket-geometry",
  "bracket-pathfinding",
- "bracket-random",
  "bracket-terminal",
  "lazy_static",
  "parking_lot 0.12.1",
@@ -193,7 +193,10 @@ dependencies = [
 name = "bo_utils"
 version = "0.1.0"
 dependencies = [
+ "bracket-random",
  "bracket-terminal",
+ "lazy_static",
+ "parking_lot 0.12.1",
 ]
 
 [[package]]

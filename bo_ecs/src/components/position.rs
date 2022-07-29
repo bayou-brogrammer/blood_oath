@@ -1,6 +1,8 @@
+use bo_utils::impl_new;
+
 use super::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Component, ConvertSaveload)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component, ConvertSaveload, Hash)]
 #[storage(DenseVecStorage)]
 pub struct Position(pub Point);
 
@@ -23,3 +25,11 @@ impl Position {
         Self::new_xy(0, 0)
     }
 }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct OtherLevelPosition {
+    pub pt: Point,
+    pub depth: i32,
+}
+
+impl_new!(OtherLevelPosition, pt: Point, depth: i32);

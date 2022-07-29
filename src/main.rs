@@ -1,7 +1,6 @@
 mod gamelog;
 mod modes;
 mod resources;
-mod rng;
 
 pub mod render;
 
@@ -27,7 +26,7 @@ mod prelude {
     pub use crate::modes::*;
     pub use crate::render;
     pub use crate::resources::*;
-    pub use crate::rng::*;
+    pub use crate::GameWorld;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -49,8 +48,8 @@ mod prelude {
 pub use prelude::*;
 
 pub struct GameWorld {
-    pub mode_stack: ModeStack,
     pub world: World,
+    pub mode_stack: ModeStack,
 }
 
 impl Default for GameWorld {
@@ -68,6 +67,7 @@ impl GameWorld {
         // Resources
         world.insert(TurnState::PreRun);
         world.insert(ParticleBuilder::new());
+        world.insert(MasterDungeonMap::new());
         world.insert(modes::MenuMemory::new());
 
         Self { world, mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]) }
@@ -90,7 +90,6 @@ impl GameWorld {
         world.register::<CombatStats>();
 
         // Intent
-        world.register::<SufferDamage>();
         world.register::<WantsToMelee>();
         world.register::<WantsToUseItem>();
         world.register::<WantsToDropItem>();
