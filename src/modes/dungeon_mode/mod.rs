@@ -64,7 +64,11 @@ impl DungeonMode {
     }
 
     fn app_quit_dialog(&self) -> (ModeControl, ModeUpdate) {
-        (ModeControl::Push(AppQuitDialogMode::new().into()), ModeUpdate::Update)
+        #[cfg(not(target_arch = "wasm32"))]
+        return (ModeControl::Push(AppQuitDialogMode::new().into()), ModeUpdate::Update);
+
+        #[cfg(target_arch = "wasm32")]
+        return (ModeControl::Stay, ModeUpdate::Update);
     }
 
     pub fn tick(
