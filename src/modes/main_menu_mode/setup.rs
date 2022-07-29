@@ -1,5 +1,5 @@
 use super::*;
-use crate::dungeon_mode::spawner;
+use crate::{dungeon_mode::spawner, render::GameCamera};
 
 pub fn setup_new_game(world: &mut World) {
     let map = Map::new(0, 80, 50, "Test Map");
@@ -16,6 +16,7 @@ pub fn setup_new_game(world: &mut World) {
     world.insert(player);
     world.insert(start_pos);
     world.insert(TurnState::PreRun);
+    world.insert(GameCamera::new(start_pos));
 
     crate::gamelog::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
 }

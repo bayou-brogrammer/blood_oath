@@ -90,11 +90,12 @@ impl GameWorld {
         world.register::<CombatStats>();
 
         // Intent
+        world.register::<WantsToMove>();
         world.register::<SufferDamage>();
         world.register::<WantsToMelee>();
-        world.register::<WantsToPickupItem>();
         world.register::<WantsToUseItem>();
         world.register::<WantsToDropItem>();
+        world.register::<WantsToPickupItem>();
 
         // Items
         world.register::<InBackpack>();

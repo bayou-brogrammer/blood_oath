@@ -1,22 +1,10 @@
 <html>
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link rel="stylesheet" href="game_styles.css" />
   </head>
-  <body style="background-color: black">
-    <h1
-      style="
-        color: white;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 10pt;
-      "
-    >
-      SecBot (2021 7DRL) - by Herbert Wolverson
-    </h1>
-    <button onclick="document.getElementById('help').style.display = 'block'">
-      Instructions
-    </button>
-    <br />
-    <canvas id="canvas" width="896" height="496"></canvas>
+
+  <body style="background-color: black; text-align: center">
     <script src="./staging/bload_oath.js"></script>
     <script>
       window.addEventListener("load", async () => {
@@ -24,85 +12,43 @@
       });
     </script>
 
-    <div
-      id="help"
-      style="
-        position: absolute;
-        left: 10px;
-        width: 400px;
-        height: 400px;
-        top: 10px;
-        display: none;
-        z-index: 100;
-        border: 1px cyan;
-        background: #333377;
-      "
-    >
+    <div id="title">
+      <h2>BloodOath</h2>
+      <span>by Jacob LeCoq</span>
+    </div>
+
+    <button onclick="document.getElementById('help').style.display = 'block'">
+      Instructions
+    </button>
+
+    <br />
+
+    <!-- Canvas -->
+    <canvas id="canvas" width="800" height="400"></canvas>
+
+    <div id="help">
       <button onclick="document.getElementById('help').style.display = 'none'">
         Close Help
       </button>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
-        SecBot is my 7-day Roguelike entry for 2021. Written in 7 days, using
-        only techniques from my book
-        <a style="color: white" href="https://hands-on-rust.com/"
-          >Hands-On Rust</a
-        >.
+
+      <p>
+        BloodOath is my fun little side project
       </p>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
-        SecBot is the remains of a dead human, stuffed full of cybernetics, and
-        forced into service with <em>Bracket Corp</em>. SecBot is a pleasant
-        fellow, and doesn't really want to kill everyone - but it's up to you if
-        you want to honor that desire.
+
+      <p>
+        You have harnessed the power of blood magic and must continue to harnest
+        your power or the magic will consume you. Blood, blood, blood is your
+        only goal. Cosume your prey, build your spells, and consume the world,
+        but be careful. Blood Magic is forbidden in the kingdom. If you are
+        caught, the only choice is to the death.
       </p>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
-        Move around with either the cursor keys or WASD. There is no diagonal
-        movement.
+
+      <p>
+        Move around with WASD. Diagonal movement is allowed with YUBN.
       </p>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
+
+      <p>
         You can mouse-over anything to see its description.
-      </p>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
-        You can cycle between available targets by pressing <strong>T</strong>.
-        You can also click a visible entity to target them.
-      </p>
-      <p
-        style="
-          color: #55ff55;
-          font-family: 'Courier New', Courier, monospace;
-          font-size: 10pt;
-        "
-      >
-        Fire your weapon by pressing <strong>F</strong>.
       </p>
     </div>
   </body>

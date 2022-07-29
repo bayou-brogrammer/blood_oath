@@ -3,7 +3,7 @@ use bracket_geometry::prelude::*;
 use bracket_pathfinding::prelude::*;
 use bracket_terminal::prelude::*;
 
-pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
+pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, ColorPair) {
     let (glyph, mut fg, mut bg) = match map.depth {
         3 => get_limestone_cavern_glyph(idx, map),
         2 => get_forest_glyph(idx, map),
@@ -15,7 +15,7 @@ pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
         bg = RGB::from_f32(0., 0., 0.); // Don't show stains out of visual range
     }
 
-    (glyph, fg, bg)
+    (glyph, ColorPair::new(fg, bg))
 }
 
 fn get_forest_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {

@@ -4,7 +4,6 @@ use bo_ecs::prelude::{Deserialize, Serialize};
 use bracket_geometry::prelude::*;
 use bracket_pathfinding::prelude::*;
 use bracket_random::prelude::RandomNumberGenerator;
-use bracket_terminal::prelude::BTerm;
 
 use std::{
     cmp::{max, min},
@@ -178,30 +177,5 @@ impl BaseMap for Map {
 
     fn get_pathing_distance(&self, idx1:usize, idx2:usize) -> f32 {
         DistanceAlg::Pythagoras.distance2d(self.index_to_point2d(idx1), self.index_to_point2d(idx2))
-    }
-}
-
-pub fn draw_map(map: &Map, ctx: &mut BTerm) {
-    let mut y = 0;
-    let mut x = 0;
-    for (idx, _tile) in map.tiles.iter().enumerate() {
-        // Render a tile depending upon the tile type
-        let pt = map.index_to_point2d(idx);
-        if map.revealed.get_bit(pt) {
-            let (glyph, fg, bg) = tile_glyph(idx, &*map);
-
-            // if map.bloodstains.contains(&idx) {
-            //     bg = RGB::from_f32(0.75, 0., 0.);
-            // }
-
-            ctx.set(x, y, fg, bg, glyph);
-        }
-
-        // Move the coordinates
-        x += 1;
-        if x > map.width as i32 - 1 {
-            x = 0;
-            y += 1;
-        }
     }
 }
