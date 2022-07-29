@@ -23,6 +23,7 @@ pub enum DungeonModeResult {
 ////////////////////////////////////////////////////////////////////////////////
 pub struct DungeonMode {
     dispatcher: Box<dyn UnifiedDispatcher + 'static>,
+    ticking: Box<dyn UnifiedDispatcher + 'static>,
 }
 
 impl std::fmt::Debug for DungeonMode {
@@ -39,13 +40,21 @@ impl DungeonMode {
     pub fn new(world: &mut World) -> Self {
         // Dispatchers
         let mut dispatcher = systems::new_dispatcher();
-        dispatcher.setup(world);
+        let mut ticking = systems::new_ticking();
 
-        Self { dispatcher }
+        dispatcher.setup(world);
+        ticking.setup(world);
+
+        Self { dispatcher, ticking }
     }
 
     fn run_dispatcher(&mut self, world: &mut World) {
         self.dispatcher.run_now(world, Box::new(run_effects_queue));
+        world.maintain();
+    }
+
+    fn run_ticking(&mut self, world: &mut World) {
+        self.ticking.run_now(world, Box::new(run_effects_queue));
         world.maintain();
     }
 
@@ -108,9 +117,6 @@ impl DungeonMode {
             };
         }
 
-        // Run Dispatcher
-        self.run_dispatcher(world);
-
         let runstate;
         {
             let state = world.fetch::<TurnState>();
@@ -130,10 +136,13 @@ impl DungeonMode {
                     return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
                 }
             },
-            _ => {} // TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
-                    //     self.run_dispatcher(world);
-                    // }
+            TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
+                self.run_dispatcher(world);
+            }
         }
+
+        // Run Dispatcher
+        self.run_ticking(world);
 
         (ModeControl::Stay, ModeUpdate::Update)
     }
@@ -147,19 +156,4 @@ impl DungeonMode {
 
         render::gui::draw_ui(world, ctx);
     }
-}
-
-pub fn get_screen_bounds(ecs: &World) -> (i32, i32, i32, i32) {
-    let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = (48, 44);
-
-    let center_x = (x_chars / 2) as i32;
-    let center_y = (y_chars / 2) as i32;
-
-    let min_x = player_pos.x - center_x;
-    let max_x = min_x + x_chars as i32;
-    let min_y = player_pos.y - center_y;
-    let max_y = min_y + y_chars as i32;
-
-    (min_x, max_x, min_y, max_y)
 }

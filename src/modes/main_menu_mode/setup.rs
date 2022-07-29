@@ -6,10 +6,13 @@ pub fn setup_new_game(world: &mut World) {
     let start_pos = map.rooms[0].center();
     let player = dungeon_mode::spawner::spawn_player(world, start_pos);
 
+    let mut rng = crate::rng::RNG.lock();
+    spawner::random_monster(world, &mut rng, map.rooms[0].center() + Point::new(2, 2));
+
     // Spawn Rooms
-    map.rooms.iter().skip(1).for_each(|room| {
-        spawner::spawn_room(world, room);
-    });
+    // map.rooms.iter().skip(1).for_each(|room| {
+    //     spawner::spawn_room(world, room);
+    // });
 
     // Resources
     world.insert(map);

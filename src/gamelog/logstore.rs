@@ -1,3 +1,5 @@
+#![allow(dead_code)] //TODO: remove this
+
 use super::*;
 use parking_lot::Mutex;
 

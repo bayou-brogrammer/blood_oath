@@ -24,15 +24,22 @@ pub use render::RenderSystem;
 pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
         (FovSystem, "fov", &[]),
-        (MonsterAISystem, "ai_system", &[]),
         (MapIndexingSystem, "map_indexing", &[]),
         (MeleeCombatSystem, "melee_combat", &[]),
         (DamageSystem, "damage", &[]),
         (ItemCollectionSystem, "pickup", &[]),
         (ItemUseSystem, "use", &[]),
         (ItemDropSystem, "drop", &[]),
+        (ParticleSpawnSystem, "particle_spawn", &[])
+    );
+
+    new_dispatch()
+}
+
+pub fn new_ticking() -> Box<dyn UnifiedDispatcher + 'static> {
+    construct_dispatcher!(
         (EndTurnSystem, "end_turn", &[]),
-        (ParticleSpawnSystem, "particle_spawn", &[]),
+        (MonsterAISystem, "ai_system", &[]),
         (ParticleUpdateSystem, "particle_update", &[]),
         (DeleteDeadSystem, "delete_dead", &[])
     );
