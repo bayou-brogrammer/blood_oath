@@ -19,7 +19,7 @@ pub struct Map {
     pub rooms: Vec<Rect>,
     pub visible: BitGrid,
     pub revealed: BitGrid,
-    pub tiles: Vec<TileType>,
+    pub tiles: Vec<GameTile>,
     pub view_blocked: HashSet<usize>,
 }
 
@@ -27,21 +27,25 @@ impl Map {
     fn apply_room_to_map(&mut self, room: &Rect) {
         room.for_each(|pt| {
             let idx = self.point2d_to_index(pt);
-            self.tiles[idx] = TileType::Floor;
+            self.tiles[idx] = GameTile::floor();
         });
     }
 
     fn apply_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
         for x in min(x1, x2)..=max(x1, x2) {
             let idx = self.point2d_to_index(Point::new(x, y));
-            self.tiles[idx] = TileType::Floor;
+            if self.tiles[idx as usize].tile_type == TileType::Wall {
+                self.tiles[idx as usize] = GameTile::floor();
+            }
         }
     }
 
     fn apply_vertical_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
         for y in min(y1, y2)..=max(y1, y2) {
             let idx = self.point2d_to_index(Point::new(x, y));
-            self.tiles[idx] = TileType::Floor;
+            if self.tiles[idx as usize].tile_type == TileType::Wall {
+                self.tiles[idx as usize] = GameTile::floor();
+            }
         }
     }
 
@@ -83,7 +87,7 @@ impl Map {
             view_blocked: HashSet::new(),
             visible: BitGrid::new(width, height),
             revealed: BitGrid::new(width, height),
-            tiles: vec![TileType::Wall; map_tile_count],
+            tiles: vec![GameTile::wall(); map_tile_count],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -153,7 +157,7 @@ impl Algorithm2D for Map {
 #[rustfmt::skip]
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx] == TileType::Wall || self.view_blocked.contains(&idx)
+        self.tiles[idx].opaque || self.view_blocked.contains(&idx)
     }
 
     fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {

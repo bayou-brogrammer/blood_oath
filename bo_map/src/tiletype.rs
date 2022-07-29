@@ -1,4 +1,46 @@
 use bo_ecs::prelude::{Deserialize, Serialize};
+use bracket_terminal::prelude::*;
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct GameTile {
+    pub opaque: bool,
+    pub walkable: bool,
+    pub color: ColorPair,
+    pub tile_type: TileType,
+    pub glyph: FontCharType,
+}
+
+impl GameTile {
+    pub fn floor() -> Self {
+        Self {
+            opaque: false,
+            walkable: true,
+            glyph: to_cp437('.'),
+            tile_type: TileType::Floor,
+            color: ColorPair::new(DARK_GRAY, BLACK),
+        }
+    }
+
+    pub fn wall() -> Self {
+        Self {
+            opaque: true,
+            walkable: false,
+            glyph: to_cp437('#'),
+            tile_type: TileType::Wall,
+            color: ColorPair::new(DARK_GRAY, BLACK),
+        }
+    }
+
+    pub fn stairs_down() -> Self {
+        Self {
+            opaque: false,
+            walkable: true,
+            glyph: to_cp437('>'),
+            tile_type: TileType::DownStairs,
+            color: ColorPair::new(WHITE, BLACK),
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
