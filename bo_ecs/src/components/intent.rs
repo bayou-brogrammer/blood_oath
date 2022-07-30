@@ -24,6 +24,7 @@ pub struct WantsToDropItem {
     pub item: Entity,
 }
 
+impl_new!(WantsToMelee, target: Entity);
 impl_new!(WantsToDropItem, item: Entity);
 impl_new!(WantsToUseItem, item: Entity, target: Option<Point>);
 impl_new!(WantsToPickupItem, item: Entity, collected_by: Entity);

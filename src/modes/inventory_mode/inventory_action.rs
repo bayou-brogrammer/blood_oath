@@ -119,7 +119,7 @@ impl InventoryActionMode {
         if let Some(result) = pop_result {
             return match result {
                 ModeResult::TargetingModeResult(result) => match result {
-                    TargetingModeResult::Cancelled => (ModeControl::Stay, ModeUpdate::Update),
+                    TargetingModeResult::Cancelled => return (ModeControl::Stay, ModeUpdate::Update),
                     TargetingModeResult::Target(item, pt) => (
                         ModeControl::Pop(InventoryActionModeResult::UseItem(*item, Some(*pt)).into()),
                         ModeUpdate::Immediate,

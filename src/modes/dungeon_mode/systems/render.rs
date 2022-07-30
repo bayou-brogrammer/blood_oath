@@ -1,5 +1,3 @@
-use crate::render::GameCamera;
-
 use super::*;
 
 pub struct RenderSystem;

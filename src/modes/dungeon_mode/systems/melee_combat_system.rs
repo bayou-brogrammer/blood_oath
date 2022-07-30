@@ -40,11 +40,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             .append("hp.")
                             .log();
 
-                        add_effect(
-                            Some(entity),
-                            EffectType::Damage { amount: damage },
-                            Targets::Single { target: wants_melee.target },
-                        );
+                        add_single_damage_effect(Some(entity), wants_melee.target, damage);
                     }
                 }
             }

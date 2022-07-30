@@ -49,10 +49,10 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
         deserialize_individually!(
             ecs, de, d,
             Player, Monster, Item, Consumable, BlocksTile, 
-            Position, Glyph, FieldOfView, Name, Description, CombatStats,
+            Position, Glyph, FieldOfView, Name, Description, CombatStats, OtherLevelPosition,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            SerializationHelper
+            ParticleLifetime, SerializationHelper, DMSerializationHelper
         );
     }
 

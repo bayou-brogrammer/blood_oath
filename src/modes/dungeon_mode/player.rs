@@ -1,5 +1,3 @@
-use crate::render::GameCamera;
-
 use super::*;
 
 pub enum PlayerInputResult {
@@ -27,7 +25,7 @@ pub fn try_move_player(delta_pt: Point, ecs: &mut World) {
         crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
             if let Some(_target) = combat_stats.get(potential_target) {
                 wants_to_melee
-                    .insert(entity, WantsToMelee { target: potential_target })
+                    .insert(entity, WantsToMelee::new(potential_target))
                     .expect("Add target failed");
             }
         });
@@ -77,6 +75,10 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
                 if try_next_level(world) { return PlayerInputResult::Descend; }
             },
 
+            // Skip Turn
+            VirtualKeyCode::Numpad5 => return skip_turn(world),
+            VirtualKeyCode::Space => return skip_turn(world),
+
             _ => { return PlayerInputResult::NoResult }
         },
     }
@@ -111,9 +113,9 @@ fn get_item(world: &mut World) {
     }
 }
 
-pub fn try_next_level(world: &mut World) -> bool {
-    let player_pos = world.fetch::<Point>();
+fn try_next_level(world: &mut World) -> bool {
     let map = world.fetch::<Map>();
+    let player_pos = world.fetch::<Point>();
     let player_idx = map.point2d_to_index(*player_pos);
 
     if map.tiles[player_idx].tile_type == TileType::DownStairs {
@@ -122,4 +124,28 @@ pub fn try_next_level(world: &mut World) -> bool {
         bo_logging::Logger::new().append("There is no way down from here.").log();
         false
     }
+}
+
+fn skip_turn(world: &mut World) -> PlayerInputResult {
+    let mut can_heal = true;
+
+    let map = world.fetch::<Map>();
+    let player = world.fetch::<Entity>();
+    let fovs = world.read_storage::<FieldOfView>();
+    let enemies = world.read_storage::<Monster>();
+
+    let fov = fovs.get(*player).unwrap();
+    fov.visible_tiles.iter().for_each(|pt| {
+        crate::spatial::for_each_tile_content(map.point2d_to_index(*pt), |entity_id| {
+            if enemies.contains(entity_id) {
+                can_heal = false;
+            }
+        });
+    });
+
+    if can_heal {
+        add_single_healing_effect(None, *player, 1);
+    }
+
+    PlayerInputResult::TurnDone
 }

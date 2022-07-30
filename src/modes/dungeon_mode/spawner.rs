@@ -1,5 +1,6 @@
 use crate::prelude::*;
-use std::collections::HashSet;
+use std::collections::hash_map::Entry::Vacant;
+use std::collections::HashMap;
 
 pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
     world
@@ -17,58 +18,53 @@ pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+fn room_table(map_depth: i32) -> RandomTable {
+    RandomTable::new()
+        .add("Goblin", 10)
+        .add("Orc", 1 + map_depth)
+        .add("Health Potion", 7)
+        .add("Fireball Scroll", 2 + map_depth)
+        .add("Confusion Scroll", 2 + map_depth)
+        .add("Magic Missile Scroll", 4)
+}
+
 const MAX_MONSTERS: i32 = 4;
-const MAX_ITEMS: i32 = 2;
 
 /// Fills a room with stuff!
-pub fn spawn_room(world: &mut World, room: &Rect) {
+pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
     let mut rng = bo_utils::rng::RNG.lock();
 
-    let num_monsters = i32::max(0, rng.roll_dice(1, MAX_MONSTERS + 2) - 3);
-    let mut monster_spawn_points: HashSet<Point> = HashSet::new();
-    (0..num_monsters).for_each(|_| loop {
-        let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-        let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-        let pt = Point::new(x, y);
+    let spawn_table = room_table(map_depth);
+    let mut spawn_points: HashMap<Point, String> = HashMap::new();
+    let num_spawns = rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3;
 
-        if !monster_spawn_points.contains(&pt) {
-            monster_spawn_points.insert(pt);
-            break;
+    for _i in 0..num_spawns {
+        let mut added = false;
+        let mut tries = 0;
+
+        while !added && tries < 20 {
+            let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
+            let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
+
+            let pt = Point::new(x, y);
+            if let Vacant(e) = spawn_points.entry(pt) {
+                e.insert(spawn_table.roll(&mut rng));
+                added = true;
+            } else {
+                tries += 1;
+            }
         }
-    });
-
-    monster_spawn_points.iter().for_each(|pt| random_monster(world, &mut rng, *pt));
-
-    let num_items = rng.roll_dice(1, MAX_ITEMS + 2) - 3;
-    let mut item_spawn_points: HashSet<Point> = HashSet::new();
-    (0..num_items).for_each(|_| loop {
-        let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-        let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-        let pt = Point::new(x, y);
-
-        if !item_spawn_points.contains(&pt) {
-            item_spawn_points.insert(pt);
-            break;
-        }
-    });
-
-    item_spawn_points.iter().for_each(|pt| random_item(world, &mut rng, *pt));
-}
-
-pub fn random_monster(world: &mut World, rng: &mut RandomNumberGenerator, pt: Point) {
-    match rng.roll_dice(1, 2) {
-        1 => orc(world, pt),
-        _ => goblin(world, pt),
     }
-}
 
-fn random_item(world: &mut World, rng: &mut RandomNumberGenerator, pt: Point) {
-    match rng.roll_dice(1, 4) {
-        1 => health_potion(world, pt),
-        2 => fireball_scroll(world, pt),
-        3 => confusion_scroll(world, pt),
-        _ => magic_missile_scroll(world, pt),
-    }
+    spawn_points.iter().for_each(|(pt, name)| match name.as_ref() {
+        "Goblin" => goblin(world, *pt),
+        "Orc" => orc(world, *pt),
+        "Health Potion" => health_potion(world, *pt),
+        "Fireball Scroll" => fireball_scroll(world, *pt),
+        "Confusion Scroll" => confusion_scroll(world, *pt),
+        "Magic Missile Scroll" => magic_missile_scroll(world, *pt),
+        _ => {}
+    });
 }
 
 fn orc(world: &mut World, pt: Point) {
@@ -99,8 +95,9 @@ pub fn monster<S: ToString>(
         .build()
 }
 
-pub fn health_potion(ecs: &mut World, pt: Point) {
-    ecs.create_entity()
+pub fn health_potion(world: &mut World, pt: Point) {
+    world
+        .create_entity()
         .with(Position::new(pt))
         .with(Glyph::new(to_cp437('¡'), ColorPair::new(MAGENTA, BLACK), RenderOrder::Item))
         .with(Name::new("Health Potion"))
@@ -111,8 +108,9 @@ pub fn health_potion(ecs: &mut World, pt: Point) {
         .build();
 }
 
-pub fn magic_missile_scroll(ecs: &mut World, pt: Point) {
-    ecs.create_entity()
+pub fn magic_missile_scroll(world: &mut World, pt: Point) {
+    world
+        .create_entity()
         .with(Position::new(pt))
         .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
         .with(Name::new("Magic Missile Scroll"))
@@ -124,8 +122,9 @@ pub fn magic_missile_scroll(ecs: &mut World, pt: Point) {
         .build();
 }
 
-pub fn fireball_scroll(ecs: &mut World, pt: Point) {
-    ecs.create_entity()
+pub fn fireball_scroll(world: &mut World, pt: Point) {
+    world
+        .create_entity()
         .with(Position::new(pt))
         .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
         .with(Name::new("Fireball Scroll"))
@@ -138,8 +137,9 @@ pub fn fireball_scroll(ecs: &mut World, pt: Point) {
         .build();
 }
 
-pub fn confusion_scroll(ecs: &mut World, pt: Point) {
-    ecs.create_entity()
+pub fn confusion_scroll(world: &mut World, pt: Point) {
+    world
+        .create_entity()
         .with(Position::new(pt))
         .with(Glyph::new(to_cp437(')'), ColorPair::new(PINK, BLACK), RenderOrder::Item))
         .with(Name::new("Confusion Scroll"))

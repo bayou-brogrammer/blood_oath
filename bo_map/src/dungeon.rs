@@ -1,6 +1,6 @@
 #![allow(dead_code)] //TODO: remove this
 
-use crate::prelude::{Map, TileType};
+use crate::prelude::{GameTile, Map, TileType};
 use bo_ecs::prelude::*;
 use bracket_geometry::prelude::Point;
 use bracket_pathfinding::prelude::Algorithm2D;
@@ -179,9 +179,48 @@ impl MasterDungeonMap {
         }
     }
 
-    fn transition_to_new_map(_ecs: &mut World, new_depth: i32) -> Vec<Map> {
-        let map = Map::new(new_depth, 80, 50, "Test Map");
-        vec![map]
+    fn transition_to_new_map(world: &mut World, new_depth: i32) -> Vec<Map> {
+        let mut map = Map::new(new_depth, 80, 50, "Test Map");
+        let history = vec![map.clone()];
+
+        // Add Up Stairs
+        if new_depth > 1 {
+            let up_idx = map.point2d_to_index(map.rooms[0].center());
+            map.tiles[up_idx] = GameTile::stairs_up();
+        }
+
+        let player_start;
+        {
+            let mut worldmap_resource = world.write_resource::<Map>();
+            *worldmap_resource = map.clone();
+            player_start = map.rooms[0].center();
+        }
+
+        // Setup Player Position
+        {
+            let player_entity = world.fetch::<Entity>();
+            let mut player_pt = world.write_resource::<Point>();
+            let mut position_components = world.write_storage::<Position>();
+
+            *player_pt = player_start;
+            position_components.insert(*player_entity, Position::new(player_start)).expect("Insert fail");
+
+            // Mark the player's visibility as dirty
+            let mut fov_components = world.write_storage::<FieldOfView>();
+            let fov = fov_components.get_mut(*player_entity);
+            if let Some(fov) = fov {
+                fov.is_dirty = true;
+            }
+        }
+
+        // Setup Camera
+        world.insert(GameCamera::new(player_start));
+
+        // Store the newly minted map
+        let mut dungeon_master = world.write_resource::<MasterDungeonMap>();
+        dungeon_master.store_map(&map);
+
+        history
     }
 
     fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {

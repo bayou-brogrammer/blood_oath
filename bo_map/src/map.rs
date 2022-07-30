@@ -126,6 +126,11 @@ impl Map {
             }
         }
 
+        let stairs_position = map.rooms[0].center();
+        // let stairs_position = map.rooms[map.rooms.len() - 1].center();
+        let stairs_idx = map.point2d_to_index(stairs_position);
+        map.tiles[stairs_idx] = GameTile::stairs_down();
+
         map
     }
 

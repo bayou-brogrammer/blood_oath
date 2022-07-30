@@ -49,9 +49,23 @@ pub struct EffectSpawner {
     pub targets: Targets,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+// Add Effects
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 pub fn add_effect(creator: Option<Entity>, effect_type: EffectType, targets: Targets) {
     EFFECT_QUEUE.lock().push_back(EffectSpawner { creator, effect_type, targets });
 }
+
+pub fn add_single_damage_effect(creator: Option<Entity>, target: Entity, amount: i32) {
+    add_effect(creator, EffectType::Damage { amount }, Targets::Single { target });
+}
+
+pub fn add_single_healing_effect(creator: Option<Entity>, target: Entity, amount: i32) {
+    add_effect(creator, EffectType::Healing { amount }, Targets::Single { target });
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 pub fn run_effects_queue(ecs: &mut World) {
     loop {

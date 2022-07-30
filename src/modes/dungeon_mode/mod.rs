@@ -88,10 +88,10 @@ impl DungeonMode {
 
                 // Yes / No Dialog
                 ModeResult::YesNoDialogModeResult(result) => match result {
+                    YesNoDialogModeResult::No => {}
                     YesNoDialogModeResult::Yes => {
                         return (ModeControl::Switch(MapGenMode::next_level().into()), ModeUpdate::Immediate);
                     }
-                    YesNoDialogModeResult::No => {}
                 },
 
                 // Inventory
@@ -132,14 +132,14 @@ impl DungeonMode {
                     *runwriter = TurnState::PlayerTurn;
                 }
                 player::PlayerInputResult::ShowInventory => {
-                    return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Immediate)
+                    return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Update)
                 }
                 player::PlayerInputResult::Descend => {
                     return (
                         ModeControl::Push(
                             YesNoDialogMode::new("Descend to the next level?".to_string(), false).into(),
                         ),
-                        ModeUpdate::Immediate,
+                        ModeUpdate::Update,
                     );
                 }
             },

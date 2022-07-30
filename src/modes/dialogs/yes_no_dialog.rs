@@ -40,14 +40,14 @@ impl YesNoDialogMode {
         if let Some(key) = ctx.key {
             match key {
                 VirtualKeyCode::Escape => {
-                    return (ModeControl::Pop(YesNoDialogModeResult::No.into()), ModeUpdate::Immediate)
+                    return (ModeControl::Pop(YesNoDialogModeResult::No.into()), ModeUpdate::Update)
                 }
                 VirtualKeyCode::Left => self.yes_selected = true,
                 VirtualKeyCode::Right => self.yes_selected = false,
                 VirtualKeyCode::Return => {
                     return (
                         ModeControl::Pop(YesNoDialogModeResult::from(self.yes_selected).into()),
-                        ModeUpdate::Immediate,
+                        ModeUpdate::Update,
                     )
                 }
                 _ => {}

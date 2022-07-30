@@ -5,6 +5,7 @@ use std::path::Path;
 
 #[cfg(not(target_arch = "wasm32"))]
 use specs::saveload::SerializeComponents;
+
 #[cfg(not(target_arch = "wasm32"))]
 use std::fs::File;
 
@@ -78,10 +79,10 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
 
         serialize_individually!(ecs, serializer, data, 
             Player, Monster, Item, Consumable, BlocksTile, 
-            Position, Glyph, FieldOfView, Name, Description, CombatStats,
+            Position, Glyph, FieldOfView, Name, Description, CombatStats, OtherLevelPosition,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            SerializationHelper
+            ParticleLifetime, SerializationHelper, DMSerializationHelper
         );
     }
 

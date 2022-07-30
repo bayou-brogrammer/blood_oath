@@ -40,6 +40,16 @@ impl GameTile {
             color: ColorPair::new(WHITE, BLACK),
         }
     }
+
+    pub fn stairs_up() -> Self {
+        Self {
+            opaque: false,
+            walkable: true,
+            glyph: to_cp437('<'),
+            tile_type: TileType::UpStairs,
+            color: ColorPair::new(WHITE, BLACK),
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Serialize, Deserialize, Debug)]

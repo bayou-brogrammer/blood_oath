@@ -1,5 +1,15 @@
-use crate::prelude::*;
+use bracket_terminal::prelude::Point;
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum TurnState {
+    PreRun,
+    // Actor States
+    AwaitingInput,
+    PlayerTurn,
+    MonsterTurn,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct GameCamera {
     pub player_pos: Point,
 }

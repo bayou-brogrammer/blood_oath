@@ -1,6 +1,6 @@
 mod events;
 mod modes;
-mod resources;
+mod random_table;
 
 pub mod render;
 
@@ -26,9 +26,8 @@ mod prelude {
 
     pub use crate::events::*;
     pub use crate::modes::*;
+    pub use crate::random_table::*;
     pub use crate::render;
-    pub use crate::resources::*;
-    pub use crate::GameWorld;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -52,6 +51,7 @@ pub use prelude::*;
 
 pub struct GameWorld {
     pub world: World,
+    pub wait_for_event: bool,
     pub mode_stack: ModeStack,
 }
 
@@ -67,22 +67,35 @@ impl GameWorld {
 
         GameWorld::register_components(&mut world);
 
+        let map = Map::new(0, 80, 50, "Test Map");
+        let start_pos = map.rooms[0].center();
+        let player = dungeon_mode::spawner::spawn_player(&mut world, start_pos);
+
         // Resources
+        world.insert(map);
+        world.insert(player);
+        world.insert(start_pos);
         world.insert(TurnState::PreRun);
         world.insert(ParticleBuilder::new());
         world.insert(MasterDungeonMap::new());
         world.insert(modes::MenuMemory::new());
+        world.insert(GameCamera::new(start_pos));
+        bo_logging::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
 
-        Self { world, mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]) }
+        Self {
+            world,
+            wait_for_event: false,
+            mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]),
+        }
     }
 
     pub fn register_components(world: &mut World) {
         // Tags
         world.register::<Player>();
         world.register::<Monster>();
-        world.register::<BlocksTile>();
         world.register::<Item>();
-        world.register::<SimpleMarker<SerializeMe>>();
+        world.register::<Consumable>();
+        world.register::<BlocksTile>();
 
         // Generics
         world.register::<Position>();
@@ -91,6 +104,7 @@ impl GameWorld {
         world.register::<Description>();
         world.register::<Name>();
         world.register::<CombatStats>();
+        world.register::<OtherLevelPosition>();
 
         // Intent
         world.register::<WantsToMelee>();
@@ -100,7 +114,6 @@ impl GameWorld {
 
         // Items
         world.register::<InBackpack>();
-        world.register::<Consumable>();
         world.register::<ProvidesHealing>();
         world.register::<InflictsDamage>();
         world.register::<Confusion>();
@@ -115,6 +128,8 @@ impl GameWorld {
         // Serialization
         world.register::<SerializationHelper>();
         world.register::<DMSerializationHelper>();
+        world.register::<SimpleMarker<SerializeMe>>();
+
         world.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     }
 }

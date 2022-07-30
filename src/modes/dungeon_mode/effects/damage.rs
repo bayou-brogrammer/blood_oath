@@ -1,7 +1,7 @@
 use super::*;
 
-pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
-    if let Some(stats) = ecs.write_storage::<CombatStats>().get_mut(target) {
+pub fn inflict_damage(world: &mut World, damage: &EffectSpawner, target: Entity) {
+    if let Some(stats) = world.write_storage::<CombatStats>().get_mut(target) {
         if let EffectType::Damage { amount } = damage.effect_type {
             stats.hp -= amount;
 

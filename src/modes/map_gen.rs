@@ -1,4 +1,4 @@
-use crate::{dungeon_mode::spawner, render::GameCamera};
+use crate::dungeon_mode::spawner;
 
 use super::{ModeControl, ModeResult, *};
 
@@ -25,19 +25,12 @@ pub struct MapGenMode {
     mapgen_index: usize,
     action: MapGenAction,
     mapgen_history: Vec<Map>,
-    // mapgen_next_state: Option<TurnState>,
 }
 
 /// Show the title screen of the game with a menu that leads into the game proper.
 impl MapGenMode {
     pub fn new_game() -> Self {
-        Self {
-            mapgen_index: 0,
-            mapgen_timer: 0.0,
-            mapgen_history: Vec::new(),
-            action: MapGenAction::NewGame,
-            // mapgen_next_state: Some(TurnState::AwaitingInput),
-        }
+        Self { mapgen_index: 0, mapgen_timer: 0.0, mapgen_history: Vec::new(), action: MapGenAction::NewGame }
     }
 
     pub fn next_level() -> Self {
@@ -46,7 +39,6 @@ impl MapGenMode {
             mapgen_timer: 0.0,
             mapgen_history: Vec::new(),
             action: MapGenAction::NextLevel,
-            // mapgen_next_state: Some(TurnState::AwaitingInput),
         }
     }
 
@@ -59,17 +51,18 @@ impl MapGenMode {
         ///////////////////////////////////////////////////////////////////////////////
         // Main Input Handling
         //////////////////////////////////////////////////////////////////////////////
-        if self.action == MapGenAction::NewGame {
-            self.setup_new_game(world);
-            return (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Immediate);
-        }
 
         match self.action {
-            MapGenAction::NewGame => self.generate_world_map(world, 1, 0),
-            MapGenAction::NextLevel => self.goto_level(world, 1),
+            MapGenAction::NextLevel => {
+                self.goto_level(world, 1);
+            }
+            MapGenAction::NewGame => {
+                self.setup_new_game(world);
+            }
         }
 
-        (ModeControl::Stay, ModeUpdate::Update)
+        world.insert(TurnState::PreRun);
+        (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Update)
     }
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {}
@@ -78,23 +71,12 @@ impl MapGenMode {
 impl MapGenMode {
     fn setup_new_game(&mut self, world: &mut World) {
         self.generate_world_map(world, 1, 0);
-        let map = self.mapgen_history[self.mapgen_index].clone();
-
-        let start_pos = map.rooms[0].center();
-        let player = dungeon_mode::spawner::spawn_player(world, start_pos);
 
         // Spawn Rooms
+        let map = self.mapgen_history.last().unwrap().clone();
         map.rooms.iter().skip(1).for_each(|room| {
-            spawner::spawn_room(world, room);
+            spawner::spawn_room(world, room, 1);
         });
-
-        // Resources
-        world.insert(map);
-        world.insert(player);
-        world.insert(start_pos);
-        world.insert(TurnState::PreRun);
-        world.insert(GameCamera::new(start_pos));
-        bo_logging::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
     }
 
     fn goto_level(&mut self, world: &mut World, offset: i32) {
@@ -103,6 +85,12 @@ impl MapGenMode {
         // Build a new map and place the player
         let current_depth = world.fetch::<Map>().depth;
         self.generate_world_map(world, current_depth + offset, offset);
+
+        // Spawn Rooms
+        let map = self.mapgen_history.last().unwrap().clone();
+        map.rooms.iter().skip(1).for_each(|room| {
+            spawner::spawn_room(world, room, current_depth + 1);
+        });
 
         // Notify the player
         bo_logging::Logger::new().append("You change level.").log();
