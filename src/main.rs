@@ -1,6 +1,7 @@
 mod events;
 mod modes;
 mod random_table;
+mod rex_assets;
 
 pub mod render;
 
@@ -29,6 +30,7 @@ mod prelude {
     pub use crate::random_table::*;
     pub use crate::render;
     pub use crate::render::gui::*;
+    pub use crate::rex_assets::*;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -69,6 +71,7 @@ impl GameWorld {
 
         GameWorld::register_components(&mut world);
         world.insert(modes::MenuMemory::new());
+        world.insert(rex_assets::RexAssets::new());
 
         Self {
             world,

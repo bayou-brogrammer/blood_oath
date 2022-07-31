@@ -55,8 +55,12 @@ impl GameOverMode {
         (ModeControl::Stay, ModeUpdate::Update)
     }
 
-    pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
+    pub fn draw(&self, _ctx: &mut BTerm, world: &World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
+
+        let assets = world.fetch::<RexAssets>();
+        let sprite = MultiTileSprite::from_xp(&assets.skull);
+        sprite.add_to_batch(&mut draw_batch, Point::new(SCREEN_WIDTH / 2 - 15, SCREEN_HEIGHT / 2 - 15));
 
         draw_batch.print_color_centered(15, "Your journey has ended!", ColorPair::new(YELLOW, BLACK));
         draw_batch.print_color_centered(

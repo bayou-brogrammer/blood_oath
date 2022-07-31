@@ -251,3 +251,12 @@ pub fn magic_mapping_scroll(world: &mut World, pt: Point) {
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
+
+fn bear_trap(ecs: &mut World, pt: Point) {
+    ecs.create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('^'), ColorPair::new(RED, BLACK), RenderOrder::Item))
+        .with(Name::new("Bear Trap"))
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}

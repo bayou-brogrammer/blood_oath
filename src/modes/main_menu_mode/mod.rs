@@ -181,15 +181,18 @@ impl MainMenuMode {
         (ModeControl::Stay, ModeUpdate::Update)
     }
 
-    pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
+    pub fn draw(&self, ctx: &mut BTerm, world: &World, _active: bool) {
         let mut batch = DrawBatch::new();
-        batch.target(0);
+        batch.target(LAYER_ZERO);
+
+        let assets = world.fetch::<RexAssets>();
+        ctx.render_xp_sprite(&assets.menu, 0, 0);
 
         let box_rect = center_box_with_title(
             &mut batch,
             (SCREEN_WIDTH, SCREEN_HEIGHT),
             BoxConfigWithTitle {
-                box_config: BoxConfig::new((40, 15), ColorPair::new(WHITE, BLACK), true, false),
+                box_config: BoxConfig::new((30, 10), ColorPair::new(WHITE, BLACK), true, false),
                 text_config: TextConfig::new("BloodOath", ColorPair::new(RED, BLACK), Alignment::Center),
             },
         );
@@ -206,7 +209,7 @@ impl MainMenuMode {
             ColorPair::new(RGB::named(GRAY), RGB::named(BLACK)),
         );
 
-        y = box_rect.center().y - 1;
+        y = box_rect.center().y;
         for (i, action) in self.actions.iter().enumerate() {
             let color = if i == self.selection { RGB::named(MAGENTA) } else { RGB::named(GRAY) };
 
