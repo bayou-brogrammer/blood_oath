@@ -2,6 +2,10 @@ use crate::prelude::*;
 use std::collections::hash_map::Entry::Vacant;
 use std::collections::HashMap;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Entities
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
     world
         .create_entity()
@@ -16,8 +20,6 @@ pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
         .build()
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 fn room_table(map_depth: i32) -> RandomTable {
     RandomTable::new()
         .add("Goblin", 10)
@@ -26,6 +28,8 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Fireball Scroll", 2 + map_depth)
         .add("Confusion Scroll", 2 + map_depth)
         .add("Magic Missile Scroll", 4)
+        .add("Dagger", 3)
+        .add("Shield", 3)
 }
 
 const MAX_MONSTERS: i32 = 4;
@@ -57,8 +61,10 @@ pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
     }
 
     spawn_points.iter().for_each(|(pt, name)| match name.as_ref() {
-        "Goblin" => goblin(world, *pt),
         "Orc" => orc(world, *pt),
+        "Dagger" => dagger(world, *pt),
+        "Shield" => shield(world, *pt),
+        "Goblin" => goblin(world, *pt),
         "Health Potion" => health_potion(world, *pt),
         "Fireball Scroll" => fireball_scroll(world, *pt),
         "Confusion Scroll" => confusion_scroll(world, *pt),
@@ -94,6 +100,10 @@ pub fn monster<S: ToString>(
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Items
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub fn health_potion(world: &mut World, pt: Point) {
     world
@@ -148,6 +158,32 @@ pub fn confusion_scroll(world: &mut World, pt: Point) {
         .with(InflictsDamage { damage: 20 })
         .with(Ranged { range: 6 })
         .with(Confusion { turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+pub fn dagger(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('/'), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
+        .with(Name::new("Dagger"))
+        .with(Item {})
+        .with(Equippable::new(EquipmentSlot::Melee))
+        .with(MeleePowerBonus::new(2))
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+pub fn shield(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('('), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
+        .with(Name::new("Shield"))
+        .with(Item {})
+        .with(Equippable::new(EquipmentSlot::Shield))
+        .with(DefenseBonus::new(1))
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

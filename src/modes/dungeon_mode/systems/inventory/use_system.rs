@@ -10,12 +10,15 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteExpect<'a, Map>,
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, AreaOfEffect>,
+        ReadStorage<'a, Equippable>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, player_entity, map, mut wants_use, aoe) = data;
+        let (entities, player_entity, map, mut wants_use, aoe, equippable) = data;
 
-        for (entity, useitem) in (&entities, &wants_use).join() {
+        for (entity, useitem, ()) in (&entities, &wants_use, !&equippable).join() {
+            println!("use: {:?}", useitem);
+
             // Call the effects system
             add_effect(
                 Some(entity),

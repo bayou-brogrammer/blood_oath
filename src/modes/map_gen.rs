@@ -77,6 +77,10 @@ impl MapGenMode {
         map.rooms.iter().skip(1).for_each(|room| {
             spawner::spawn_room(world, room, 1);
         });
+
+        spawner::dagger(world, map.rooms[0].center());
+        spawner::shield(world, map.rooms[0].center());
+        spawner::fireball_scroll(world, map.rooms[0].center());
     }
 
     fn goto_level(&mut self, world: &mut World, offset: i32) {

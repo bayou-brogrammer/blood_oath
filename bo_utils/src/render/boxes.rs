@@ -141,18 +141,18 @@ fn draw_title(
 
 pub fn box_with_title(batch: &mut DrawBatch, pt: Point, config: BoxConfigWithTitle) -> Rect {
     let BoxConfigWithTitle {
-        box_config: BoxConfig { color, double, hollow, dimensions: (width, height) },
+        box_config: BoxConfig { color, double, hollow, dimensions },
         text_config: TextConfig { title, alignment, title_color, footer, footer_color },
     } = config;
 
+    let (box_w, box_h) = dimensions;
+
     assert!(pt.x >= 0);
     assert!(pt.y >= 0);
-    assert!(width > 0);
-    assert!(height > 0);
+    assert!(box_w > 0);
+    assert!(box_h > 0);
 
-    let end_x = width;
-    let end_y = height / 2;
-    let box_rect = Rect::with_size(pt.x, pt.y, end_x, end_y);
+    let box_rect = Rect::with_size(pt.x, pt.y, box_w, box_h);
 
     draw_box(batch, box_rect, double, hollow, color);
     draw_title(batch, box_rect, title, title_color, footer, footer_color, alignment);

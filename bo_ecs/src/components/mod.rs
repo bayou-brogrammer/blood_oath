@@ -3,7 +3,9 @@ use bracket_terminal::prelude::*;
 use specs::prelude::*;
 use specs::Component;
 
+mod combat;
 mod description;
+mod equipment;
 mod fov;
 mod glyph;
 mod intent;
@@ -15,7 +17,9 @@ mod ranged;
 mod stats;
 mod tags;
 
+pub use combat::*;
 pub use description::*;
+pub use equipment::*;
 pub use fov::*;
 pub use glyph::*;
 pub use intent::*;

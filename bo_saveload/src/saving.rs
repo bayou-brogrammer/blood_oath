@@ -1,4 +1,3 @@
-use super::*;
 use crate::BoxedError;
 use specs::prelude::*;
 use std::path::Path;
@@ -61,14 +60,30 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
     use std::convert::Infallible;
     use ron::Options;
     use specs::saveload::MarkedBuilder;
+    use crate::{DMSerializationHelper, SerializationHelper};
 
     use bo_ecs::prelude::*;
     use bo_map::prelude::*;
 
+
     // Create helper
     let mapcopy = ecs.fetch_mut::<Map>().clone();
-    let savehelper =
-        ecs.create_entity().with(SerializationHelper(mapcopy)).marked::<SimpleMarker<SerializeMe>>().build();
+    let dungeon_master = ecs
+        .get_mut::<MasterDungeonMap>()
+        .unwrap()
+        .clone();
+
+    let savehelper = ecs
+        .create_entity()
+        .with(SerializationHelper::new(mapcopy))
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+
+    let savehelper2 = ecs
+        .create_entity()
+        .with(DMSerializationHelper::new(dungeon_master,bo_logging::clone_log(),bo_logging::clone_events()))
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
 
     // Actually serialize
     {
@@ -82,12 +97,14 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
             Position, Glyph, FieldOfView, Name, Description, CombatStats, OtherLevelPosition,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
+            Equippable, DefenseBonus, MeleePowerBonus,
             ParticleLifetime, SerializationHelper, DMSerializationHelper
         );
     }
 
     // Clean up
     ecs.delete_entity(savehelper)?;
+    ecs.delete_entity(savehelper2)?;
 
     Ok(())
 }

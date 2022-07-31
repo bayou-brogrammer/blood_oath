@@ -1,7 +1,7 @@
 use self::systems::RenderSystem;
 
+use super::InventoryMode;
 use super::*;
-use super::{AppQuitDialogMode, InventoryMode};
 
 pub mod spawner;
 
@@ -99,8 +99,13 @@ impl DungeonMode {
                     InventoryModeResult::DoNothing => {}
                     _ => {
                         match result {
-                            InventoryModeResult::DropItem(item_id) => self.drop_item(world, item_id),
+                            InventoryModeResult::EquipItem(item) => self.use_item(world, item, None),
+                            InventoryModeResult::DropItem(item) => self.drop_item(world, item),
+                            InventoryModeResult::DropEquipment(item) => self.drop_item(world, item),
                             InventoryModeResult::UseItem(item, target) => self.use_item(world, item, *target),
+                            InventoryModeResult::RemoveEquipment(equipment) => {
+                                self.remove_equipment(world, equipment)
+                            }
                             _ => {}
                         }
 
@@ -142,6 +147,7 @@ impl DungeonMode {
                         ModeUpdate::Update,
                     );
                 }
+                _ => {}
             },
         }
 
@@ -183,6 +189,13 @@ impl DungeonMode {
         world
             .write_storage::<WantsToDropItem>()
             .insert(*world.fetch::<Entity>(), WantsToDropItem::new(*item))
+            .expect("Failed to insert intent");
+    }
+
+    fn remove_equipment(&self, world: &World, equipment: &Entity) {
+        world
+            .write_storage::<WantsToRemoveItem>()
+            .insert(*world.fetch::<Entity>(), WantsToRemoveItem::new(*equipment))
             .expect("Failed to insert intent");
     }
 }

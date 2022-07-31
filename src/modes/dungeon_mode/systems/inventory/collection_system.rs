@@ -3,7 +3,6 @@ use super::*;
 pub struct ItemCollectionSystem {}
 
 impl<'a> System<'a> for ItemCollectionSystem {
-    #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
         WriteStorage<'a, WantsToPickupItem>,

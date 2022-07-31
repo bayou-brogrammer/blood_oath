@@ -27,8 +27,10 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
         (MapIndexingSystem, "map_indexing", &[]),
         (MeleeCombatSystem, "melee_combat", &[]),
         (ItemCollectionSystem, "pickup", &[]),
+        (ItemEquipOnUse, "equip", &[]),
         (ItemUseSystem, "use", &[]),
-        (ItemDropSystem, "drop", &[])
+        (ItemDropSystem, "drop", &[]),
+        (ItemRemoveSystem, "remove", &[])
     );
 
     new_dispatch()

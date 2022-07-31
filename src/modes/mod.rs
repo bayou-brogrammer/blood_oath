@@ -12,7 +12,10 @@ pub mod targeting_mode;
 use app_quit_dialog::{AppQuitDialogMode, AppQuitDialogModeResult};
 use dungeon_mode::{DungeonMode, DungeonModeResult};
 use game_over_mode::{GameOverMode, GameOverModeResult};
-use inventory_mode::{InventoryActionMode, InventoryActionModeResult, InventoryMode, InventoryModeResult};
+use inventory_mode::{EquipmentActionMode, EquipmentActionModeResult};
+use inventory_mode::{InventoryActionMode, InventoryActionModeResult};
+use inventory_mode::{InventoryMode, InventoryModeResult};
+
 use main_menu_mode::{MainMenuMode, MainMenuModeResult};
 use map_gen::{MapGenMode, MapGenModeResult};
 use targeting_mode::{TargetingMode, TargetingModeResult};
@@ -22,10 +25,13 @@ pub use menu_memory::MenuMemory;
 
 /// Return value for `update` callback sent into [run] that controls the main event loop.
 pub enum RunControl {
-    /// Call `update` again next frame.
-    Update,
-    /// Quit the run loop.
+    // Quit the run loop.
     Quit,
+    // Call `update` again next frame.
+    Update,
+    // Wait for an input event before the next update; this will likely draw the mode before
+    // waiting.
+    WaitForEvent,
 }
 
 /// Helper macro to convert a type into an enum variant with the same name.
@@ -53,6 +59,7 @@ pub enum Mode {
     YesNoDialogMode(YesNoDialogMode),
     AppQuitDialogMode(AppQuitDialogMode),
     InventoryActionMode(InventoryActionMode),
+    EquipmentActionMode(EquipmentActionMode),
 }
 
 impl_from!(Mode, MapGenMode);
@@ -65,6 +72,7 @@ impl_from!(Mode, MessageBoxMode);
 impl_from!(Mode, YesNoDialogMode);
 impl_from!(Mode, AppQuitDialogMode);
 impl_from!(Mode, InventoryActionMode);
+impl_from!(Mode, EquipmentActionMode);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +88,7 @@ pub enum ModeResult {
     YesNoDialogModeResult(YesNoDialogModeResult),
     AppQuitDialogModeResult(AppQuitDialogModeResult),
     InventoryActionModeResult(InventoryActionModeResult),
+    EquipmentActionModeResult(EquipmentActionModeResult),
 }
 
 impl_from!(ModeResult, MapGenModeResult);
@@ -92,6 +101,7 @@ impl_from!(ModeResult, MessageBoxModeResult);
 impl_from!(ModeResult, YesNoDialogModeResult);
 impl_from!(ModeResult, AppQuitDialogModeResult);
 impl_from!(ModeResult, InventoryActionModeResult);
+impl_from!(ModeResult, EquipmentActionModeResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -139,6 +149,7 @@ impl Mode {
             Mode::YesNoDialogMode(x) => x.tick(ctx, world, pop_result),
             Mode::AppQuitDialogMode(x) => x.tick(ctx, world, pop_result),
             Mode::InventoryActionMode(x) => x.tick(ctx, world, pop_result),
+            Mode::EquipmentActionMode(x) => x.tick(ctx, world, pop_result),
         }
     }
 
@@ -154,6 +165,7 @@ impl Mode {
             Mode::YesNoDialogMode(x) => x.draw(ctx, world, active),
             Mode::AppQuitDialogMode(x) => x.draw(ctx, world, active),
             Mode::InventoryActionMode(x) => x.draw(ctx, world, active),
+            Mode::EquipmentActionMode(x) => x.draw(ctx, world, active),
         }
     }
 
@@ -170,6 +182,7 @@ impl Mode {
             Mode::YesNoDialogMode(_) => true,
             Mode::AppQuitDialogMode(_) => true,
             Mode::InventoryActionMode(_) => true,
+            Mode::EquipmentActionMode(_) => true,
         }
     }
 }
@@ -230,7 +243,7 @@ impl ModeStack {
                 let draw_from = self.stack.iter().rposition(|mode| !mode.draw_behind()).unwrap_or(0);
                 let top = self.stack.len().saturating_sub(1);
 
-                bo_utils::prelude::clear_all_consoles(ctx, [LAYER_MAP, LAYER_LOG]);
+                bo_utils::prelude::clear_all_consoles(ctx, [LAYER_ZERO, LAYER_TEXT]);
 
                 // always draw dungeon
                 if top > 0 {
@@ -249,7 +262,7 @@ impl ModeStack {
             match mode_update {
                 ModeUpdate::Immediate => (),
                 ModeUpdate::Update => return RunControl::Update,
-                ModeUpdate::WaitForEvent => return RunControl::Update,
+                ModeUpdate::WaitForEvent => return RunControl::WaitForEvent,
             }
         }
 

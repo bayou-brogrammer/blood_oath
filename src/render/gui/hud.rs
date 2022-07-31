@@ -74,13 +74,13 @@ fn draw_stats(world: &World, draw_batch: &mut DrawBatch, player_entity: &Entity)
 
 pub fn draw_ui(world: &World, _ctx: &mut BTerm) {
     let mut gui_batch = DrawBatch::new();
-    gui_batch.target(0);
+    gui_batch.target(LAYER_ZERO);
     let player_entity = world.fetch::<Entity>();
 
     box_framework(&mut gui_batch);
     map_label(world, &mut gui_batch);
     draw_stats(world, &mut gui_batch, &player_entity);
-    bo_logging::print_log(LAYER_LOG, Point::new(1, 23));
+    bo_logging::print_log(LAYER_TEXT, Point::new(1, 23));
 
     gui_batch.submit(BATCH_UI).expect("Batch error"); // On top of everything
 }

@@ -5,7 +5,11 @@ pub enum PlayerInputResult {
     Descend,
     TurnDone,
     NoResult,
+    // Inventory
+    ShowDrop,
+    ShowRemove,
     ShowInventory,
+    ShowInventoryShortcut,
 }
 
 pub fn try_move_player(delta_pt: Point, ecs: &mut World) {
@@ -68,7 +72,8 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
             // Inventory
             VirtualKeyCode::G => get_item(world),
             VirtualKeyCode::I => return PlayerInputResult::ShowInventory,
-            VirtualKeyCode::D => return PlayerInputResult::ShowInventory,
+            VirtualKeyCode::D => return PlayerInputResult::ShowDrop,
+            VirtualKeyCode::R => return PlayerInputResult::ShowRemove,
 
             // Stairs
             VirtualKeyCode::Period | VirtualKeyCode::Return => {

@@ -10,7 +10,7 @@ impl<'a> System<'a> for RenderSystem {
         let (map, camera, positions, glyphs) = data;
 
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(LAYER_MAP);
+        draw_batch.target(LAYER_ZERO);
 
         let (min_x, max_x, min_y, max_y) = camera.get_screen_bounds();
         let map_width = map.width - 1;

@@ -15,12 +15,12 @@ pub enum MenuAction {
 }
 
 impl MenuAction {
-    fn label(&self) -> &'static str {
-        match self {
-            MenuAction::NewGame => "New Game",
-            MenuAction::Quit => "Quit",
-        }
-    }
+    // fn label(&self) -> &'static str {
+    //     match self {
+    //         MenuAction::NewGame => "New Game",
+    //         MenuAction::Quit => "Quit",
+    //     }
+    // }
 }
 
 #[derive(Debug, Default)]
@@ -32,6 +32,10 @@ pub struct GameOverMode {
 /// Show the title screen of the game with a menu that leads into the game proper.
 impl GameOverMode {
     pub fn new() -> Self {
+        #[cfg(target_arch = "wasm32")]
+        let actions = vec![MenuAction::NewGame];
+
+        #[cfg(not(target_arch = "wasm32"))]
         let mut actions = vec![MenuAction::NewGame];
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -93,7 +97,7 @@ impl GameOverMode {
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
 
-        let box_rect = center_box_with_title(
+        let _box_rect = center_box_with_title(
             &mut draw_batch,
             (SCREEN_WIDTH, SCREEN_HEIGHT),
             BoxConfigWithTitle {

@@ -3,7 +3,6 @@ use super::*;
 pub struct ItemDropSystem {}
 
 impl<'a> System<'a> for ItemDropSystem {
-    #[allow(clippy::type_complexity)]
     type SystemData = (
         ReadExpect<'a, Entity>,
         Entities<'a>,

@@ -28,6 +28,7 @@ mod prelude {
     pub use crate::modes::*;
     pub use crate::random_table::*;
     pub use crate::render;
+    pub use crate::render::gui::*;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -35,8 +36,8 @@ mod prelude {
     pub const UI_WIDTH: i32 = 80;
     pub const UI_HEIGHT: i32 = 30;
 
-    pub const LAYER_MAP: usize = 0;
-    pub const LAYER_LOG: usize = 1;
+    pub const LAYER_ZERO: usize = 0;
+    pub const LAYER_TEXT: usize = 1;
 
     pub const BATCH_ZERO: usize = 0;
     pub const BATCH_CHARS: usize = 1000;
@@ -53,6 +54,7 @@ pub struct GameWorld {
     pub world: World,
     pub wait_for_event: bool,
     pub mode_stack: ModeStack,
+    pub active_mouse_pos: Point,
 }
 
 impl Default for GameWorld {
@@ -85,24 +87,25 @@ impl GameWorld {
         Self {
             world,
             wait_for_event: false,
+            active_mouse_pos: Point::zero(),
             mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]),
         }
     }
 
     pub fn register_components(world: &mut World) {
         // Tags
+        world.register::<Item>();
         world.register::<Player>();
         world.register::<Monster>();
-        world.register::<Item>();
         world.register::<Consumable>();
         world.register::<BlocksTile>();
 
         // Generics
-        world.register::<Position>();
+        world.register::<Name>();
         world.register::<Glyph>();
+        world.register::<Position>();
         world.register::<FieldOfView>();
         world.register::<Description>();
-        world.register::<Name>();
         world.register::<CombatStats>();
         world.register::<OtherLevelPosition>();
 
@@ -112,11 +115,16 @@ impl GameWorld {
         world.register::<WantsToDropItem>();
         world.register::<WantsToPickupItem>();
 
-        // Items
-        world.register::<InBackpack>();
-        world.register::<ProvidesHealing>();
-        world.register::<InflictsDamage>();
+        // Items / Equipment
         world.register::<Confusion>();
+        world.register::<InBackpack>();
+        world.register::<Equippable>();
+        world.register::<InflictsDamage>();
+        world.register::<ProvidesHealing>();
+
+        // Combat
+        world.register::<DefenseBonus>();
+        world.register::<MeleePowerBonus>();
 
         // Ranged
         world.register::<Ranged>();
@@ -138,11 +146,27 @@ impl GameState for GameWorld {
     fn tick(&mut self, ctx: &mut BTerm) {
         self.world.insert(ctx.frame_time_ms);
 
-        match self.mode_stack.update(ctx, &mut self.world) {
-            RunControl::Quit => {
-                ctx.quit();
+        if !self.wait_for_event {
+            self.active_mouse_pos = ctx.mouse_point();
+
+            match self.mode_stack.update(ctx, &mut self.world) {
+                RunControl::Update => {}
+                RunControl::Quit => ctx.quit(),
+                RunControl::WaitForEvent => self.wait_for_event = true,
             }
-            RunControl::Update => {}
+        } else {
+            let new_mouse = ctx.mouse_point();
+
+            // Handle Keys & Mouse Clicks
+            if ctx.key.is_some() || ctx.left_click {
+                self.wait_for_event = false;
+            }
+
+            // Handle Mouse Movement
+            if new_mouse != self.active_mouse_pos {
+                self.wait_for_event = false;
+                self.active_mouse_pos = new_mouse;
+            }
         }
 
         render_draw_buffer(ctx).expect("Render error");

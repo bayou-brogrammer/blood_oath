@@ -131,7 +131,7 @@ impl TargetingMode {
         }
 
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(LAYER_MAP);
+        draw_batch.target(LAYER_ZERO);
 
         draw_batch.print_color(
             Point::new(2, 2),
