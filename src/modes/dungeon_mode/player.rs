@@ -148,6 +148,16 @@ fn skip_turn(world: &mut World) -> PlayerInputResult {
         });
     });
 
+    let hunger_clocks = world.read_storage::<HungerClock>();
+    let hc = hunger_clocks.get(*player);
+    if let Some(hc) = hc {
+        match hc.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Starving => can_heal = false,
+            _ => {}
+        }
+    }
+
     if can_heal {
         add_single_healing_effect(None, *player, 1);
     }

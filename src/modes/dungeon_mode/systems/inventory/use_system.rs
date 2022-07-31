@@ -17,8 +17,6 @@ impl<'a> System<'a> for ItemUseSystem {
         let (entities, player_entity, map, mut wants_use, aoe, equippable) = data;
 
         for (entity, useitem, ()) in (&entities, &wants_use, !&equippable).join() {
-            println!("use: {:?}", useitem);
-
             // Call the effects system
             add_effect(
                 Some(entity),

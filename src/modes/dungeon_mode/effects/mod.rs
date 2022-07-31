@@ -3,10 +3,12 @@ use parking_lot::Mutex;
 use std::collections::VecDeque;
 
 mod damage;
+mod hunger;
 mod particles;
 mod targeting;
 mod triggers;
 
+pub use hunger::*;
 pub use particles::*;
 pub use targeting::*;
 
@@ -16,15 +18,13 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum EffectType {
-    // WellFed,
-    Bloodstain,
+    WellFed,
     EntityDeath,
+    Bloodstain(RGB),
     Damage { amount: i32 },
     Healing { amount: i32 },
     Confusion { turns: i32 },
     ItemUse { item: Entity },
-    // TriggerFire { trigger: Entity },
-    // TeleportTo { x: i32, y: i32, depth: i32, player_only: bool },
     Particle { glyph: FontCharType, color: ColorPair, lifespan: f32 },
 }
 
@@ -94,7 +94,13 @@ fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
 }
 
 fn tile_effect_hits_entities(effect: &EffectType) -> bool {
-    matches!(effect, EffectType::Damage { .. } | EffectType::Healing { .. } | EffectType::Confusion { .. })
+    matches!(
+        effect,
+        EffectType::Damage { .. }
+            | EffectType::Healing { .. }
+            | EffectType::Confusion { .. }
+            | EffectType::WellFed
+    )
 }
 
 fn affect_tile(ecs: &mut World, effect: &EffectSpawner, tile_idx: usize) {
@@ -104,7 +110,7 @@ fn affect_tile(ecs: &mut World, effect: &EffectSpawner, tile_idx: usize) {
     }
 
     match &effect.effect_type {
-        EffectType::Bloodstain => damage::bloodstain(ecs, tile_idx),
+        EffectType::Bloodstain(blood) => damage::bloodstain(ecs, tile_idx, *blood),
         EffectType::Particle { .. } => particles::particle_to_tile(ecs, tile_idx, effect),
         _ => {}
     }
@@ -112,18 +118,19 @@ fn affect_tile(ecs: &mut World, effect: &EffectSpawner, tile_idx: usize) {
 
 fn affect_entity(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     match &effect.effect_type {
-        EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
+        EffectType::WellFed => hunger::well_fed(ecs, effect, target),
         EffectType::EntityDeath => damage::death(ecs, effect, target),
         EffectType::Healing { .. } => damage::heal_damage(ecs, effect, target),
+        EffectType::Damage { .. } => damage::inflict_damage(ecs, effect, target),
         EffectType::Confusion { .. } => damage::add_confusion(ecs, effect, target),
         EffectType::Particle { .. } => {
             if let Some(pos) = entity_position(ecs, target) {
                 particles::particle_to_tile(ecs, pos, effect)
             }
         }
-        EffectType::Bloodstain { .. } => {
+        EffectType::Bloodstain(blood) => {
             if let Some(pos) = entity_position(ecs, target) {
-                damage::bloodstain(ecs, pos)
+                damage::bloodstain(ecs, pos, *blood)
             }
         }
         _ => {}

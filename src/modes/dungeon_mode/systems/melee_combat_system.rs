@@ -11,11 +11,20 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, MeleePowerBonus>,
         ReadStorage<'a, DefenseBonus>,
         ReadStorage<'a, Equipped>,
+        ReadStorage<'a, HungerClock>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut wants_melee, names, combat_stats, melee_power_bonuses, defense_bonuses, equipped) =
-            data;
+        let (
+            entities,
+            mut wants_melee,
+            names,
+            combat_stats,
+            melee_power_bonuses,
+            defense_bonuses,
+            equipped,
+            hunger_clock,
+        ) = data;
 
         for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
             if stats.hp > 0 {
@@ -25,6 +34,14 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 {
                     if equipped_by.owner == entity {
                         offensive_bonus += power_bonus.power;
+                    }
+                }
+
+                // Hunger Bonus
+                let hc = hunger_clock.get(entity);
+                if let Some(hc) = hc {
+                    if hc.state == HungerState::WellFed {
+                        offensive_bonus += 1;
                     }
                 }
 

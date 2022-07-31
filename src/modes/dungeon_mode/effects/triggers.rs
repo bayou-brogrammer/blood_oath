@@ -26,6 +26,15 @@ pub fn item_trigger(creator: Option<Entity>, item: Entity, targets: &Targets, ec
 fn event_trigger(creator: Option<Entity>, entity: Entity, targets: &Targets, ecs: &mut World) -> bool {
     let mut did_something = false;
 
+    // Providing food
+    if ecs.read_storage::<ProvidesFood>().get(entity).is_some() {
+        did_something = true;
+        let names = ecs.read_storage::<Name>();
+
+        add_effect(creator, EffectType::WellFed, targets.clone());
+        bo_logging::Logger::new().append("You eat the").item_name(&names.get(entity).unwrap().0).log();
+    }
+
     // Healing
     if let Some(heal) = ecs.read_storage::<ProvidesHealing>().get(entity) {
         add_effect(creator, EffectType::Healing { amount: heal.heal_amount }, targets.clone());
@@ -41,6 +50,14 @@ fn event_trigger(creator: Option<Entity>, entity: Entity, targets: &Targets, ecs
     // Confusion
     if let Some(confusion) = ecs.read_storage::<Confusion>().get(entity) {
         add_effect(creator, EffectType::Confusion { turns: confusion.turns }, targets.clone());
+        did_something = true;
+    }
+
+    // Magic mapper
+    if ecs.read_storage::<MagicMapper>().get(entity).is_some() {
+        bo_logging::Logger::new().append("The map is revealed to you!").log();
+        let mut runstate = ecs.fetch_mut::<TurnState>();
+        *runstate = TurnState::MagicMapReveal(0);
         did_something = true;
     }
 

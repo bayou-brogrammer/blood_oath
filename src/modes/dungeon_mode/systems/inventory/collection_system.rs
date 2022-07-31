@@ -18,7 +18,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
             positions.remove(pickup.item);
 
             backpack
-                .insert(pickup.item, InBackpack { owner: pickup.collected_by })
+                .insert(pickup.item, InBackpack::new(pickup.collected_by))
                 .expect("Unable to insert backpack entry");
 
             if pickup.collected_by == *player_entity {

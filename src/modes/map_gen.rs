@@ -1,3 +1,5 @@
+use bo_saveload::BoxedError;
+
 use crate::dungeon_mode::spawner;
 
 use super::{ModeControl, ModeResult, *};
@@ -57,7 +59,7 @@ impl MapGenMode {
                 self.goto_level(world, 1);
             }
             MapGenAction::NewGame => {
-                self.setup_new_game(world);
+                self.setup_new_game(world).expect("Failed to setup new game");
             }
         }
 
@@ -69,7 +71,29 @@ impl MapGenMode {
 }
 
 impl MapGenMode {
-    fn setup_new_game(&mut self, world: &mut World) {
+    fn setup_new_game(&mut self, world: &mut World) -> Result<(), BoxedError> {
+        // Delete everything
+        #[cfg(target_arch = "wasm32")]
+        let to_delete = world.entities().join().collect::<Vec<_>>();
+
+        #[cfg(not(target_arch = "wasm32"))]
+        let to_delete = world.entities().par_join().collect::<Vec<_>>();
+
+        // Delete all Entities
+        world.delete_entities(&to_delete)?;
+
+        let map = Map::new(0, 80, 50, "Test Map");
+        let start_pos = map.rooms[0].center();
+        let player = dungeon_mode::spawner::spawn_player(world, start_pos);
+
+        // Insert Resources
+        world.insert(map);
+        world.insert(player);
+        world.insert(start_pos);
+        world.insert(ParticleBuilder::new());
+        world.insert(MasterDungeonMap::new());
+        world.insert(TurnState::PreRun);
+
         self.generate_world_map(world, 1, 0);
 
         // Spawn Rooms
@@ -78,9 +102,12 @@ impl MapGenMode {
             spawner::spawn_room(world, room, 1);
         });
 
-        spawner::dagger(world, map.rooms[0].center());
-        spawner::shield(world, map.rooms[0].center());
-        spawner::fireball_scroll(world, map.rooms[0].center());
+        spawner::magic_mapping_scroll(world, map.rooms[0].center());
+        // spawner::dagger(world, map.rooms[0].center());
+        // spawner::shield(world, map.rooms[0].center());
+        // spawner::fireball_scroll(world, map.rooms[0].center());
+
+        Ok(())
     }
 
     fn goto_level(&mut self, world: &mut World, offset: i32) {

@@ -1,3 +1,5 @@
+use bo_utils::impl_new;
+
 use super::*;
 
 #[derive(Component, Debug, Clone, ConvertSaveload)]
@@ -19,3 +21,11 @@ pub struct InflictsDamage {
 pub struct Confusion {
     pub turns: i32,
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicMapper {}
+
+impl_new!(Confusion, turns: i32);
+impl_new!(InBackpack, owner: Entity);
+impl_new!(InflictsDamage, damage: i32);
+impl_new!(ProvidesHealing, heal_amount: i32);

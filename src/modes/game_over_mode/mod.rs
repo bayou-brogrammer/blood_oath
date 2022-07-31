@@ -1,3 +1,5 @@
+use bo_saveload::BoxedError;
+
 use super::{ModeControl, ModeResult, *};
 
 pub const MAIN_MENU_SCREEN_WIDTH: usize = 80;
@@ -10,17 +12,7 @@ pub enum GameOverModeResult {
 
 #[derive(Debug)]
 pub enum MenuAction {
-    NewGame,
-    Quit,
-}
-
-impl MenuAction {
-    // fn label(&self) -> &'static str {
-    //     match self {
-    //         MenuAction::NewGame => "New Game",
-    //         MenuAction::Quit => "Quit",
-    //     }
-    // }
+    Exit,
 }
 
 #[derive(Debug, Default)]
@@ -32,15 +24,7 @@ pub struct GameOverMode {
 /// Show the title screen of the game with a menu that leads into the game proper.
 impl GameOverMode {
     pub fn new() -> Self {
-        #[cfg(target_arch = "wasm32")]
-        let actions = vec![MenuAction::NewGame];
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let mut actions = vec![MenuAction::NewGame];
-
-        #[cfg(not(target_arch = "wasm32"))]
-        actions.push(MenuAction::Quit);
-
+        let actions = vec![MenuAction::Exit];
         Self { actions, selection: 0 }
     }
 
@@ -55,37 +39,14 @@ impl GameOverMode {
                 VirtualKeyCode::Escape => {
                     return (ModeControl::Pop(GameOverModeResult::AppQuit.into()), ModeUpdate::Immediate)
                 }
-                VirtualKeyCode::Down => {
-                    if self.selection < self.actions.len().saturating_sub(1) {
-                        self.selection += 1;
-                    } else {
-                        self.selection = 0;
-                    }
-                }
-                VirtualKeyCode::Up => {
-                    if self.selection > 0 {
-                        self.selection -= 1;
-                    } else {
-                        self.selection = self.actions.len().saturating_sub(1);
-                    }
-                }
                 VirtualKeyCode::Return => {
                     assert!(self.selection < self.actions.len());
 
-                    match self.actions[self.selection] {
-                        MenuAction::NewGame => {
-                            return (
-                                ModeControl::Switch(DungeonMode::new(world).into()),
-                                ModeUpdate::Immediate,
-                            );
-                        }
-                        MenuAction::Quit => {
-                            return (
-                                ModeControl::Pop(GameOverModeResult::AppQuit.into()),
-                                ModeUpdate::Immediate,
-                            )
-                        }
+                    if let Err(e) = self.game_over_cleanup(world) {
+                        eprintln!("Warning: game_over_cleanup error: {}", e);
                     }
+
+                    return (ModeControl::Switch(MainMenuMode::new().into()), ModeUpdate::Immediate);
                 }
                 _ => {}
             }
@@ -96,29 +57,6 @@ impl GameOverMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
-
-        let _box_rect = center_box_with_title(
-            &mut draw_batch,
-            (SCREEN_WIDTH, SCREEN_HEIGHT),
-            BoxConfigWithTitle {
-                box_config: BoxConfig::new((30, 20), ColorPair::new(WHITE, BLACK), true, false),
-                text_config: TextConfig::new("GameOver", ColorPair::new(RED, BLACK), Alignment::Center),
-            },
-        );
-
-        // let mut y = MAIN_MENU_SCREEN_HEIGHT / 2 - 10;
-        // batch.print_color_centered(
-        //     y + 1,
-        //     "Use Up/Down Arrows and Enter",
-        //     ColorPair::new(RGB::named(GRAY), BLACK),
-        // );
-
-        // y = box_rect.center().y as usize - 2;
-        // for (i, action) in self.actions.iter().enumerate() {
-        //     let color = if i == self.selection { RGB::named(MAGENTA) } else { RGB::named(GRAY) };
-
-        //     batch.print_color_centered(y + i, action.label(), ColorPair::new(color, BLACK));
-        // }
 
         draw_batch.print_color_centered(15, "Your journey has ended!", ColorPair::new(YELLOW, BLACK));
         draw_batch.print_color_centered(
@@ -155,5 +93,21 @@ impl GameOverMode {
         );
 
         draw_batch.submit(BATCH_ZERO).expect("Error batching title");
+    }
+}
+
+impl GameOverMode {
+    fn game_over_cleanup(&mut self, world: &mut World) -> Result<(), BoxedError> {
+        // Delete everything
+        #[cfg(target_arch = "wasm32")]
+        let to_delete = world.entities().join().collect::<Vec<_>>();
+
+        #[cfg(not(target_arch = "wasm32"))]
+        let to_delete = world.entities().par_join().collect::<Vec<_>>();
+
+        // Delete all Entities
+        world.delete_entities(&to_delete)?;
+
+        Ok(())
     }
 }

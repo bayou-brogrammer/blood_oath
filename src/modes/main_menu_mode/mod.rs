@@ -147,7 +147,6 @@ impl MainMenuMode {
                                         );
                                     }
                                     Err(e) => {
-                                        println!("Failed to load game: {:?}", e);
                                         let mut msg =
                                             vec!["Failed to load game:".to_string(), "".to_string()];
 

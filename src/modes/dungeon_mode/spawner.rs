@@ -16,6 +16,8 @@ pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
         .with(Description::new("Everybody's favorite Bracket Corp SecBot"))
         .with(FieldOfView::new(8))
         .with(CombatStats::new(30, 30, 2, 5))
+        .with(Blood(DARKRED.into()))
+        .with(HungerClock::new(HungerState::WellFed, 20))
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
@@ -30,6 +32,10 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Magic Missile Scroll", 4)
         .add("Dagger", 3)
         .add("Shield", 3)
+        .add("Longsword", map_depth - 1)
+        .add("Tower Shield", map_depth - 1)
+        .add("Rations", 10)
+        .add("Magic Mapping Scroll", 2)
 }
 
 const MAX_MONSTERS: i32 = 4;
@@ -65,27 +71,32 @@ pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
         "Dagger" => dagger(world, *pt),
         "Shield" => shield(world, *pt),
         "Goblin" => goblin(world, *pt),
+        "Rations" => rations(world, *pt),
+        "Longsword" => longsword(world, *pt),
+        "Tower Shield" => tower_shield(world, *pt),
         "Health Potion" => health_potion(world, *pt),
         "Fireball Scroll" => fireball_scroll(world, *pt),
         "Confusion Scroll" => confusion_scroll(world, *pt),
         "Magic Missile Scroll" => magic_missile_scroll(world, *pt),
+        "Magic Mapping Scroll" => magic_mapping_scroll(world, *pt),
         _ => {}
     });
 }
 
 fn orc(world: &mut World, pt: Point) {
-    monster(world, pt, to_cp437('o'), "Orc", "An ugly orc");
+    monster(world, pt, to_cp437('o'), "Orc", "An ugly orc", PURPLE);
 }
 fn goblin(world: &mut World, pt: Point) {
-    monster(world, pt, to_cp437('g'), "Goblin", "A nasty, green creature");
+    monster(world, pt, to_cp437('g'), "Goblin", "A nasty, green creature", GREEN);
 }
 
-pub fn monster<S: ToString>(
+pub fn monster<S: ToString, C: Into<RGB>>(
     world: &mut World,
     start_pos: Point,
     glyph: FontCharType,
     name: S,
     desc: S,
+    blood_color: C,
 ) -> Entity {
     world
         .create_entity()
@@ -97,6 +108,7 @@ pub fn monster<S: ToString>(
         .with(Name::new(name))
         .with(Description::new(desc))
         .with(CombatStats::new(16, 16, 1, 4))
+        .with(Blood(blood_color.into()))
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
@@ -184,6 +196,58 @@ pub fn shield(world: &mut World, pt: Point) {
         .with(Item {})
         .with(Equippable::new(EquipmentSlot::Shield))
         .with(DefenseBonus::new(1))
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+pub fn longsword(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('/'), ColorPair::new(YELLOW, BLACK), RenderOrder::Item))
+        .with(Name::new("Longsword"))
+        .with(Item {})
+        .with(Equippable { slot: EquipmentSlot::Melee })
+        .with(MeleePowerBonus { power: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+pub fn tower_shield(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('('), ColorPair::new(YELLOW, BLACK), RenderOrder::Item))
+        .with(Name::new("Tower Shield"))
+        .with(Item {})
+        .with(Equippable { slot: EquipmentSlot::Shield })
+        .with(DefenseBonus { defense: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn rations(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437('%'), ColorPair::new(GREEN, BLACK), RenderOrder::Item))
+        .with(Name::new("Rations"))
+        .with(Item {})
+        .with(ProvidesFood {})
+        .with(Consumable {})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+pub fn magic_mapping_scroll(world: &mut World, pt: Point) {
+    world
+        .create_entity()
+        .with(Position::new(pt))
+        .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN3, BLACK), RenderOrder::Item))
+        .with(Name::new("Scroll of Magic Mapping"))
+        .with(Item {})
+        .with(MagicMapper {})
+        .with(Consumable {})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

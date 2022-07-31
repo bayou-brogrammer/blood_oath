@@ -3,10 +3,11 @@ use bo_ecs::prelude::{Deserialize, Serialize};
 
 use bracket_geometry::prelude::*;
 use bracket_pathfinding::prelude::*;
+use bracket_terminal::prelude::RGB;
 
 use std::{
     cmp::{max, min},
-    collections::HashSet,
+    collections::{HashMap, HashSet},
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -20,6 +21,7 @@ pub struct Map {
     pub revealed: BitGrid,
     pub tiles: Vec<GameTile>,
     pub view_blocked: HashSet<usize>,
+    pub bloodstains: HashMap<usize, RGB>,
 }
 
 impl Map {
@@ -87,6 +89,7 @@ impl Map {
             depth: new_depth,
             rooms: Vec::new(),
             name: name.to_string(),
+            bloodstains: HashMap::new(),
             view_blocked: HashSet::new(),
             visible: BitGrid::new(width, height),
             revealed: BitGrid::new(width, height),
@@ -126,8 +129,7 @@ impl Map {
             }
         }
 
-        let stairs_position = map.rooms[0].center();
-        // let stairs_position = map.rooms[map.rooms.len() - 1].center();
+        let stairs_position = map.rooms[map.rooms.len() - 1].center();
         let stairs_idx = map.point2d_to_index(stairs_position);
         map.tiles[stairs_idx] = GameTile::stairs_down();
 

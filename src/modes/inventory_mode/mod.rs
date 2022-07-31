@@ -107,7 +107,6 @@ impl InventoryMode {
         pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
         if let Some(result) = pop_result {
-            println!("{:?}", result);
             return match result {
                 ////////////////////////////////////////////////////////////////////////////////////////
                 // Inventory Action

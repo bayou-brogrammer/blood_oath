@@ -4,6 +4,7 @@ use bo_ecs::construct_dispatcher;
 mod damage_system;
 mod end_turn;
 mod fov_system;
+mod hunger;
 mod inventory;
 mod map_indexing_system;
 mod melee_combat_system;
@@ -14,6 +15,7 @@ mod render;
 pub use damage_system::DeleteDeadSystem;
 pub use end_turn::EndTurnSystem;
 pub use fov_system::FovSystem;
+pub use hunger::HungerSystem;
 pub use inventory::*;
 pub use map_indexing_system::MapIndexingSystem;
 pub use melee_combat_system::MeleeCombatSystem;
@@ -30,7 +32,8 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
         (ItemEquipOnUse, "equip", &[]),
         (ItemUseSystem, "use", &[]),
         (ItemDropSystem, "drop", &[]),
-        (ItemRemoveSystem, "remove", &[])
+        (ItemRemoveSystem, "remove", &[]),
+        (HungerSystem, "hunger", &[])
     );
 
     new_dispatch()

@@ -17,7 +17,7 @@ lazy_static! {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-fn box_framework(draw_batch: &mut DrawBatch) {
+pub fn box_framework(draw_batch: &mut DrawBatch) {
     let box_gray: RGB = RGB::from_hex("#999999").expect("Oops");
 
     draw_batch.draw_hollow_box(Rect::with_size(0, 0, 79, 59), ColorPair::new(box_gray, BLACK)); // Overall box
@@ -48,7 +48,7 @@ pub fn map_label(world: &World, draw_batch: &mut DrawBatch) {
     draw_batch.print_color(Point::new(x_pos, 0), &map.name, ColorPair::new(WHITE, BLACK));
 }
 
-fn draw_stats(world: &World, draw_batch: &mut DrawBatch, player_entity: &Entity) {
+pub fn draw_stats(world: &World, draw_batch: &mut DrawBatch, player_entity: &Entity) {
     let stats = world.read_storage::<CombatStats>();
     let player_stats = stats.get(*player_entity).unwrap();
 
@@ -72,6 +72,28 @@ fn draw_stats(world: &World, draw_batch: &mut DrawBatch, player_entity: &Entity)
     draw_batch.bar_horizontal(Point::new(64, 3), 14, 0 - xp_level_start, 1000, ColorPair::new(GOLD, BLACK));
 }
 
+fn status(ecs: &World, draw_batch: &mut DrawBatch, player_entity: &Entity) {
+    let hunger = ecs.read_storage::<HungerClock>();
+    let hc = hunger.get(*player_entity).unwrap();
+
+    let y = 44;
+    match hc.state {
+        HungerState::Normal => {}
+        HungerState::WellFed => {
+            draw_batch.print_color(Point::new(50, y), "Well Fed", ColorPair::new(GREEN, BLACK));
+            // y -= 1;
+        }
+        HungerState::Hungry => {
+            draw_batch.print_color(Point::new(50, y), "Hungry", ColorPair::new(ORANGE, BLACK));
+            // y -= 1;
+        }
+        HungerState::Starving => {
+            draw_batch.print_color(Point::new(50, y), "Starving", ColorPair::new(RED, BLACK));
+            // y -= 1;
+        }
+    }
+}
+
 pub fn draw_ui(world: &World, _ctx: &mut BTerm) {
     let mut gui_batch = DrawBatch::new();
     gui_batch.target(LAYER_ZERO);
@@ -80,6 +102,7 @@ pub fn draw_ui(world: &World, _ctx: &mut BTerm) {
     box_framework(&mut gui_batch);
     map_label(world, &mut gui_batch);
     draw_stats(world, &mut gui_batch, &player_entity);
+    status(world, &mut gui_batch, &player_entity);
     bo_logging::print_log(LAYER_TEXT, Point::new(1, 23));
 
     gui_batch.submit(BATCH_UI).expect("Batch error"); // On top of everything

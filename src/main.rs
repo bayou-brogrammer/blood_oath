@@ -68,21 +68,7 @@ impl GameWorld {
         let mut world = World::new();
 
         GameWorld::register_components(&mut world);
-
-        let map = Map::new(0, 80, 50, "Test Map");
-        let start_pos = map.rooms[0].center();
-        let player = dungeon_mode::spawner::spawn_player(&mut world, start_pos);
-
-        // Resources
-        world.insert(map);
-        world.insert(player);
-        world.insert(start_pos);
-        world.insert(TurnState::PreRun);
-        world.insert(ParticleBuilder::new());
-        world.insert(MasterDungeonMap::new());
         world.insert(modes::MenuMemory::new());
-        world.insert(GameCamera::new(start_pos));
-        bo_logging::Logger::new().append("Welcome to").append_with_color("Rusty Roguelike", CYAN).log();
 
         Self {
             world,
@@ -95,6 +81,7 @@ impl GameWorld {
     pub fn register_components(world: &mut World) {
         // Tags
         world.register::<Item>();
+        world.register::<Blood>();
         world.register::<Player>();
         world.register::<Monster>();
         world.register::<Consumable>();
@@ -119,10 +106,13 @@ impl GameWorld {
         world.register::<Confusion>();
         world.register::<InBackpack>();
         world.register::<Equippable>();
+        world.register::<MagicMapper>();
         world.register::<InflictsDamage>();
         world.register::<ProvidesHealing>();
 
         // Combat
+        world.register::<HungerClock>();
+        world.register::<ProvidesFood>();
         world.register::<DefenseBonus>();
         world.register::<MeleePowerBonus>();
 

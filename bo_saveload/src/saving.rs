@@ -97,7 +97,7 @@ pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
             Position, Glyph, FieldOfView, Name, Description, CombatStats, OtherLevelPosition,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            Equippable, DefenseBonus, MeleePowerBonus,
+            Equippable, DefenseBonus, MeleePowerBonus, Blood, HungerClock,
             ParticleLifetime, SerializationHelper, DMSerializationHelper
         );
     }

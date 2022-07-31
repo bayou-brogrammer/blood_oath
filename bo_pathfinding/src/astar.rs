@@ -193,7 +193,6 @@ mod test {
     fn avoid_expensive_shortcut_on_triangle() {
         let map = TriangleMap;
         let path = a_star_search(0, 2, &map);
-        println!("{:?}", path.steps);
         assert_eq!(path.steps, [0, 1, 2]);
     }
 
@@ -234,7 +233,6 @@ mod test {
         let len = 15;
         let map = ExpensiveShortcutMap { len };
         let path = a_star_search(0, len - 1, &map);
-        println!("{:?}", path.steps);
         assert_eq!(path.steps, (0..len).collect::<Vec<_>>());
     }
 }

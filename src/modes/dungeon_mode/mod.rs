@@ -63,7 +63,7 @@ impl DungeonMode {
     }
 
     fn run_rendering(&mut self, world: &mut World) {
-        RenderSystem {}.run_now(world);
+        RenderSystem.run_now(world);
         world.maintain();
     }
 
@@ -123,19 +123,18 @@ impl DungeonMode {
             runstate = *state;
         }
 
-        #[allow(clippy::single_match)]
         match runstate {
+            TurnState::GameOver => {
+                return (ModeControl::Switch(GameOverMode::new().into()), ModeUpdate::Immediate)
+            }
+            TurnState::MagicMapReveal(row) => self.reveal_map(world, row),
             TurnState::PreRun | TurnState::PlayerTurn | TurnState::MonsterTurn => {
                 self.run_dispatcher(world);
             }
             TurnState::AwaitingInput => match player_input(ctx, world) {
                 player::PlayerInputResult::NoResult => {}
                 player::PlayerInputResult::AppQuit => return self.app_quit_dialog(),
-                player::PlayerInputResult::TurnDone => {
-                    bo_logging::record_event(TURN_DONE_EVENT, 1);
-                    let mut runwriter = world.write_resource::<TurnState>();
-                    *runwriter = TurnState::PlayerTurn;
-                }
+                player::PlayerInputResult::TurnDone => self.end_turn(world),
                 player::PlayerInputResult::ShowInventory => {
                     return (ModeControl::Push(InventoryMode::new(world).into()), ModeUpdate::Update)
                 }
@@ -151,7 +150,7 @@ impl DungeonMode {
             },
         }
 
-        // Run Dispatcher
+        // Run Ticking Dispatcher
         self.run_ticking(world);
 
         (ModeControl::Stay, ModeUpdate::Update)
@@ -178,6 +177,12 @@ impl DungeonMode {
         return (ModeControl::Stay, ModeUpdate::Update);
     }
 
+    fn end_turn(&self, world: &World) {
+        bo_logging::record_event(TURN_DONE_EVENT, 1);
+        let mut runwriter = world.write_resource::<TurnState>();
+        *runwriter = TurnState::PlayerTurn
+    }
+
     fn use_item(&self, world: &World, item: &Entity, pt: Option<Point>) {
         world
             .write_storage::<WantsToUseItem>()
@@ -197,5 +202,21 @@ impl DungeonMode {
             .write_storage::<WantsToRemoveItem>()
             .insert(*world.fetch::<Entity>(), WantsToRemoveItem::new(*equipment))
             .expect("Failed to insert intent");
+    }
+
+    fn reveal_map(&self, world: &World, row: i32) {
+        let mut map = world.fetch_mut::<Map>();
+        let mut runwriter = world.write_resource::<TurnState>();
+
+        for x in 0..map.width {
+            let pt = Point::new(x as i32, row);
+            map.revealed.set_bit(pt, true);
+        }
+
+        if row == map.height - 1 {
+            *runwriter = TurnState::PlayerTurn
+        } else {
+            *runwriter = TurnState::MagicMapReveal(row + 1);
+        }
     }
 }

@@ -16,7 +16,7 @@ impl<'a> System<'a> for ItemRemoveSystem {
 
         for (entity, to_remove) in (&entities, &wants_remove).join() {
             equipped.remove(to_remove.item);
-            backpack.insert(to_remove.item, InBackpack { owner: entity }).expect("Unable to insert backpack");
+            backpack.insert(to_remove.item, InBackpack::new(entity)).expect("Unable to insert backpack");
         }
 
         wants_remove.clear();

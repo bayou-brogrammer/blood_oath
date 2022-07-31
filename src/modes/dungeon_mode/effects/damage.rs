@@ -5,8 +5,22 @@ pub fn inflict_damage(world: &mut World, damage: &EffectSpawner, target: Entity)
         if let EffectType::Damage { amount } = damage.effect_type {
             stats.hp -= amount;
 
-            add_effect(None, EffectType::Bloodstain, Targets::Single { target });
             add_damage_particle(target);
+            if let Some(blood) = world.read_storage::<Blood>().get(target) {
+                add_effect(None, EffectType::Bloodstain(blood.0), Targets::Single { target });
+            }
+
+            // Events
+            let player_entity = world.fetch::<Entity>();
+            if target == *player_entity {
+                bo_logging::record_event("Damage Taken", amount);
+            }
+
+            if let Some(creator) = damage.creator {
+                if creator == *player_entity {
+                    bo_logging::record_event("Damage Inflicted", amount);
+                }
+            }
 
             if stats.hp < 1 {
                 add_effect(damage.creator, EffectType::EntityDeath, Targets::Single { target });
@@ -15,9 +29,9 @@ pub fn inflict_damage(world: &mut World, damage: &EffectSpawner, target: Entity)
     }
 }
 
-pub fn bloodstain(_ecs: &mut World, _tile_idx: usize) {
-    // let mut map = ecs.fetch_mut::<Map>();
-    // map.bloodstains.insert(tile_idx);
+pub fn bloodstain(world: &mut World, tile_idx: usize, blood: RGB) {
+    let mut map = world.fetch_mut::<Map>();
+    map.bloodstains.insert(tile_idx, blood);
 }
 
 pub fn death(ecs: &mut World, _effect: &EffectSpawner, target: Entity) {
