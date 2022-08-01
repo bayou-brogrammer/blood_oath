@@ -36,6 +36,7 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Tower Shield", map_depth - 1)
         .add("Rations", 10)
         .add("Magic Mapping Scroll", 2)
+        .add("Bear Trap", 2)
 }
 
 const MAX_MONSTERS: i32 = 4;
@@ -72,6 +73,7 @@ pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
         "Shield" => shield(world, *pt),
         "Goblin" => goblin(world, *pt),
         "Rations" => rations(world, *pt),
+        "Bear Trap" => bear_trap(world, *pt),
         "Longsword" => longsword(world, *pt),
         "Tower Shield" => tower_shield(world, *pt),
         "Health Potion" => health_potion(world, *pt),
@@ -257,6 +259,10 @@ fn bear_trap(ecs: &mut World, pt: Point) {
         .with(Position::new(pt))
         .with(Glyph::new(to_cp437('^'), ColorPair::new(RED, BLACK), RenderOrder::Item))
         .with(Name::new("Bear Trap"))
+        .with(Hidden {})
+        .with(EntryTrigger {})
+        .with(InflictsDamage::new(6))
+        .with(SingleActivation {})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

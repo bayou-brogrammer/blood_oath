@@ -85,6 +85,7 @@ impl GameWorld {
         // Tags
         world.register::<Item>();
         world.register::<Blood>();
+        world.register::<Hidden>();
         world.register::<Player>();
         world.register::<Monster>();
         world.register::<Consumable>();
@@ -97,6 +98,7 @@ impl GameWorld {
         world.register::<FieldOfView>();
         world.register::<Description>();
         world.register::<CombatStats>();
+        world.register::<EntityMoved>();
         world.register::<OtherLevelPosition>();
 
         // Intent
@@ -104,6 +106,12 @@ impl GameWorld {
         world.register::<WantsToUseItem>();
         world.register::<WantsToDropItem>();
         world.register::<WantsToPickupItem>();
+
+        // Combat
+        world.register::<HungerClock>();
+        world.register::<ProvidesFood>();
+        world.register::<DefenseBonus>();
+        world.register::<MeleePowerBonus>();
 
         // Items / Equipment
         world.register::<Confusion>();
@@ -113,11 +121,9 @@ impl GameWorld {
         world.register::<InflictsDamage>();
         world.register::<ProvidesHealing>();
 
-        // Combat
-        world.register::<HungerClock>();
-        world.register::<ProvidesFood>();
-        world.register::<DefenseBonus>();
-        world.register::<MeleePowerBonus>();
+        // Triggers
+        world.register::<EntryTrigger>();
+        world.register::<SingleActivation>();
 
         // Ranged
         world.register::<Ranged>();
@@ -138,6 +144,7 @@ impl GameWorld {
 impl GameState for GameWorld {
     fn tick(&mut self, ctx: &mut BTerm) {
         self.world.insert(ctx.frame_time_ms);
+        self.world.insert(ctx.mouse_pos());
 
         if !self.wait_for_event {
             self.active_mouse_pos = ctx.mouse_point();

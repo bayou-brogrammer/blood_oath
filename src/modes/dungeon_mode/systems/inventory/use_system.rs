@@ -20,14 +20,14 @@ impl<'a> System<'a> for ItemUseSystem {
             // Call the effects system
             add_effect(
                 Some(entity),
-                EffectType::ItemUse { item: useitem.item },
+                EffectType::ItemUse(useitem.item),
                 match useitem.target {
-                    None => Targets::Single { target: *player_entity },
+                    None => Targets::Single(*player_entity),
                     Some(target) => {
                         if let Some(aoe) = aoe.get(useitem.item) {
-                            Targets::Tiles { tiles: aoe_tiles(&*map, target, aoe.radius) }
+                            Targets::Tiles(aoe_tiles(&*map, target, aoe.radius))
                         } else {
-                            Targets::Tile { tile_idx: map.point2d_to_index(target) }
+                            Targets::Tile(map.point2d_to_index(target))
                         }
                     }
                 },

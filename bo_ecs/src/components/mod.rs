@@ -17,6 +17,7 @@ mod position;
 mod ranged;
 mod stats;
 mod tags;
+mod trigger;
 
 pub use combat::*;
 pub use description::*;
@@ -32,3 +33,4 @@ pub use position::*;
 pub use ranged::*;
 pub use stats::*;
 pub use tags::*;
+pub use trigger::*;

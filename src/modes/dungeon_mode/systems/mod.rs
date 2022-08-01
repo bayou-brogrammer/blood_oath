@@ -11,6 +11,7 @@ mod melee_combat_system;
 mod monster_ai_system;
 mod particle_system;
 mod render;
+mod trigger_system;
 
 pub use damage_system::DeleteDeadSystem;
 pub use end_turn::EndTurnSystem;
@@ -21,12 +22,14 @@ pub use map_indexing_system::MapIndexingSystem;
 pub use melee_combat_system::MeleeCombatSystem;
 pub use monster_ai_system::MonsterAISystem;
 pub use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
-pub use render::RenderSystem;
+pub use render::{RenderSystem, RenderTooltips};
+pub use trigger_system::TriggerSystem;
 
 pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
         (FovSystem, "fov", &[]),
         (MapIndexingSystem, "map_indexing", &[]),
+        (TriggerSystem, "triggers", &[]),
         (MeleeCombatSystem, "melee_combat", &[]),
         (ItemCollectionSystem, "pickup", &[]),
         (ItemEquipOnUse, "equip", &[]),

@@ -20,4 +20,8 @@ pub struct Item {}
 #[storage(NullStorage)]
 pub struct Consumable {}
 
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone)]
+#[storage(NullStorage)]
+pub struct Hidden {}
+
 pub struct SerializeMe {}

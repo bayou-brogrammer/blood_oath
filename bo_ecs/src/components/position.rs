@@ -33,3 +33,7 @@ pub struct OtherLevelPosition {
 }
 
 impl_new!(OtherLevelPosition, pt: Point, depth: i32);
+
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone)]
+#[storage(NullStorage)]
+pub struct EntityMoved {}

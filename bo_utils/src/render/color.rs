@@ -6,6 +6,7 @@ use bracket_terminal::prelude::*;
 
 pub const BOX_GRAY: (u8, u8, u8) = (153, 153, 153);
 pub const LIGHT_RED: (u8, u8, u8) = (255, 204, 203);
+pub const LIGHT_GRAY: (u8, u8, u8) = (221, 221, 221);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Named Colors

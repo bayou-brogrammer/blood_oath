@@ -1,16 +1,28 @@
 use crate::prelude::*;
+use bracket_geometry::prelude::Point;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use specs::Entity;
 
 struct SpatialMap {
+    width: i32,
+    height: i32,
     blocked: Vec<(bool, bool)>,
     tile_content: Vec<Vec<(Entity, bool)>>,
 }
 
 impl SpatialMap {
     fn new() -> Self {
-        Self { blocked: Vec::new(), tile_content: Vec::new() }
+        Self { blocked: Vec::new(), tile_content: Vec::new(), width: 0, height: 0 }
+    }
+
+    fn _xy_idx(&self, x: i32, y: i32) -> usize {
+        (y as usize * self.width as usize) + x as usize
+    }
+
+    fn point2d_to_index(&self, pt: Point) -> usize {
+        let bounds = Point::new(self.width, self.height);
+        ((pt.y * bounds.x) + pt.x).try_into().expect("Not a valid usize. Did something go negative?")
     }
 }
 
@@ -18,8 +30,12 @@ lazy_static! {
     static ref SPATIAL_MAP: Mutex<SpatialMap> = Mutex::new(SpatialMap::new());
 }
 
-pub fn set_size(map_tile_count: usize) {
+pub fn set_size(width: i32, height: i32) {
     let mut lock = SPATIAL_MAP.lock();
+    lock.width = width;
+    lock.height = height;
+
+    let map_tile_count = (width * height) as usize;
     lock.blocked = vec![(false, false); map_tile_count];
     lock.tile_content = vec![Vec::new(); map_tile_count];
 }
@@ -61,6 +77,17 @@ where
     F: FnMut(Entity),
 {
     let lock = SPATIAL_MAP.lock();
+    for entity in lock.tile_content[idx].iter() {
+        f(entity.0);
+    }
+}
+
+pub fn for_each_tile_content_pt<F>(pt: Point, mut f: F)
+where
+    F: FnMut(Entity),
+{
+    let lock = SPATIAL_MAP.lock();
+    let idx = lock.point2d_to_index(pt);
     for entity in lock.tile_content[idx].iter() {
         f(entity.0);
     }

@@ -51,11 +51,7 @@ impl<'a> System<'a> for HungerSystem {
                                 .log();
                         }
 
-                        add_effect(
-                            None,
-                            EffectType::Damage { amount: 1 },
-                            Targets::Single { target: entity },
-                        );
+                        add_effect(None, EffectType::Damage(1), Targets::Single(entity));
                     }
                 }
             }

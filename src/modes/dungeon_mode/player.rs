@@ -12,45 +12,6 @@ pub enum PlayerInputResult {
     ShowInventoryShortcut,
 }
 
-pub fn try_move_player(delta_pt: Point, ecs: &mut World) {
-    let map = ecs.fetch::<Map>();
-    let entities = ecs.entities();
-
-    let players = ecs.read_storage::<Player>();
-    let mut positions = ecs.write_storage::<Position>();
-    let mut fovs = ecs.write_storage::<FieldOfView>();
-    let combat_stats = ecs.read_storage::<CombatStats>();
-    let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
-
-    for (entity, _player, pos, fov) in (&entities, &players, &mut positions, &mut fovs).join() {
-        let destination = pos.0 + delta_pt;
-        let destination_idx = map.point2d_to_index(destination);
-
-        crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
-            if let Some(_target) = combat_stats.get(potential_target) {
-                wants_to_melee
-                    .insert(entity, WantsToMelee::new(potential_target))
-                    .expect("Add target failed");
-            }
-        });
-
-        if map.can_enter_tile(destination) {
-            let old_idx = map.point2d_to_index(pos.0);
-            let new_idx = map.point2d_to_index(destination);
-
-            pos.0 = destination;
-            fov.is_dirty = true;
-
-            let mut camera = ecs.write_resource::<GameCamera>();
-            camera.on_player_move(destination);
-
-            let mut ppos = ecs.write_resource::<Point>();
-            *ppos = pos.0;
-            crate::spatial::move_entity(entity, old_idx, new_idx);
-        }
-    }
-}
-
 #[rustfmt::skip]
 pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
     // Player movement
@@ -89,6 +50,47 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
     }
 
     PlayerInputResult::TurnDone
+}
+
+pub fn try_move_player(delta_pt: Point, world: &mut World) {
+    let map = world.fetch::<Map>();
+    let entities = world.entities();
+
+    let players = world.read_storage::<Player>();
+    let mut positions = world.write_storage::<Position>();
+    let mut fovs = world.write_storage::<FieldOfView>();
+    let combat_stats = world.read_storage::<CombatStats>();
+    let mut wants_to_melee = world.write_storage::<WantsToMelee>();
+    let mut entity_moved = world.write_storage::<EntityMoved>();
+
+    for (entity, _player, pos, fov) in (&entities, &players, &mut positions, &mut fovs).join() {
+        let destination = pos.0 + delta_pt;
+        let destination_idx = map.point2d_to_index(destination);
+
+        crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
+            if let Some(_target) = combat_stats.get(potential_target) {
+                wants_to_melee
+                    .insert(entity, WantsToMelee::new(potential_target))
+                    .expect("Add target failed");
+            }
+        });
+
+        if map.can_enter_tile(destination) {
+            let old_idx = map.point2d_to_index(pos.0);
+            let new_idx = map.point2d_to_index(destination);
+
+            pos.0 = destination;
+            fov.is_dirty = true;
+            entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
+
+            let mut camera = world.write_resource::<GameCamera>();
+            camera.on_player_move(destination);
+
+            let mut ppos = world.write_resource::<Point>();
+            *ppos = pos.0;
+            crate::spatial::move_entity(entity, old_idx, new_idx);
+        }
+    }
 }
 
 fn get_item(world: &mut World) {

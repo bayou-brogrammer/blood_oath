@@ -15,6 +15,7 @@ impl<'a> System<'a> for MonsterAISystem {
         WriteStorage<'a, Position>,
         WriteStorage<'a, WantsToMelee>,
         WriteStorage<'a, Confusion>,
+        WriteStorage<'a, EntityMoved>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -29,6 +30,7 @@ impl<'a> System<'a> for MonsterAISystem {
             mut position,
             mut wants_to_melee,
             mut confused,
+            mut entity_moved,
         ) = data;
 
         if *runstate != TurnState::MonsterTurn {
@@ -74,6 +76,7 @@ impl<'a> System<'a> for MonsterAISystem {
 
                         pos.0 = destination;
                         fov.is_dirty = true;
+                        entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
                     }
                 }
             }

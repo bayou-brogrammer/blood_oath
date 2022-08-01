@@ -81,7 +81,7 @@ impl Map {
     /// Generates an empty map, consisting entirely of solid walls
     pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> Map {
         let map_tile_count = (width * height) as usize;
-        crate::spatial::set_size(map_tile_count);
+        crate::spatial::set_size(width, height);
 
         let mut map = Map {
             width,

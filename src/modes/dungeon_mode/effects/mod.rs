@@ -21,10 +21,11 @@ pub enum EffectType {
     WellFed,
     EntityDeath,
     Bloodstain(RGB),
-    Damage { amount: i32 },
-    Healing { amount: i32 },
-    Confusion { turns: i32 },
-    ItemUse { item: Entity },
+    Damage(i32),
+    Healing(i32),
+    Confusion(i32),
+    ItemUse(Entity),
+    TriggerFire(Entity),
     Particle { glyph: FontCharType, color: ColorPair, lifespan: f32 },
 }
 
@@ -36,10 +37,10 @@ impl EffectType {
 
 #[derive(Clone, Debug)]
 pub enum Targets {
-    Single { target: Entity },
-    TargetList { targets: Vec<Entity> },
-    Tile { tile_idx: usize },
-    Tiles { tiles: Vec<usize> },
+    Tile(usize),
+    Single(Entity),
+    Tiles(Vec<usize>),
+    TargetList(Vec<Entity>),
 }
 
 #[derive(Debug)]
@@ -58,11 +59,11 @@ pub fn add_effect(creator: Option<Entity>, effect_type: EffectType, targets: Tar
 }
 
 pub fn add_single_damage_effect(creator: Option<Entity>, target: Entity, amount: i32) {
-    add_effect(creator, EffectType::Damage { amount }, Targets::Single { target });
+    add_effect(creator, EffectType::Damage(amount), Targets::Single(target));
 }
 
 pub fn add_single_healing_effect(creator: Option<Entity>, target: Entity, amount: i32) {
-    add_effect(creator, EffectType::Healing { amount }, Targets::Single { target });
+    add_effect(creator, EffectType::Healing(amount), Targets::Single(target));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,14 +80,16 @@ pub fn run_effects_queue(ecs: &mut World) {
 }
 
 fn target_applicator(ecs: &mut World, effect: &EffectSpawner) {
-    if let EffectType::ItemUse { item } = effect.effect_type {
+    if let EffectType::ItemUse(item) = effect.effect_type {
         triggers::item_trigger(effect.creator, item, &effect.targets, ecs);
+    } else if let EffectType::TriggerFire(trigger) = effect.effect_type {
+        triggers::trigger(effect.creator, trigger, &effect.targets, ecs);
     } else {
         match &effect.targets {
-            Targets::Tile { tile_idx } => affect_tile(ecs, effect, *tile_idx),
-            Targets::Tiles { tiles } => tiles.iter().for_each(|tile_idx| affect_tile(ecs, effect, *tile_idx)),
-            Targets::Single { target } => affect_entity(ecs, effect, *target),
-            Targets::TargetList { targets } => {
+            Targets::Tile(tile_idx) => affect_tile(ecs, effect, *tile_idx),
+            Targets::Tiles(tiles) => tiles.iter().for_each(|tile_idx| affect_tile(ecs, effect, *tile_idx)),
+            Targets::Single(target) => affect_entity(ecs, effect, *target),
+            Targets::TargetList(targets) => {
                 targets.iter().for_each(|entity| affect_entity(ecs, effect, *entity))
             }
         }

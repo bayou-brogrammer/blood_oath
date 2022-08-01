@@ -52,7 +52,8 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             Position, Glyph, FieldOfView, Name, Description, CombatStats, OtherLevelPosition,
             WantsToMelee, WantsToPickupItem, WantsToUseItem, WantsToDropItem,
             InBackpack, Ranged, InflictsDamage, AreaOfEffect, Confusion, ProvidesHealing,
-            Equippable, DefenseBonus, MeleePowerBonus, Blood, HungerClock,
+            Equippable, Equipped, DefenseBonus, MeleePowerBonus, Blood, HungerClock, MagicMapper,
+            Hidden, ProvidesFood, EntryTrigger, EntityMoved, SingleActivation,
             ParticleLifetime, SerializationHelper, DMSerializationHelper
         );
     }
@@ -77,7 +78,7 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             deleteme = Some(e);
 
             let local_map = h.map.clone();
-            bo_map::spatial::set_size((local_map.height * local_map.width) as usize);
+            bo_map::spatial::set_size(local_map.height, local_map.width);
             loaded_map = Some(local_map);
         }
 
