@@ -1,9 +1,4 @@
-mod events;
-mod modes;
-mod random_table;
-mod rex_assets;
-
-pub mod render;
+// mod modes;
 
 mod prelude {
     pub use lazy_static::*;
@@ -14,23 +9,14 @@ mod prelude {
     pub use bracket_terminal::prelude::*;
     pub use bracket_terminal::{embedded_resource, link_resource};
 
-    pub use specs::prelude::World;
-    pub use specs::prelude::*;
-    pub use specs::saveload::MarkedBuilder;
-    pub use specs::Component;
+    pub use hecs::*;
+    pub use hecs_schedule::*;
 
     pub use bo_ecs::prelude::*;
     pub use bo_logging::*;
     pub use bo_map::prelude::*;
     pub use bo_pathfinding::prelude::*;
     pub use bo_utils::prelude::*;
-
-    pub use crate::events::*;
-    pub use crate::modes::*;
-    pub use crate::random_table::*;
-    pub use crate::render;
-    pub use crate::render::gui::*;
-    pub use crate::rex_assets::*;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -49,11 +35,11 @@ mod prelude {
     pub const BATCH_TOOLTIPS: usize = 100_000; // Over everything
 }
 
-use bo_saveload::{DMSerializationHelper, SerializationHelper};
 pub use prelude::*;
 
 pub struct GameWorld {
     pub world: World,
+    pub schedule: Schedule,
     pub wait_for_event: bool,
     pub mode_stack: ModeStack,
     pub active_mouse_pos: Point,
@@ -69,98 +55,33 @@ impl GameWorld {
     pub fn new() -> Self {
         let mut world = World::new();
 
-        GameWorld::register_components(&mut world);
-        world.insert(modes::MenuMemory::new());
-        world.insert(rex_assets::RexAssets::new());
+        // Spawn some entities
+        let a = world.spawn((TestComp { name: "Name".to_string() },));
 
-        Self {
-            world,
-            wait_for_event: false,
-            active_mouse_pos: Point::zero(),
-            mode_stack: ModeStack::new(vec![main_menu_mode::MainMenuMode::new().into()]),
+        // let get_system = move |w: SubWorld<&TestComp>| -> anyhow::Result<()> {
+        //     for (e, i) in w.query::<&TestComp>().iter() {
+        //         println!("Got: {:?}", i.name);
+        //     }
+
+        //     Ok(())
+        // };
+
+        if let Ok(i) = world.get::<TestComp>(a) {
+            println!("Got: {:?}", *i);
         }
-    }
 
-    pub fn register_components(world: &mut World) {
-        // Tags
-        world.register::<Item>();
-        world.register::<Blood>();
-        world.register::<Player>();
-        world.register::<Monster>();
-        world.register::<Consumable>();
-        world.register::<BlocksTile>();
+        // Construct a schedule
+        let mut schedule = Schedule::builder()
+            // .add_system(get_system)
+            .build();
 
-        // Generics
-        world.register::<Name>();
-        world.register::<Glyph>();
-        world.register::<Position>();
-        world.register::<FieldOfView>();
-        world.register::<Description>();
-        world.register::<CombatStats>();
-        world.register::<OtherLevelPosition>();
-
-        // Intent
-        world.register::<WantsToMelee>();
-        world.register::<WantsToUseItem>();
-        world.register::<WantsToDropItem>();
-        world.register::<WantsToPickupItem>();
-
-        // Items / Equipment
-        world.register::<Confusion>();
-        world.register::<InBackpack>();
-        world.register::<Equippable>();
-        world.register::<MagicMapper>();
-        world.register::<InflictsDamage>();
-        world.register::<ProvidesHealing>();
-
-        // Combat
-        world.register::<HungerClock>();
-        world.register::<ProvidesFood>();
-        world.register::<DefenseBonus>();
-        world.register::<MeleePowerBonus>();
-
-        // Ranged
-        world.register::<Ranged>();
-        world.register::<AreaOfEffect>();
-
-        // Particles
-        world.register::<ParticleLifetime>();
-
-        // Serialization
-        world.register::<SerializationHelper>();
-        world.register::<DMSerializationHelper>();
-        world.register::<SimpleMarker<SerializeMe>>();
-
-        world.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+        Self { world, schedule }
     }
 }
 
 impl GameState for GameWorld {
     fn tick(&mut self, ctx: &mut BTerm) {
-        self.world.insert(ctx.frame_time_ms);
-
-        if !self.wait_for_event {
-            self.active_mouse_pos = ctx.mouse_point();
-
-            match self.mode_stack.update(ctx, &mut self.world) {
-                RunControl::Update => {}
-                RunControl::Quit => ctx.quit(),
-                RunControl::WaitForEvent => self.wait_for_event = true,
-            }
-        } else {
-            let new_mouse = ctx.mouse_point();
-
-            // Handle Keys & Mouse Clicks
-            if ctx.key.is_some() || ctx.left_click {
-                self.wait_for_event = false;
-            }
-
-            // Handle Mouse Movement
-            if new_mouse != self.active_mouse_pos {
-                self.wait_for_event = false;
-                self.active_mouse_pos = new_mouse;
-            }
-        }
+        self.schedule.execute((&mut self.world,)).expect("Failed to execute schedule");
 
         render_draw_buffer(ctx).expect("Render error");
     }

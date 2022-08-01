@@ -50,6 +50,9 @@ specs = { version = "^0.18.0", default_features = false, features = [
   "derive",
   "serde",
 ] }
+hecs = "0.7.7"
+hecs-schedule = "0.6.2"
+anyhow = "1.0.58"
 
 ####################
 # WASM Building

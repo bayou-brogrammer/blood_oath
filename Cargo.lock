@@ -78,6 +78,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9ff149ed9780025acfdb36862d35b28856bb693ceb451259a7164442f22fdc3"
 
 [[package]]
+name = "atomic_refcell"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73b5e5f48b927f04e952dedc932f31995a65a0bf65ec971c74436e51bf6e970d"
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -112,6 +118,7 @@ dependencies = [
 name = "bload_oath"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bitvec",
  "bo_ecs",
  "bo_logging",
@@ -125,6 +132,8 @@ dependencies = [
  "bracket-terminal",
  "embed-resource",
  "getrandom",
+ "hecs",
+ "hecs-schedule",
  "lazy_static",
  "parking_lot 0.12.1",
  "rayon",
@@ -877,6 +886,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "hecs"
+version = "0.7.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95ae6c6368add4cc6592ed9b48a270b35cf3a52d429355aaeb55822935526e94"
+dependencies = [
+ "hashbrown",
+ "hecs-macros",
+ "lazy_static",
+ "spin 0.9.4",
+]
+
+[[package]]
+name = "hecs-macros"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14883fb70dcf2363b5dd2321b9473117d91ebadf211959df748cec6927fd3765"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "hecs-schedule"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c0f9dc613d4a76770025e71fc1b2e5d357354e4d0d0564eb002e49a7c0c28fc"
+dependencies = [
+ "anyhow",
+ "atomic_refcell",
+ "hecs",
+ "rayon",
+ "smallvec",
+ "thiserror",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -986,6 +1032,9 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+dependencies = [
+ "spin 0.5.2",
+]
 
 [[package]]
 name = "lazycell"
@@ -1818,6 +1867,18 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "spin"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "spin"
+version = "0.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f6002a767bff9e83f8eeecf883ecb8011875a21ae8da43bffb817a57e78cc09"
 
 [[package]]
 name = "strsim"
