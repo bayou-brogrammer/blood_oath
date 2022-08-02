@@ -1,14 +1,5 @@
 use crate::prelude::*;
-use bo_ecs::prelude::{Deserialize, Serialize};
-
-use bracket_geometry::prelude::*;
-use bracket_pathfinding::prelude::*;
-use bracket_terminal::prelude::RGB;
-
-use std::{
-    cmp::{max, min},
-    collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Map {
@@ -16,7 +7,6 @@ pub struct Map {
     pub height: i32,
     pub depth: i32,
     pub name: String,
-    pub rooms: Vec<Rect>,
     pub visible: BitGrid,
     pub revealed: BitGrid,
     pub tiles: Vec<GameTile>,
@@ -25,29 +15,8 @@ pub struct Map {
 }
 
 impl Map {
-    fn apply_room_to_map(&mut self, room: &Rect) {
-        room.for_each(|pt| {
-            let idx = self.point2d_to_index(pt);
-            self.tiles[idx] = GameTile::floor();
-        });
-    }
-
-    fn apply_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
-        for x in min(x1, x2)..=max(x1, x2) {
-            let idx = self.point2d_to_index(Point::new(x, y));
-            if self.tiles[idx as usize].tile_type == TileType::Wall {
-                self.tiles[idx as usize] = GameTile::floor();
-            }
-        }
-    }
-
-    fn apply_vertical_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
-        for y in min(y1, y2)..=max(y1, y2) {
-            let idx = self.point2d_to_index(Point::new(x, y));
-            if self.tiles[idx as usize].tile_type == TileType::Wall {
-                self.tiles[idx as usize] = GameTile::floor();
-            }
-        }
+    pub fn xy_idx(&self, x: i32, y: i32) -> usize {
+        (y * self.width + x) as usize
     }
 
     pub fn get_tile_type(&self, tt: TileType) -> Vec<GameTile> {
@@ -83,57 +52,17 @@ impl Map {
         let map_tile_count = (width * height) as usize;
         crate::spatial::set_size(width, height);
 
-        let mut map = Map {
+        Map {
             width,
             height,
             depth: new_depth,
-            rooms: Vec::new(),
             name: name.to_string(),
             bloodstains: HashMap::new(),
             view_blocked: HashSet::new(),
             visible: BitGrid::new(width, height),
             revealed: BitGrid::new(width, height),
             tiles: vec![GameTile::wall(); map_tile_count],
-        };
-
-        const MAX_ROOMS: i32 = 30;
-        const MIN_SIZE: i32 = 6;
-        const MAX_SIZE: i32 = 10;
-
-        for _i in 0..MAX_ROOMS {
-            let w = bo_utils::rng::range(MIN_SIZE, MAX_SIZE);
-            let h = bo_utils::rng::range(MIN_SIZE, MAX_SIZE);
-            let x = bo_utils::rng::roll_dice(1, map.width - w - 1) - 1;
-            let y = bo_utils::rng::roll_dice(1, map.height - h - 1) - 1;
-            let new_room = Rect::with_size(x, y, w, h);
-
-            let ok = map.rooms.iter().all(|room| !new_room.intersect(room));
-
-            if ok {
-                map.apply_room_to_map(&new_room);
-
-                if !map.rooms.is_empty() {
-                    let Point { x: new_x, y: new_y } = new_room.center();
-                    let Point { x: prev_x, y: prev_y } = map.rooms[map.rooms.len() - 1].center();
-
-                    if bo_utils::rng::range(0, 2) == 1 {
-                        map.apply_horizontal_tunnel(prev_x, new_x, prev_y);
-                        map.apply_vertical_tunnel(prev_y, new_y, new_x);
-                    } else {
-                        map.apply_vertical_tunnel(prev_y, new_y, prev_x);
-                        map.apply_horizontal_tunnel(prev_x, new_x, new_y);
-                    }
-                }
-
-                map.rooms.push(new_room);
-            }
         }
-
-        let stairs_position = map.rooms[map.rooms.len() - 1].center();
-        let stairs_idx = map.point2d_to_index(stairs_position);
-        map.tiles[stairs_idx] = GameTile::stairs_down();
-
-        map
     }
 
     fn valid_exit(&self, loc: Point, delta: Point) -> Option<usize> {

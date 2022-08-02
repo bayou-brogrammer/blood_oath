@@ -1,10 +1,6 @@
 #![allow(dead_code)] //TODO: remove this
 
-use crate::prelude::{GameTile, Map, TileType};
-use bo_ecs::prelude::*;
-use bracket_geometry::prelude::Point;
-use bracket_pathfinding::prelude::Algorithm2D;
-use specs::prelude::*;
+use crate::prelude::*;
 use std::collections::{HashMap, HashSet};
 
 const POTION_COLORS: &[&str] = &["Red", "Orange", "Yellow", "Green", "Brown", "Indigo", "Violet"];
@@ -180,23 +176,26 @@ impl MasterDungeonMap {
     }
 
     fn transition_to_new_map(world: &mut World, new_depth: i32) -> Vec<Map> {
-        let mut map = Map::new(new_depth, 80, 50, "Test Map");
-        let history = vec![map.clone()];
+        let mut builder = map_builders::random_builder(1);
+        builder.build_map();
 
         // Add Up Stairs
         if new_depth > 1 {
-            let up_idx = map.point2d_to_index(map.rooms[0].center());
+            let mut map = builder.get_map();
+            let up_idx = map.point2d_to_index(builder.get_starting_position());
             map.tiles[up_idx] = GameTile::stairs_up();
         }
 
         let player_start;
         {
             let mut worldmap_resource = world.write_resource::<Map>();
-            *worldmap_resource = map.clone();
-            player_start = map.rooms[0].center();
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_position();
         }
 
-        // Setup Player Position
+        builder.spawn_entities(world);
+
+        // Setup Player Position / FOV
         {
             let player_entity = world.fetch::<Entity>();
             let mut player_pt = world.write_resource::<Point>();
@@ -218,9 +217,9 @@ impl MasterDungeonMap {
 
         // Store the newly minted map
         let mut dungeon_master = world.write_resource::<MasterDungeonMap>();
-        dungeon_master.store_map(&map);
+        dungeon_master.store_map(&builder.get_map());
 
-        history
+        builder.get_snapshot_history()
     }
 
     fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {

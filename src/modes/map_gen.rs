@@ -1,7 +1,3 @@
-use bo_saveload::BoxedError;
-
-use crate::dungeon_mode::spawner;
-
 use super::{ModeControl, ModeResult, *};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,28 +21,39 @@ pub enum MapGenAction {
 pub struct MapGenMode {
     mapgen_timer: f32,
     mapgen_index: usize,
-    action: MapGenAction,
     mapgen_history: Vec<Map>,
+    mapgen_next_state: Option<TurnState>,
 }
 
 /// Show the title screen of the game with a menu that leads into the game proper.
 impl MapGenMode {
-    pub fn new_game() -> Self {
-        Self { mapgen_index: 0, mapgen_timer: 0.0, mapgen_history: Vec::new(), action: MapGenAction::NewGame }
-    }
-
-    pub fn next_level() -> Self {
-        Self {
+    pub fn new_game(world: &mut World) -> Self {
+        let mut map_gen_mode = MapGenMode {
             mapgen_index: 0,
             mapgen_timer: 0.0,
             mapgen_history: Vec::new(),
-            action: MapGenAction::NextLevel,
-        }
+            mapgen_next_state: Some(TurnState::PreRun),
+        };
+
+        map_gen_mode.setup_new_game(world).expect("Failed to setup new game");
+        map_gen_mode
+    }
+
+    pub fn next_level(world: &mut World) -> Self {
+        let mut map_gen_mode = MapGenMode {
+            mapgen_index: 0,
+            mapgen_timer: 0.0,
+            mapgen_history: Vec::new(),
+            mapgen_next_state: Some(TurnState::PreRun),
+        };
+
+        map_gen_mode.goto_level(world, 1);
+        map_gen_mode
     }
 
     pub fn tick(
         &mut self,
-        _ctx: &mut BTerm,
+        ctx: &mut BTerm,
         world: &mut World,
         _pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
@@ -54,20 +61,65 @@ impl MapGenMode {
         // Main Input Handling
         //////////////////////////////////////////////////////////////////////////////
 
-        match self.action {
-            MapGenAction::NextLevel => {
-                self.goto_level(world, 1);
-            }
-            MapGenAction::NewGame => {
-                self.setup_new_game(world).expect("Failed to setup new game");
+        if !SHOW_MAPGEN_VISUALIZER {
+            world.insert(self.mapgen_next_state.unwrap());
+            return (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Update);
+        }
+
+        self.mapgen_timer += ctx.frame_time_ms;
+        if self.mapgen_timer > 100.0 {
+            self.mapgen_timer = 0.0;
+            self.mapgen_index += 1;
+            if self.mapgen_index >= self.mapgen_history.len() {
+                world.insert(self.mapgen_next_state.unwrap());
+                return (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Update);
             }
         }
 
-        world.insert(TurnState::PreRun);
-        (ModeControl::Switch(DungeonMode::new(world).into()), ModeUpdate::Update)
+        (ModeControl::Stay, ModeUpdate::Update)
     }
 
-    pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {}
+    pub fn draw(&self, ctx: &mut BTerm, _world: &World, _active: bool) {
+        if self.mapgen_index < self.mapgen_history.len() && self.mapgen_index < self.mapgen_history.len() {
+            let map = &self.mapgen_history[self.mapgen_index];
+
+            let player_pos = Point::new(map.width / 2, map.height / 2);
+            let (x_chars, y_chars) = ctx.get_char_size();
+
+            let center_x = (x_chars / 2) as i32;
+            let center_y = (y_chars / 2) as i32;
+
+            let min_x = player_pos.x - center_x;
+            let max_x = min_x + x_chars as i32;
+            let min_y = player_pos.y - center_y;
+            let max_y = min_y + y_chars as i32;
+
+            let map_width = map.width - 1;
+            let map_height = map.height - 1;
+
+            let mut draw_batch = DrawBatch::new();
+            draw_batch.target(LAYER_ZERO);
+
+            // Render Map
+            for (y, ty) in (min_y..max_y).enumerate() {
+                for (x, tx) in (min_x..max_x).enumerate() {
+                    let pt = Point::new(tx, ty);
+                    if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
+                        let idx = map.point2d_to_index(pt);
+
+                        if map.revealed.get_bit(pt) {
+                            let (glyph, color) = tile_glyph(idx, &*map);
+                            draw_batch.set(Point::new(x, y), color, glyph);
+                        }
+                    } else if SHOW_BOUNDARIES {
+                        draw_batch.set(Point::new(x, y), ColorPair::new(GRAY, BLACK), to_cp437('·'));
+                    }
+                }
+            }
+
+            draw_batch.submit(BATCH_ZERO).expect("Failed to submit draw batch");
+        }
+    }
 }
 
 impl MapGenMode {
@@ -82,30 +134,14 @@ impl MapGenMode {
         // Delete all Entities
         world.delete_entities(&to_delete)?;
 
-        let map = Map::new(0, 80, 50, "Test Map");
-        let start_pos = map.rooms[0].center();
-        let player = dungeon_mode::spawner::spawn_player(world, start_pos);
-
-        // Insert Resources
-        world.insert(map);
-        world.insert(player);
-        world.insert(start_pos);
+        let player = spawner::spawn_player(world, Point::new(0, 0));
+        world.insert(player); // Player Entity PlaceHolder
+        world.insert(Point::new(0, 0)); // Player Start Placeholder
         world.insert(ParticleBuilder::new());
         world.insert(MasterDungeonMap::new());
-        world.insert(TurnState::PreRun);
+        world.insert(Map::new(1, 64, 64, "New Map"));
 
         self.generate_world_map(world, 1, 0);
-
-        // Spawn Rooms
-        let map = self.mapgen_history.last().unwrap().clone();
-        map.rooms.iter().skip(1).for_each(|room| {
-            spawner::spawn_room(world, room, 1);
-        });
-
-        spawner::magic_mapping_scroll(world, map.rooms[0].center());
-        // spawner::dagger(world, map.rooms[0].center());
-        // spawner::shield(world, map.rooms[0].center());
-        // spawner::fireball_scroll(world, map.rooms[0].center());
 
         Ok(())
     }
@@ -116,12 +152,6 @@ impl MapGenMode {
         // Build a new map and place the player
         let current_depth = world.fetch::<Map>().depth;
         self.generate_world_map(world, current_depth + offset, offset);
-
-        // Spawn Rooms
-        let map = self.mapgen_history.last().unwrap().clone();
-        map.rooms.iter().skip(1).for_each(|room| {
-            spawner::spawn_room(world, room, current_depth + 1);
-        });
 
         // Notify the player
         bo_logging::Logger::new().append("You change level.").log();

@@ -1,5 +1,4 @@
-use bo_ecs::prelude::{Deserialize, Serialize};
-use bracket_terminal::prelude::*;
+use crate::prelude::*;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct GameTile {
@@ -8,6 +7,16 @@ pub struct GameTile {
     pub color: ColorPair,
     pub tile_type: TileType,
     pub glyph: FontCharType,
+}
+
+impl GameTile {
+    pub fn set_as_floor(&mut self) {
+        *self = GameTile::floor()
+    }
+
+    pub fn set_as_wall(&mut self) {
+        *self = GameTile::wall()
+    }
 }
 
 impl GameTile {

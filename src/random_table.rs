@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bracket_random::prelude::RandomNumberGenerator;
 
 pub struct RandomEntry {
     weight: i32,

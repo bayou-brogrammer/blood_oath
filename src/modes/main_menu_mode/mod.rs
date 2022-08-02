@@ -46,7 +46,7 @@ impl MainMenuMode {
         // There's no obvious way to get Emscripten to load the IndexedDB filesystem in time to
         // realize that a save file exists, so always include the Load Game option for it and just
         // check if there really is a save file when the option is chosen instead.
-        if cfg!(target_os = "emscripten") || bo_saveload::does_save_exist() {
+        if cfg!(target_os = "emscripten") || crate::saveload::does_save_exist() {
             actions.push(MainMenuAction::LoadGame);
         }
 
@@ -77,8 +77,8 @@ impl MainMenuMode {
                 ModeResult::YesNoDialogModeResult(result) => match result {
                     YesNoDialogModeResult::No => (ModeControl::Stay, ModeUpdate::Update),
                     YesNoDialogModeResult::Yes => {
-                        bo_saveload::delete_save();
-                        (ModeControl::Switch(MapGenMode::new_game().into()), ModeUpdate::Immediate)
+                        crate::saveload::delete_save();
+                        (ModeControl::Switch(MapGenMode::new_game(world).into()), ModeUpdate::Immediate)
                     }
                 },
                 _ => unreachable!("Unknown popped main_menu result: [{:?}]", result),
@@ -119,7 +119,7 @@ impl MainMenuMode {
                             )
                         }
                         MainMenuAction::NewGame => {
-                            if bo_saveload::does_save_exist() {
+                            if crate::saveload::does_save_exist() {
                                 return (
                                     ModeControl::Push(
                                         YesNoDialogMode::new(
@@ -132,14 +132,14 @@ impl MainMenuMode {
                                 );
                             } else {
                                 return (
-                                    ModeControl::Switch(MapGenMode::new_game().into()),
+                                    ModeControl::Switch(MapGenMode::new_game(world).into()),
                                     ModeUpdate::Immediate,
                                 );
                             }
                         }
                         MainMenuAction::LoadGame => {
-                            if bo_saveload::does_save_exist() {
-                                match bo_saveload::load_game(world) {
+                            if crate::saveload::does_save_exist() {
+                                match crate::saveload::load_game(world) {
                                     Ok(_) => {
                                         return (
                                             ModeControl::Switch(DungeonMode::new(world).into()),

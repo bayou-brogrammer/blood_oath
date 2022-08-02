@@ -1,7 +1,4 @@
 use crate::prelude::*;
-use bracket_geometry::prelude::*;
-use bracket_pathfinding::prelude::*;
-use bracket_terminal::prelude::*;
 
 pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, ColorPair) {
     let (glyph, mut color) = match map.depth {

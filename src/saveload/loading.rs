@@ -1,13 +1,5 @@
-use crate::{BoxedError, SAVE_FILENAME};
-
-use super::*;
-use bracket_geometry::prelude::Point;
-use specs::prelude::*;
-use std::convert::Infallible;
+use crate::prelude::*;
 use std::fs;
-
-use bo_ecs::prelude::*;
-use bo_map::prelude::*;
 
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
@@ -78,7 +70,7 @@ pub fn load_game(ecs: &mut World) -> Result<(), BoxedError> {
             deleteme = Some(e);
 
             let local_map = h.map.clone();
-            bo_map::spatial::set_size(local_map.height, local_map.width);
+            spatial::set_size(local_map.height, local_map.width);
             loaded_map = Some(local_map);
         }
 

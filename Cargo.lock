@@ -61,9 +61,15 @@ checksum = "000444226fcff248f2bc4c7625be32c63caccfecc2723a2b9f78a7487a49c407"
 
 [[package]]
 name = "anyhow"
-version = "1.0.58"
+version = "1.0.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb07d2053ccdbe10e2af2995a2f116c1330396493dc1269f6a91d0ae82e19704"
+checksum = "c91f1f46651137be86f3a2b9a8359f9ab421d04d941c62b5982e1ca21113adf9"
+
+[[package]]
+name = "arrayvec"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "arrayvec"
@@ -113,14 +119,12 @@ name = "bload_oath"
 version = "0.1.0"
 dependencies = [
  "bitvec",
- "bo_ecs",
  "bo_logging",
- "bo_map",
  "bo_pathfinding",
- "bo_saveload",
  "bo_utils",
  "bracket-color",
  "bracket-geometry",
+ "bracket-noise",
  "bracket-random",
  "bracket-terminal",
  "embed-resource",
@@ -128,9 +132,9 @@ dependencies = [
  "lazy_static",
  "parking_lot 0.12.1",
  "rayon",
+ "ron",
  "serde",
- "serde_json",
- "specs",
+ "specs 0.18.0",
  "textwrap",
 ]
 
@@ -139,17 +143,6 @@ name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
-
-[[package]]
-name = "bo_ecs"
-version = "0.1.0"
-dependencies = [
- "bo_utils",
- "bracket-terminal",
- "serde",
- "serde_json",
- "specs",
-]
 
 [[package]]
 name = "bo_logging"
@@ -162,22 +155,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bo_map"
-version = "0.1.0"
-dependencies = [
- "bitvec",
- "bo_ecs",
- "bo_utils",
- "bracket-geometry",
- "bracket-pathfinding",
- "bracket-terminal",
- "lazy_static",
- "parking_lot 0.12.1",
- "serde",
- "specs",
-]
-
-[[package]]
 name = "bo_pathfinding"
 version = "0.1.0"
 dependencies = [
@@ -185,21 +162,6 @@ dependencies = [
  "bracket-geometry",
  "bracket-pathfinding",
  "smallvec",
-]
-
-[[package]]
-name = "bo_saveload"
-version = "0.1.0"
-dependencies = [
- "bo_ecs",
- "bo_logging",
- "bo_map",
- "bo_utils",
- "bracket-geometry",
- "ron",
- "serde",
- "serde_json",
- "specs",
 ]
 
 [[package]]
@@ -241,7 +203,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4db22c32c68bd9330ab982f8ff7ffe7b10541d16ea7d7d51aac074499850402b"
 dependencies = [
  "serde",
+ "specs 0.17.0",
  "ultraviolet",
+]
+
+[[package]]
+name = "bracket-noise"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60de9564f6a658c770666a6cf6ccf837f0669f5906f67de7f089bebe09b46723"
+dependencies = [
+ "bracket-random",
 ]
 
 [[package]]
@@ -869,6 +841,15 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+dependencies = [
+ "ahash",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
@@ -937,12 +918,6 @@ checksum = "b2b3ea6ff95e175473f8ffe6a7eb7c00d054240321b84c57051175fe3c1e075e"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "itoa"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d"
 
 [[package]]
 name = "jni-sys"
@@ -1621,12 +1596,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ryu"
-version = "1.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3f6f92acf49d1b98f7a81226834412ada05458b7364277387724a237f062695"
-
-[[package]]
 name = "safe_arch"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1670,33 +1639,22 @@ checksum = "a0eddf2e8f50ced781f288c19f18621fa72a3779e3cb58dbf23b07469b0abeb4"
 
 [[package]]
 name = "serde"
-version = "1.0.140"
+version = "1.0.141"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc855a42c7967b7c369eb5860f7164ef1f6f81c20c7cc1141f2a604e18723b03"
+checksum = "7af873f2c95b99fcb0bd0fe622a43e29514658873c8ceba88c4cb88833a22500"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.140"
+version = "1.0.141"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f2122636b9fe3b81f1cb25099fcf2d3f542cdb1d45940d56c713158884a05da"
+checksum = "75743a150d003dd863b51dc809bcad0d73f2102c53632f1e954e738192a3413f"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "serde_json"
-version = "1.0.82"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82c2c1fdcd807d1098552c5b9a36e425e42e9fbd7c6a37a8425f390f781f7fa7"
-dependencies = [
- "itoa",
- "ryu",
- "serde",
 ]
 
 [[package]]
@@ -1711,12 +1669,26 @@ dependencies = [
 
 [[package]]
 name = "shred"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb0210289d693217926314867c807e0b7b42f7e23c136adb31f8697f5bf242d3"
+dependencies = [
+ "arrayvec 0.5.2",
+ "hashbrown 0.11.2",
+ "mopa",
+ "rayon",
+ "smallvec",
+ "tynm",
+]
+
+[[package]]
+name = "shred"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "102269e720bb814df57e136161cad841f2b6f411e003ac748fc48aaf2363bea3"
 dependencies = [
- "arrayvec",
- "hashbrown",
+ "arrayvec 0.7.2",
+ "hashbrown 0.12.3",
  "mopa",
  "rayon",
  "shred-derive",
@@ -1792,20 +1764,36 @@ dependencies = [
 
 [[package]]
 name = "specs"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dcc1e4ba7ab1f08ecb3d7e2f693defc3907e2c03bb0924f9978be45b364f83f"
+dependencies = [
+ "crossbeam-queue",
+ "hashbrown 0.11.2",
+ "hibitset",
+ "log",
+ "rayon",
+ "shred 0.12.0",
+ "shrev",
+ "tuple_utils 0.3.0",
+]
+
+[[package]]
+name = "specs"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ea85dac2880f84d4025ff5ace80cda6d8bc43bc88b6a389b9277fcf894b51e9"
 dependencies = [
  "crossbeam-queue",
- "hashbrown",
+ "hashbrown 0.12.3",
  "hibitset",
  "log",
  "rayon",
  "serde",
- "shred",
+ "shred 0.13.0",
  "shrev",
  "specs-derive",
- "tuple_utils",
+ "tuple_utils 0.4.0",
 ]
 
 [[package]]
@@ -1909,6 +1897,12 @@ name = "ttf-parser"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e5d7cd7ab3e47dda6e56542f4bbf3824c15234958c6e1bd6aaa347e93499fdc"
+
+[[package]]
+name = "tuple_utils"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44834418e2c5b16f47bedf35c28e148db099187dd5feee6367fb2525863af4f1"
 
 [[package]]
 name = "tuple_utils"

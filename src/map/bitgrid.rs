@@ -1,8 +1,8 @@
-use bo_ecs::prelude::{Deserialize, Serialize};
-
-use bitvec::prelude::*;
-use bracket_geometry::prelude::Point;
-use bracket_pathfinding::prelude::*;
+use crate::prelude::*;
+use bitvec::{
+    prelude::*,
+    slice::{Iter, IterMut},
+};
 
 /// A width-by-height&-sized BitVec for convenient handling of a grid of boolean values.
 #[derive(Default, Serialize, Deserialize, Clone, Debug)]
@@ -21,9 +21,29 @@ impl BitGrid {
         Self { width, height, bv: bitvec![0; (width * height) as usize] }
     }
 
+    pub fn iter(&self) -> Iter<'_, usize, Lsb0> {
+        self.bv.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<'_, usize, Lsb0> {
+        self.bv.iter_mut()
+    }
+
+    pub fn as_bitslice(&mut self) -> &BitSlice {
+        self.bv.as_bitslice()
+    }
+
+    pub fn as_mut_bitslice(&mut self) -> &mut BitSlice {
+        self.bv.as_mut_bitslice()
+    }
+
     /// Reset all elements to false.
     pub fn zero_out_bits(&mut self) {
         self.bv.set_elements(0);
+    }
+
+    pub fn apply_all_bits(&mut self) {
+        self.bv.as_mut_bitslice().iter_mut().for_each(|mut b| b.set(true));
     }
 
     /// Get the bool at the given x and y.

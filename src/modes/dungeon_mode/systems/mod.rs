@@ -1,5 +1,5 @@
 use super::*;
-use bo_ecs::construct_dispatcher;
+use crate::construct_dispatcher;
 
 mod damage_system;
 mod end_turn;

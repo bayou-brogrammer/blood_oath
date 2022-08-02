@@ -1,36 +1,56 @@
+mod components;
 mod events;
+mod map;
 mod modes;
 mod random_table;
+mod resources;
 mod rex_assets;
 
 pub mod render;
+pub mod saveload;
+pub mod spawner;
 
 mod prelude {
     pub use lazy_static::*;
 
     pub use bracket_color::prelude::*;
     pub use bracket_geometry::prelude::*;
+    pub use bracket_noise::prelude::*;
     pub use bracket_random::prelude::*;
     pub use bracket_terminal::prelude::*;
     pub use bracket_terminal::{embedded_resource, link_resource};
 
     pub use specs::prelude::World;
     pub use specs::prelude::*;
-    pub use specs::saveload::MarkedBuilder;
+    pub use specs::saveload::SimpleMarker;
+    pub use specs::saveload::*;
     pub use specs::Component;
+    pub use specs::ConvertSaveload;
+    pub use std::convert::Infallible;
 
-    pub use bo_ecs::prelude::*;
+    pub use serde::{Deserialize, Serialize};
+
     pub use bo_logging::*;
-    pub use bo_map::prelude::*;
     pub use bo_pathfinding::prelude::*;
     pub use bo_utils::prelude::*;
 
+    pub use crate::render;
+    pub use crate::saveload;
+    pub use crate::spawner;
+
+    pub use crate::components::*;
     pub use crate::events::*;
+    pub use crate::map::*;
     pub use crate::modes::*;
     pub use crate::random_table::*;
-    pub use crate::render;
     pub use crate::render::gui::*;
+    pub use crate::resources::*;
     pub use crate::rex_assets::*;
+    pub use crate::saveload::*;
+
+    pub type NoError = Infallible;
+
+    pub const SHOW_BOUNDARIES: bool = false;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -49,7 +69,7 @@ mod prelude {
     pub const BATCH_TOOLTIPS: usize = 100_000; // Over everything
 }
 
-use bo_saveload::{DMSerializationHelper, SerializationHelper};
+use prelude::saveload::SerializationHelper;
 pub use prelude::*;
 
 pub struct GameWorld {

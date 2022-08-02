@@ -3,12 +3,12 @@ use self::systems::{RenderSystem, RenderTooltips};
 use super::InventoryMode;
 use super::*;
 
-pub mod spawner;
-
+mod dispatcher;
 mod effects;
 mod player;
 mod systems;
 
+pub use dispatcher::*;
 pub use effects::*;
 use player::player_input;
 
@@ -80,7 +80,7 @@ impl DungeonMode {
                 ModeResult::AppQuitDialogModeResult(result) => match result {
                     AppQuitDialogModeResult::Cancelled => {}
                     AppQuitDialogModeResult::Confirmed => {
-                        if let Err(e) = bo_saveload::save_game(world) {
+                        if let Err(e) = saveload::save_game(world) {
                             eprintln!("Warning: bo_saveload::save_game: {}", e);
                         }
                         return (ModeControl::Pop(DungeonModeResult::Done.into()), ModeUpdate::Immediate);
@@ -91,7 +91,10 @@ impl DungeonMode {
                 ModeResult::YesNoDialogModeResult(result) => match result {
                     YesNoDialogModeResult::No => {}
                     YesNoDialogModeResult::Yes => {
-                        return (ModeControl::Switch(MapGenMode::next_level().into()), ModeUpdate::Immediate);
+                        return (
+                            ModeControl::Switch(MapGenMode::next_level(world).into()),
+                            ModeUpdate::Immediate,
+                        );
                     }
                 },
 

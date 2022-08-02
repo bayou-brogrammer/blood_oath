@@ -1,5 +1,3 @@
-use bo_saveload::BoxedError;
-
 use super::{ModeControl, ModeResult, *};
 
 pub const MAIN_MENU_SCREEN_WIDTH: usize = 80;

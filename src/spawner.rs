@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::collections::hash_map::Entry::Vacant;
 use std::collections::HashMap;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,46 +42,78 @@ const MAX_MONSTERS: i32 = 4;
 
 /// Fills a room with stuff!
 pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
-    let mut rng = bo_utils::rng::RNG.lock();
-
-    let spawn_table = room_table(map_depth);
-    let mut spawn_points: HashMap<Point, String> = HashMap::new();
-    let num_spawns = rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3;
-
-    for _i in 0..num_spawns {
-        let mut added = false;
-        let mut tries = 0;
-
-        while !added && tries < 20 {
-            let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-            let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-
-            let pt = Point::new(x, y);
-            if let Vacant(e) = spawn_points.entry(pt) {
-                e.insert(spawn_table.roll(&mut rng));
-                added = true;
-            } else {
-                tries += 1;
+    let mut possible_targets: Vec<usize> = Vec::new();
+    {
+        // Borrow scope - to keep access to the map separated
+        let map = world.fetch::<Map>();
+        for y in room.y1 + 1..room.y2 {
+            for x in room.x1 + 1..room.x2 {
+                let idx = map.xy_idx(x, y);
+                if map.tiles[idx].tile_type == TileType::Floor {
+                    possible_targets.push(idx);
+                }
             }
         }
     }
 
-    spawn_points.iter().for_each(|(pt, name)| match name.as_ref() {
-        "Orc" => orc(world, *pt),
-        "Dagger" => dagger(world, *pt),
-        "Shield" => shield(world, *pt),
-        "Goblin" => goblin(world, *pt),
-        "Rations" => rations(world, *pt),
-        "Bear Trap" => bear_trap(world, *pt),
-        "Longsword" => longsword(world, *pt),
-        "Tower Shield" => tower_shield(world, *pt),
-        "Health Potion" => health_potion(world, *pt),
-        "Fireball Scroll" => fireball_scroll(world, *pt),
-        "Confusion Scroll" => confusion_scroll(world, *pt),
-        "Magic Missile Scroll" => magic_missile_scroll(world, *pt),
-        "Magic Mapping Scroll" => magic_mapping_scroll(world, *pt),
+    spawn_region(world, &possible_targets, map_depth);
+}
+
+/// Fills a region with stuff!
+pub fn spawn_region(world: &mut World, area: &[usize], map_depth: i32) {
+    let spawn_table = room_table(map_depth);
+    let mut spawn_points: HashMap<usize, String> = HashMap::new();
+    let mut areas: Vec<usize> = Vec::from(area);
+
+    // Scope to keep the borrow checker happy
+    {
+        bo_utils::rng::reseed(FILL_ROOM_WITH_SPAWNS);
+        let mut rng = bo_utils::rng::RNG.lock();
+
+        let num_spawns =
+            i32::min(areas.len() as i32, rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3);
+        if num_spawns == 0 {
+            return;
+        }
+
+        for _i in 0..num_spawns {
+            let array_index =
+                if areas.len() == 1 { 0usize } else { (rng.roll_dice(1, areas.len() as i32) - 1) as usize };
+
+            let map_idx = areas[array_index];
+            spawn_points.insert(map_idx, spawn_table.roll(&mut rng));
+            areas.remove(array_index);
+        }
+    }
+
+    // Actually spawn the monsters
+    for spawn in spawn_points.iter() {
+        spawn_entity(world, &spawn);
+    }
+}
+
+/// Spawns a named entity (name in tuple.1) at the location in (tuple.0)
+fn spawn_entity(world: &mut World, spawn: &(&usize, &String)) {
+    let map = world.fetch::<Map>();
+    let pt = map.index_to_point2d(*spawn.0);
+    std::mem::drop(map);
+
+    match spawn.1.as_ref() {
+        "Orc" => orc(world, pt),
+        "Dagger" => dagger(world, pt),
+        "Shield" => shield(world, pt),
+        "Goblin" => goblin(world, pt),
+        "Rations" => rations(world, pt),
+        "Bear Trap" => bear_trap(world, pt),
+        "Longsword" => longsword(world, pt),
+        "Tower Shield" => tower_shield(world, pt),
+        "Health Potion" => health_potion(world, pt),
+        "Fireball Scroll" => fireball_scroll(world, pt),
+        "Confusion Scroll" => confusion_scroll(world, pt),
+        "Magic Missile Scroll" => magic_missile_scroll(world, pt),
+        "Magic Mapping Scroll" => magic_mapping_scroll(world, pt),
         _ => {}
-    });
+    }
 }
 
 fn orc(world: &mut World, pt: Point) {

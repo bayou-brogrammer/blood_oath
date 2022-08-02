@@ -1,6 +1,6 @@
 use bracket_terminal::prelude::Point;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TurnState {
     PreRun,
     GameOver,

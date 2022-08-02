@@ -1,5 +1,5 @@
+use crate::prelude::*;
 use crate::BoxedError;
-use specs::prelude::*;
 use std::path::Path;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -57,13 +57,11 @@ pub fn save_game(_ecs: &mut World) -> Result<(), BoxedError> {
 #[cfg(not(target_arch = "wasm32"))]
 #[rustfmt::skip]
 pub fn save_game(ecs: &mut World) -> Result<(), BoxedError> {
-    use std::convert::Infallible;
     use ron::Options;
     use specs::saveload::MarkedBuilder;
     use crate::{DMSerializationHelper, SerializationHelper};
 
-    use bo_ecs::prelude::*;
-    use bo_map::prelude::*;
+    
 
 
     // Create helper

@@ -9,7 +9,7 @@ pub enum PlayerInputResult {
     ShowDrop,
     ShowRemove,
     ShowInventory,
-    ShowInventoryShortcut,
+    _ShowInventoryShortcut,
 }
 
 #[rustfmt::skip]
