@@ -1,0 +1,21 @@
+use super::*;
+
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum EquipmentSlot {
+    Melee,
+    Shield,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Equippable {
+    pub slot: EquipmentSlot,
+}
+
+#[derive(Clone)]
+pub struct Equipped {
+    pub owner: Entity,
+    pub slot: EquipmentSlot,
+}
+
+impl_new!(Equippable, slot: EquipmentSlot);
+impl_new!(Equipped, owner: Entity, slot: EquipmentSlot);
