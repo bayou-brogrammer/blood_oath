@@ -2,23 +2,23 @@ use crate::prelude::*;
 
 pub mod dialogs;
 pub mod dungeon_mode;
-pub mod game_over_mode;
-pub mod inventory_mode;
-pub mod main_menu_mode;
-pub mod map_gen;
+// pub mod game_over_mode;
+// pub mod inventory_mode;
+// pub mod main_menu_mode;
+// pub mod map_gen;
 pub mod menu_memory;
-pub mod targeting_mode;
+// pub mod targeting_mode;
 
 use app_quit_dialog::{AppQuitDialogMode, AppQuitDialogModeResult};
 use dungeon_mode::{DungeonMode, DungeonModeResult};
-use game_over_mode::{GameOverMode, GameOverModeResult};
-use inventory_mode::{EquipmentActionMode, EquipmentActionModeResult};
-use inventory_mode::{InventoryActionMode, InventoryActionModeResult};
-use inventory_mode::{InventoryMode, InventoryModeResult};
+// use game_over_mode::{GameOverMode, GameOverModeResult};
+// use inventory_mode::{EquipmentActionMode, EquipmentActionModeResult};
+// use inventory_mode::{InventoryActionMode, InventoryActionModeResult};
+// use inventory_mode::{InventoryMode, InventoryModeResult};
 
-use main_menu_mode::{MainMenuMode, MainMenuModeResult};
-use map_gen::{MapGenMode, MapGenModeResult};
-use targeting_mode::{TargetingMode, TargetingModeResult};
+// use main_menu_mode::{MainMenuMode, MainMenuModeResult};
+// use map_gen::{MapGenMode, MapGenModeResult};
+// use targeting_mode::{TargetingMode, TargetingModeResult};
 
 use dialogs::*;
 pub use menu_memory::MenuMemory;
@@ -49,59 +49,59 @@ macro_rules! impl_from {
 
 #[derive(Debug)]
 pub enum Mode {
-    MapGenMode(MapGenMode),
+    // MapGenMode(MapGenMode),
     DungeonMode(DungeonMode),
-    MainMenuMode(MainMenuMode),
-    GameOverMode(GameOverMode),
-    InventoryMode(InventoryMode),
-    TargetingMode(TargetingMode),
+    // MainMenuMode(MainMenuMode),
+    // GameOverMode(GameOverMode),
+    // InventoryMode(InventoryMode),
+    // TargetingMode(TargetingMode),
     MessageBoxMode(MessageBoxMode),
     YesNoDialogMode(YesNoDialogMode),
     AppQuitDialogMode(AppQuitDialogMode),
-    InventoryActionMode(InventoryActionMode),
-    EquipmentActionMode(EquipmentActionMode),
+    // InventoryActionMode(InventoryActionMode),
+    // EquipmentActionMode(EquipmentActionMode),
 }
 
-impl_from!(Mode, MapGenMode);
+// impl_from!(Mode, MapGenMode);
 impl_from!(Mode, DungeonMode);
-impl_from!(Mode, MainMenuMode);
-impl_from!(Mode, GameOverMode);
-impl_from!(Mode, InventoryMode);
-impl_from!(Mode, TargetingMode);
+// impl_from!(Mode, MainMenuMode);
+// impl_from!(Mode, GameOverMode);
+// impl_from!(Mode, InventoryMode);
+// impl_from!(Mode, TargetingMode);
 impl_from!(Mode, MessageBoxMode);
 impl_from!(Mode, YesNoDialogMode);
 impl_from!(Mode, AppQuitDialogMode);
-impl_from!(Mode, InventoryActionMode);
-impl_from!(Mode, EquipmentActionMode);
+// impl_from!(Mode, InventoryActionMode);
+// impl_from!(Mode, EquipmentActionMode);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
 pub enum ModeResult {
-    MapGenModeResult(MapGenModeResult),
+    // MapGenModeResult(MapGenModeResult),
     DungeonModeResult(DungeonModeResult),
-    MainMenuModeResult(MainMenuModeResult),
-    GameOverModeResult(GameOverModeResult),
-    InventoryModeResult(InventoryModeResult),
-    TargetingModeResult(TargetingModeResult),
+    // MainMenuModeResult(MainMenuModeResult),
+    // GameOverModeResult(GameOverModeResult),
+    // InventoryModeResult(InventoryModeResult),
+    // TargetingModeResult(TargetingModeResult),
     MessageBoxModeResult(MessageBoxModeResult),
     YesNoDialogModeResult(YesNoDialogModeResult),
     AppQuitDialogModeResult(AppQuitDialogModeResult),
-    InventoryActionModeResult(InventoryActionModeResult),
-    EquipmentActionModeResult(EquipmentActionModeResult),
+    // InventoryActionModeResult(InventoryActionModeResult),
+    // EquipmentActionModeResult(EquipmentActionModeResult),
 }
 
-impl_from!(ModeResult, MapGenModeResult);
+// impl_from!(ModeResult, MapGenModeResult);
 impl_from!(ModeResult, DungeonModeResult);
-impl_from!(ModeResult, MainMenuModeResult);
-impl_from!(ModeResult, GameOverModeResult);
-impl_from!(ModeResult, InventoryModeResult);
-impl_from!(ModeResult, TargetingModeResult);
+// impl_from!(ModeResult, MainMenuModeResult);
+// impl_from!(ModeResult, GameOverModeResult);
+// impl_from!(ModeResult, InventoryModeResult);
+// impl_from!(ModeResult, TargetingModeResult);
 impl_from!(ModeResult, MessageBoxModeResult);
 impl_from!(ModeResult, YesNoDialogModeResult);
 impl_from!(ModeResult, AppQuitDialogModeResult);
-impl_from!(ModeResult, InventoryActionModeResult);
-impl_from!(ModeResult, EquipmentActionModeResult);
+// impl_from!(ModeResult, InventoryActionModeResult);
+// impl_from!(ModeResult, EquipmentActionModeResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -139,50 +139,52 @@ impl Mode {
         pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
         match self {
-            Mode::MapGenMode(x) => x.tick(ctx, world, pop_result),
-            Mode::DungeonMode(x) => x.tick(ctx, world, pop_result),
-            Mode::MainMenuMode(x) => x.tick(ctx, world, pop_result),
-            Mode::GameOverMode(x) => x.tick(ctx, world, pop_result),
-            Mode::InventoryMode(x) => x.tick(ctx, world, pop_result),
-            Mode::TargetingMode(x) => x.tick(ctx, world, pop_result),
-            Mode::MessageBoxMode(x) => x.tick(ctx, world, pop_result),
-            Mode::YesNoDialogMode(x) => x.tick(ctx, world, pop_result),
-            Mode::AppQuitDialogMode(x) => x.tick(ctx, world, pop_result),
-            Mode::InventoryActionMode(x) => x.tick(ctx, world, pop_result),
-            Mode::EquipmentActionMode(x) => x.tick(ctx, world, pop_result),
+            x => x.tick(ctx, world, pop_result),
+            // Mode::MapGenMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::DungeonMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::MainMenuMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::GameOverMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::InventoryMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::TargetingMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::MessageBoxMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::YesNoDialogMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::AppQuitDialogMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::InventoryActionMode(x) => x.tick(ctx, world, pop_result),
+            // Mode::EquipmentActionMode(x) => x.tick(ctx, world, pop_result),
         }
     }
 
     fn draw(&mut self, ctx: &mut BTerm, world: &mut World, active: bool) {
         match self {
-            Mode::MapGenMode(x) => x.draw(ctx, world, active),
-            Mode::DungeonMode(x) => x.draw(ctx, world, active),
-            Mode::MainMenuMode(x) => x.draw(ctx, world, active),
-            Mode::GameOverMode(x) => x.draw(ctx, world, active),
-            Mode::InventoryMode(x) => x.draw(ctx, world, active),
-            Mode::TargetingMode(x) => x.draw(ctx, world, active),
-            Mode::MessageBoxMode(x) => x.draw(ctx, world, active),
-            Mode::YesNoDialogMode(x) => x.draw(ctx, world, active),
-            Mode::AppQuitDialogMode(x) => x.draw(ctx, world, active),
-            Mode::InventoryActionMode(x) => x.draw(ctx, world, active),
-            Mode::EquipmentActionMode(x) => x.draw(ctx, world, active),
+            x => x.draw(ctx, world, active),
+            // Mode::MapGenMode(x) => x.draw(ctx, world, active),
+            // Mode::DungeonMode(x) => x.draw(ctx, world, active),
+            // Mode::MainMenuMode(x) => x.draw(ctx, world, active),
+            // Mode::GameOverMode(x) => x.draw(ctx, world, active),
+            // Mode::InventoryMode(x) => x.draw(ctx, world, active),
+            // Mode::TargetingMode(x) => x.draw(ctx, world, active),
+            // Mode::MessageBoxMode(x) => x.draw(ctx, world, active),
+            // Mode::YesNoDialogMode(x) => x.draw(ctx, world, active),
+            // Mode::AppQuitDialogMode(x) => x.draw(ctx, world, active),
+            // Mode::InventoryActionMode(x) => x.draw(ctx, world, active),
+            // Mode::EquipmentActionMode(x) => x.draw(ctx, world, active),
         }
     }
 
     /// Should the current mode draw modes behind it in the stack?
     fn draw_behind(&self) -> bool {
         match self {
-            Mode::MapGenMode(_) => false,
+            // Mode::MapGenMode(_) => false,
             Mode::DungeonMode(_) => false,
-            Mode::GameOverMode(_) => false,
-            Mode::MainMenuMode(_) => false,
-            Mode::InventoryMode(_) => true,
-            Mode::TargetingMode(_) => false,
+            // Mode::GameOverMode(_) => false,
+            // Mode::MainMenuMode(_) => false,
+            // Mode::InventoryMode(_) => true,
+            // Mode::TargetingMode(_) => false,
             Mode::MessageBoxMode(_) => true,
             Mode::YesNoDialogMode(_) => true,
             Mode::AppQuitDialogMode(_) => true,
-            Mode::InventoryActionMode(_) => true,
-            Mode::EquipmentActionMode(_) => true,
+            // Mode::InventoryActionMode(_) => true,
+            // Mode::EquipmentActionMode(_) => true,
         }
     }
 }
@@ -243,7 +245,7 @@ impl ModeStack {
                 let draw_from = self.stack.iter().rposition(|mode| !mode.draw_behind()).unwrap_or(0);
                 let top = self.stack.len().saturating_sub(1);
 
-                bo_utils::prelude::clear_all_consoles(ctx, [LAYER_ZERO, LAYER_TEXT]);
+                clear_all_consoles(ctx, [LAYER_ZERO, LAYER_TEXT]);
 
                 // always draw dungeon
                 if top > 0 {

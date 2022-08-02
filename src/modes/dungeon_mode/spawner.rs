@@ -42,7 +42,7 @@ const MAX_MONSTERS: i32 = 4;
 
 /// Fills a room with stuff!
 pub fn spawn_room(world: &mut World, room: &Rect, map_depth: i32) {
-    let mut rng = bo_utils::rng::RNG.lock();
+    let mut rng = crate::rng::RNG.lock();
 
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<Point, String> = HashMap::new();

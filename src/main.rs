@@ -1,7 +1,18 @@
+mod camera;
+mod components;
 // mod modes;
+mod magicnum;
+mod map;
+mod random_table;
+mod resources;
+mod utils;
+
+pub mod rng;
+pub mod spawner;
 
 mod prelude {
-    pub use lazy_static::*;
+    pub use lazy_static::lazy_static;
+    pub use serde::{Deserialize, Serialize};
 
     pub use bracket_color::prelude::*;
     pub use bracket_geometry::prelude::*;
@@ -12,11 +23,18 @@ mod prelude {
     pub use hecs::*;
     pub use hecs_schedule::*;
 
-    pub use bo_ecs::prelude::*;
-    pub use bo_logging::*;
-    pub use bo_map::prelude::*;
+    pub use crate::impl_new;
+    pub use crate::rng;
+    pub use crate::spawner;
     pub use bo_pathfinding::prelude::*;
-    pub use bo_utils::prelude::*;
+
+    pub use crate::camera::*;
+    pub use crate::components::*;
+    pub use crate::magicnum::*;
+    pub use crate::map::*;
+    pub use crate::random_table::*;
+    pub use crate::resources::*;
+    pub use crate::utils::*;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -40,9 +58,6 @@ pub use prelude::*;
 pub struct GameWorld {
     pub world: World,
     pub schedule: Schedule,
-    pub wait_for_event: bool,
-    pub mode_stack: ModeStack,
-    pub active_mouse_pos: Point,
 }
 
 impl Default for GameWorld {
@@ -55,20 +70,12 @@ impl GameWorld {
     pub fn new() -> Self {
         let mut world = World::new();
 
-        // Spawn some entities
-        let a = world.spawn((TestComp { name: "Name".to_string() },));
+        let map = Map::new(1, 80, 50, "Test");
+        let manager = ResourceManager::default();
 
-        // let get_system = move |w: SubWorld<&TestComp>| -> anyhow::Result<()> {
-        //     for (e, i) in w.query::<&TestComp>().iter() {
-        //         println!("Got: {:?}", i.name);
-        //     }
+        manager.insert(map);
 
-        //     Ok(())
-        // };
-
-        if let Ok(i) = world.get::<TestComp>(a) {
-            println!("Got: {:?}", *i);
-        }
+        // world.spawn(Position(Pgoint::new(0, 0)));
 
         // Construct a schedule
         let mut schedule = Schedule::builder()

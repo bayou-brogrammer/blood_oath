@@ -15,14 +15,7 @@ lto = true
 
 
 [dependencies]
-# Internal Crates
-bo_ecs = { path = "bo_ecs/" }
-bo_map = { path = "bo_map/" }
-bo_utils = { path = "bo_utils/" }
-bo_logging = { path = "bo_logging/" }
-bo_saveload = { path = "bo_saveload/" }
 bo_pathfinding = { path = "bo_pathfinding/" }
-
 # Core Crates
 bracket-terminal = "^0.8.5"
 bracket-geometry = { version = "^0.8.3", features = ['serde'] }
@@ -32,8 +25,9 @@ bracket-random = { version = "^0.8.2", features = ['serde'] }
 # Utility Crates
 lazy_static = "1.4.0"
 parking_lot = { version = "^0.12.1", features = ["nightly"] }
-bitvec = "^1.0.1"
+bitvec = { version = "^1.0.1", features = ["serde"] }
 textwrap = "^0.15.0"
+indexmap = "1.9.1"
 
 # Serde
 serde = { version = "^1.0.140", features = ["derive"] }
@@ -45,13 +39,8 @@ serde_json = "^1.0.82"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 rayon = { version = "^1.5.3" }
-specs = { version = "^0.18.0", default_features = false, features = [
-  "parallel",
-  "derive",
-  "serde",
-] }
-hecs = "0.7.7"
-hecs-schedule = "0.6.2"
+hecs = "0.9.0"
+hecs-schedule = { git = "https://github.com/lecoqjacob/hecs-schedule" }
 anyhow = "1.0.58"
 
 ####################
@@ -60,10 +49,6 @@ anyhow = "1.0.58"
 
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.2.7", features = ["js"] }
-specs = { version = "^0.18.0", default_features = false, features = [
-  "derive",
-  "serde",
-] }
 
 [build-dependencies]
 embed-resource = "1.7.3"
@@ -71,11 +56,4 @@ embed-resource = "1.7.3"
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
-members = [
-  "bo_map",
-  "bo_ecs",
-  "bo_utils",
-  "bo_logging",
-  "bo_saveload",
-  "bo_pathfinding",
-]
+members = ["bo_pathfinding"]
