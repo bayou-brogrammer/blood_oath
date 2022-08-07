@@ -3,15 +3,11 @@ use super::*;
 pub struct DoorPlacement {}
 
 impl MetaMapBuilder for DoorPlacement {
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.doors(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.doors(build_data); }
 }
 
 impl DoorPlacement {
-    pub fn new() -> Box<DoorPlacement> {
-        Box::new(DoorPlacement {})
-    }
+    pub fn new() -> Box<DoorPlacement> { Box::new(DoorPlacement {}) }
 
     fn door_possible(&self, build_data: &mut BuilderMap, idx: usize) -> bool {
         let mut blocked = false;

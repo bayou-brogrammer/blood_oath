@@ -17,13 +17,9 @@ pub struct GameCamera {
 }
 
 impl GameCamera {
-    pub fn new(player_pos: Point) -> Self {
-        Self { player_pos }
-    }
+    pub fn new(player_pos: Point) -> Self { Self { player_pos } }
 
-    pub fn on_player_move(&mut self, player_position: Point) {
-        self.player_pos = player_position;
-    }
+    pub fn on_player_move(&mut self, player_position: Point) { self.player_pos = player_position; }
 
     pub fn get_screen_bounds(&self) -> (i32, i32, i32, i32) {
         let (x_chars, y_chars) = (48, 44);

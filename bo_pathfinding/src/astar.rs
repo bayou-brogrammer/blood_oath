@@ -38,30 +38,22 @@ struct Node {
 }
 
 impl PartialEq for Node {
-    fn eq(&self, other: &Self) -> bool {
-        self.f == other.f
-    }
+    fn eq(&self, other: &Self) -> bool { self.f == other.f }
 }
 
 impl Eq for Node {}
 
 impl Ord for Node {
-    fn cmp(&self, b: &Self) -> Ordering {
-        b.f.partial_cmp(&self.f).unwrap()
-    }
+    fn cmp(&self, b: &Self) -> Ordering { b.f.partial_cmp(&self.f).unwrap() }
 }
 
 impl PartialOrd for Node {
-    fn partial_cmp(&self, b: &Self) -> Option<Ordering> {
-        b.f.partial_cmp(&self.f)
-    }
+    fn partial_cmp(&self, b: &Self) -> Option<Ordering> { b.f.partial_cmp(&self.f) }
 }
 
 impl NavigationPath {
     /// Makes a new (empty) NavigationPath
-    pub fn new() -> NavigationPath {
-        NavigationPath { destination: 0, success: false, steps: Vec::new() }
-    }
+    pub fn new() -> NavigationPath { NavigationPath { destination: 0, success: false, steps: Vec::new() } }
 }
 
 /// Private structure for calculating an A-Star navigation path.

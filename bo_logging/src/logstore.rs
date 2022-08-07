@@ -9,13 +9,9 @@ lazy_static! {
     static ref LOG: Mutex<Vec<Vec<LogFragment>>> = Mutex::new(Vec::new());
 }
 
-pub fn append_entry(fragments: Vec<LogFragment>) {
-    LOG.lock().push(fragments);
-}
+pub fn append_entry(fragments: Vec<LogFragment>) { LOG.lock().push(fragments); }
 
-pub fn clear_log() {
-    LOG.lock().clear();
-}
+pub fn clear_log() { LOG.lock().clear(); }
 
 pub fn print_log(console: usize, pos: Point) {
     let mut batch = DrawBatch::new();
@@ -36,9 +32,7 @@ pub fn print_log(console: usize, pos: Point) {
     batch.submit(5000).expect("Batch error");
 }
 
-pub fn clone_log() -> Vec<Vec<LogFragment>> {
-    LOG.lock().clone()
-}
+pub fn clone_log() -> Vec<Vec<LogFragment>> { LOG.lock().clone() }
 
 pub fn restore_log(log: &mut Vec<Vec<LogFragment>>) {
     LOG.lock().clear();

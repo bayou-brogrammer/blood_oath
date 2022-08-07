@@ -77,9 +77,7 @@ impl BuilderChain {
         };
     }
 
-    pub fn with(&mut self, metabuilder: Box<dyn MetaMapBuilder>) {
-        self.builders.push(metabuilder);
-    }
+    pub fn with(&mut self, metabuilder: Box<dyn MetaMapBuilder>) { self.builders.push(metabuilder); }
 
     pub fn build_map(&mut self) {
         match &mut self.starter {

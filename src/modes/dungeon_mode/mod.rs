@@ -20,9 +20,7 @@ pub struct DungeonMode {
 }
 
 impl std::fmt::Debug for DungeonMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("DungeonMode").finish()
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result { f.debug_struct("DungeonMode").finish() }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

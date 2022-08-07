@@ -15,9 +15,7 @@ pub struct VoronoiCellBuilder {
 
 impl InitialMapBuilder for VoronoiCellBuilder {
     #[allow(dead_code)]
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.build(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.build(build_data); }
 }
 
 impl VoronoiCellBuilder {

@@ -5,21 +5,15 @@ struct Tooltip {
 }
 
 impl Tooltip {
-    fn new() -> Tooltip {
-        Tooltip { lines: Vec::new() }
-    }
+    fn new() -> Tooltip { Tooltip { lines: Vec::new() } }
 
     fn add<S: ToString>(&mut self, color: (u8, u8, u8), line: S) {
         self.lines.push((color, line.to_string()));
     }
 
-    fn width(&self) -> i32 {
-        (self.lines.iter().map(|s| s.1.len()).max().unwrap() + 2) as i32
-    }
+    fn width(&self) -> i32 { (self.lines.iter().map(|s| s.1.len()).max().unwrap() + 2) as i32 }
 
-    fn height(&self) -> i32 {
-        self.lines.len() as i32 + 1
-    }
+    fn height(&self) -> i32 { self.lines.len() as i32 + 1 }
 
     fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
         draw_batch.draw_box(

@@ -53,7 +53,5 @@ impl UnifiedDispatcher for MultiThreadedDispatcher {
         }
     }
 
-    fn setup(&mut self, ecs: &mut World) {
-        self.dispatcher.setup(ecs);
-    }
+    fn setup(&mut self, ecs: &mut World) { self.dispatcher.setup(ecs); }
 }

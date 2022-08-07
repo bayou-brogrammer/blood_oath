@@ -21,9 +21,7 @@ pub fn spawn_player(world: &mut World, start_pos: Point) -> Entity {
         .build()
 }
 
-fn room_table(map_depth: i32) -> MasterTable {
-    raws::get_spawn_table_for_depth(&RAWS.lock(), map_depth)
-}
+fn room_table(map_depth: i32) -> MasterTable { raws::get_spawn_table_for_depth(&RAWS.lock(), map_depth) }
 
 const MAX_MONSTERS: i32 = 4;
 

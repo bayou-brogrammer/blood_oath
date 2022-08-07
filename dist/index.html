@@ -5,10 +5,10 @@
   </head>
 
   <body style="background-color: black; text-align: center">
-    <script src="./staging/bload_oath.js"></script>
+    <script src="./wasm/bload_oath.js"></script>
     <script>
       window.addEventListener("load", async () => {
-        await wasm_bindgen("./staging/bload_oath_bg.wasm");
+        await wasm_bindgen("./wasm/bload_oath_bg.wasm");
       });
     </script>
 

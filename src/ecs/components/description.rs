@@ -5,7 +5,5 @@ use super::*;
 pub struct Description(pub String);
 
 impl Description {
-    pub fn new<S: ToString>(description: S) -> Self {
-        Description(description.to_string())
-    }
+    pub fn new<S: ToString>(description: S) -> Self { Description(description.to_string()) }
 }

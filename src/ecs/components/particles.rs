@@ -7,9 +7,7 @@ pub struct ParticleBuilder {
 }
 
 impl ParticleBuilder {
-    pub fn new() -> ParticleBuilder {
-        ParticleBuilder { requests: Vec::new() }
-    }
+    pub fn new() -> ParticleBuilder { ParticleBuilder { requests: Vec::new() } }
 
     pub fn request(&mut self, pt: Point, color: ColorPair, glyph: FontCharType, lifetime: f32) {
         self.requests.push(ParticleRequest::new(lifetime, pt, color, glyph));
@@ -17,9 +15,7 @@ impl ParticleBuilder {
 }
 
 impl Default for ParticleBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

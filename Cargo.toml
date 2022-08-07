@@ -13,28 +13,24 @@ opt-level = 1
 codegen-units = 1
 lto = true
 
-
 [dependencies]
 # Internal Crates
-bo_utils = { path = "bo_utils/" }
 bo_logging = { path = "bo_logging/" }
 bo_pathfinding = { path = "bo_pathfinding/" }
+bo_utils = { path = "bo_utils/" }
 
 # Core Crates
-bracket-lib = { git = "https://github.com/lecoqjacob/bracket-lib", branch = "custom", features = [
-  'serde',
-  'specs',
-] }
+bracket-lib = { git = "https://github.com/lecoqjacob/bracket-lib", branch = "custom", features = ['serde', 'specs'] }
 
 # Utility Crates
+bitvec = { version = "^1.0.1", features = ["serde"] }
 lazy_static = "1.4.0"
 parking_lot = { version = "^0.12.1", features = ["nightly"] }
-bitvec = { version = "^1.0.1", features = ["serde"] }
 textwrap = "^0.15.0"
 
 # Serde
-serde = { version = "^1.0.140", features = ["derive"] }
 ron = "^0.7.1"
+serde = { version = "^1.0.140", features = ["derive"] }
 
 ####################
 # Non WASM Building
@@ -42,22 +38,14 @@ ron = "^0.7.1"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 rayon = { version = "^1.5.3" }
-specs = { version = "^0.18.0", default_features = false, features = [
-  "parallel",
-  "derive",
-  "serde",
-] }
+specs = { version = "^0.18.0", features = ["derive", "serde"] }
 
 ####################
 # WASM Building
 ####################
-
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.2.7", features = ["js"] }
-specs = { version = "^0.18.0", default_features = false, features = [
-  "derive",
-  "serde",
-] }
+specs = { version = "^0.18.0", default_features = false, features = ["derive", "serde"] }
 
 [build-dependencies]
 embed-resource = "1.7.3"

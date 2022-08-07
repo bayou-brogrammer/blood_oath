@@ -3,15 +3,11 @@ use super::*;
 pub struct BspCorridors {}
 
 impl MetaMapBuilder for BspCorridors {
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.corridors(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.corridors(build_data); }
 }
 
 impl BspCorridors {
-    pub fn new() -> Box<BspCorridors> {
-        Box::new(BspCorridors {})
-    }
+    pub fn new() -> Box<BspCorridors> { Box::new(BspCorridors {}) }
 
     fn corridors(&mut self, build_data: &mut BuilderMap) {
         let rooms: Vec<Rect>;

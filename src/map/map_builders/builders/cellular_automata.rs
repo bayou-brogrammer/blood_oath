@@ -3,21 +3,15 @@ use super::*;
 pub struct CellularAutomataBuilder {}
 
 impl InitialMapBuilder for CellularAutomataBuilder {
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.build(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.build(build_data); }
 }
 
 impl MetaMapBuilder for CellularAutomataBuilder {
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.apply_iteration(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.apply_iteration(build_data); }
 }
 
 impl CellularAutomataBuilder {
-    pub fn new() -> Box<CellularAutomataBuilder> {
-        Box::new(CellularAutomataBuilder {})
-    }
+    pub fn new() -> Box<CellularAutomataBuilder> { Box::new(CellularAutomataBuilder {}) }
 
     fn apply_iteration(&mut self, build_data: &mut BuilderMap) {
         let mut newtiles = build_data.map.tiles.clone();

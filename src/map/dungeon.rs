@@ -36,9 +36,7 @@ impl MasterDungeonMap {
         // }
     }
 
-    pub fn store_map(&mut self, map: &Map) {
-        self.maps.insert(map.depth, map.clone());
-    }
+    pub fn store_map(&mut self, map: &Map) { self.maps.insert(map.depth, map.clone()); }
 
     pub fn get_map(&self, depth: i32) -> Option<Map> {
         if self.maps.contains_key(&depth) {

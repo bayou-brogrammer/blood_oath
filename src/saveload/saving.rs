@@ -26,9 +26,7 @@ pub fn delete_save() {
     }
 }
 
-pub fn does_save_exist() -> bool {
-    Path::new(SAVE_FILENAME).exists()
-}
+pub fn does_save_exist() -> bool { Path::new(SAVE_FILENAME).exists() }
 
 #[cfg(not(target_arch = "wasm32"))]
 macro_rules! serialize_individually {
@@ -50,9 +48,7 @@ macro_rules! serialize_individually {
 ///////////////////////////////////////////////////////////////////////////////
 
 #[cfg(target_arch = "wasm32")]
-pub fn save_game(_ecs: &mut World) -> Result<(), BoxedError> {
-    Ok(())
-}
+pub fn save_game(_ecs: &mut World) -> Result<(), BoxedError> { Ok(()) }
 
 #[cfg(not(target_arch = "wasm32"))]
 #[rustfmt::skip]

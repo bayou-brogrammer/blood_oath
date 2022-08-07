@@ -80,9 +80,7 @@ pub struct GameWorld {
 }
 
 impl Default for GameWorld {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 impl GameWorld {

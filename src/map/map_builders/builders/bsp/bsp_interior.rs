@@ -7,15 +7,11 @@ pub struct BspInteriorBuilder {
 }
 
 impl InitialMapBuilder for BspInteriorBuilder {
-    fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.build(build_data);
-    }
+    fn build_map(&mut self, build_data: &mut BuilderMap) { self.build(build_data); }
 }
 
 impl BspInteriorBuilder {
-    pub fn new() -> Box<BspInteriorBuilder> {
-        Box::new(BspInteriorBuilder { rects: Vec::new() })
-    }
+    pub fn new() -> Box<BspInteriorBuilder> { Box::new(BspInteriorBuilder { rects: Vec::new() }) }
 
     fn build(&mut self, build_data: &mut BuilderMap) {
         let mut rooms: Vec<Rect> = Vec::new();
