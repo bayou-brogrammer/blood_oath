@@ -1,6 +1,6 @@
 #![allow(dead_code)] //TODO: remove this
 
-use bracket_terminal::prelude::*;
+use bracket_lib::prelude::*;
 use logstore::append_entry;
 
 use super::*;

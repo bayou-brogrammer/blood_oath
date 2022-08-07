@@ -5,7 +5,10 @@ authors = ["Jacob LeCoq <lecoqjacob@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-bracket-terminal = "^0.8.5"
-bracket-random = "^0.8.2"
+bracket-lib = { git = "https://github.com/lecoqjacob/bracket-lib", branch = "custom", features = [
+  'serde',
+  'specs',
+] }
+
 lazy_static = "^1.4.0"
 parking_lot = "^0.12.1"

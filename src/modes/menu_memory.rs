@@ -1,11 +1,12 @@
 use super::*;
 use std::ops::{Index, IndexMut};
 
-#[derive(Default)]
 pub struct MenuMemory {
     menu: [usize; 7],
-    pub pick_up_pos: Position,
+    pub pick_up_pos: Point,
 }
+
+impl_default!(MenuMemory);
 
 impl MenuMemory {
     pub const INVENTORY: usize = 0;
@@ -17,7 +18,7 @@ impl MenuMemory {
     pub const PICK_UP: usize = 6;
 
     pub fn new() -> Self {
-        Self { menu: [0; 7], pick_up_pos: Position::zero() }
+        Self { menu: [0; 7], pick_up_pos: Point::zero() }
     }
 
     pub fn reset(&mut self) {
@@ -25,7 +26,7 @@ impl MenuMemory {
             *m = 0;
         }
 
-        self.pick_up_pos = Position::zero();
+        self.pick_up_pos = Point::zero();
     }
 }
 

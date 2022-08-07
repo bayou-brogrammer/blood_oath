@@ -1,4 +1,4 @@
-use bracket_random::prelude::RandomNumberGenerator;
+use bracket_lib::random::RandomNumberGenerator;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 

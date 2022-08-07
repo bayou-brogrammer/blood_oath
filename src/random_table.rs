@@ -1,8 +1,9 @@
-use bracket_random::prelude::RandomNumberGenerator;
+use crate::prelude::*;
 
+#[derive(Debug)]
 pub struct RandomEntry {
-    weight: i32,
     name: String,
+    weight: i32,
 }
 
 impl RandomEntry {
@@ -12,9 +13,40 @@ impl RandomEntry {
 }
 
 #[derive(Default)]
+pub struct MasterTable {
+    items: RandomTable,
+    mobs: RandomTable,
+    props: RandomTable,
+}
+
+impl MasterTable {
+    pub fn new() -> MasterTable {
+        MasterTable { items: RandomTable::new(), mobs: RandomTable::new(), props: RandomTable::new() }
+    }
+
+    pub fn add<S: ToString>(&mut self, name: S, weight: i32, raws: &RawMaster) {
+        match raws::spawn_type_by_name(raws, &name.to_string()) {
+            SpawnTableType::Mob => self.mobs.add(name, weight),
+            SpawnTableType::Item => self.items.add(name, weight),
+            SpawnTableType::Prop => self.props.add(name, weight),
+        }
+    }
+
+    pub fn roll(&self) -> String {
+        let roll = crate::rng::roll_dice(1, 4);
+        match roll {
+            1 => self.items.roll(),
+            2 => self.props.roll(),
+            3 => self.mobs.roll(),
+            _ => "None".to_string(),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
 pub struct RandomTable {
-    entries: Vec<RandomEntry>,
     total_weight: i32,
+    entries: Vec<RandomEntry>,
 }
 
 impl RandomTable {
@@ -22,19 +54,18 @@ impl RandomTable {
         RandomTable { entries: Vec::new(), total_weight: 0 }
     }
 
-    pub fn add<S: ToString>(mut self, name: S, weight: i32) -> RandomTable {
+    pub fn add<S: ToString>(&mut self, name: S, weight: i32) {
         if weight > 0 {
             self.total_weight += weight;
             self.entries.push(RandomEntry::new(name.to_string(), weight));
         }
-        self
     }
 
-    pub fn roll(&self, rng: &mut RandomNumberGenerator) -> String {
+    pub fn roll(&self) -> String {
         if self.total_weight == 0 {
             return "None".to_string();
         }
-        let mut roll = rng.roll_dice(1, self.total_weight) - 1;
+        let mut roll = crate::rng::roll_dice(1, self.total_weight) - 1;
         let mut index: usize = 0;
 
         while roll > 0 {

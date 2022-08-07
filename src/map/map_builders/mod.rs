@@ -1,36 +1,111 @@
 use crate::prelude::*;
 
-mod bsp;
-mod cellular_automata;
+mod builders;
 mod common;
-mod drunkard;
-mod simple_map;
+mod maps;
+mod random;
 
-pub use bsp::*;
-pub use cellular_automata::*;
+pub use builders::*;
 pub use common::*;
-pub use drunkard::*;
-pub use simple_map::SimpleMapBuilder;
+pub use maps::*;
+pub use random::*;
 
-pub trait MapBuilder {
-    fn build_map(&mut self);
-    fn get_map(&self) -> Map;
-    fn take_snapshot(&mut self);
-    fn get_starting_position(&self) -> Point;
-    fn get_snapshot_history(&self) -> Vec<Map>;
-    fn spawn_entities(&mut self, ecs: &mut World);
+////////////////////////////////////////////////////////////////////////////////
+// Map Builder Traits
+////////////////////////////////////////////////////////////////////////////////
+
+pub trait InitialMapBuilder {
+    fn build_map(&mut self, build_data: &mut BuilderMap);
 }
 
-pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
-    let mut rng = bo_utils::rng::RNG.lock();
-    let builder = rng.roll_dice(1, 4);
-    match builder {
-        1 => Box::new(BspDungeonBuilder::new(new_depth)),
-        2 => Box::new(BspInteriorBuilder::new(new_depth)),
-        3 => Box::new(CellularAutomataBuilder::new(new_depth)),
-        4 => Box::new(DrunkardsWalkBuilder::open_area(new_depth)),
-        5 => Box::new(DrunkardsWalkBuilder::open_halls(new_depth)),
-        6 => Box::new(DrunkardsWalkBuilder::winding_passages(new_depth)),
-        _ => Box::new(SimpleMapBuilder::new(new_depth)),
+pub trait MetaMapBuilder {
+    fn build_map(&mut self, build_data: &mut BuilderMap);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone)]
+pub struct BuilderMap {
+    pub map: Map,
+    pub width: i32,
+    pub height: i32,
+    pub history: Vec<Map>,
+    pub rooms: Option<Vec<Rect>>,
+    pub spawn_list: Vec<(usize, String)>,
+    pub starting_position: Option<Point>,
+    pub corridors: Option<Vec<Vec<usize>>>,
+}
+
+impl BuilderMap {
+    fn take_snapshot(&mut self) {
+        if SHOW_MAPGEN_VISUALIZER {
+            let mut snapshot = self.map.clone();
+            snapshot.revealed.apply_all_bits();
+            self.history.push(snapshot);
+        }
+    }
+}
+
+pub struct BuilderChain {
+    pub build_data: BuilderMap,
+    builders: Vec<Box<dyn MetaMapBuilder>>,
+    starter: Option<Box<dyn InitialMapBuilder>>,
+}
+
+impl BuilderChain {
+    pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> BuilderChain {
+        BuilderChain {
+            starter: None,
+            builders: Vec::new(),
+            build_data: BuilderMap {
+                width,
+                height,
+                rooms: None,
+                corridors: None,
+                history: Vec::new(),
+                spawn_list: Vec::new(),
+                starting_position: None,
+                map: Map::new(new_depth, width, height, name),
+            },
+        }
+    }
+
+    pub fn start_with(&mut self, starter: Box<dyn InitialMapBuilder>) {
+        match self.starter {
+            None => self.starter = Some(starter),
+            Some(_) => panic!("You can only have one starting builder."),
+        };
+    }
+
+    pub fn with(&mut self, metabuilder: Box<dyn MetaMapBuilder>) {
+        self.builders.push(metabuilder);
+    }
+
+    pub fn build_map(&mut self) {
+        match &mut self.starter {
+            None => panic!("Cannot run a map builder chain without a starting build system"),
+            Some(starter) => {
+                // Build the starting map
+                starter.build_map(&mut self.build_data);
+            }
+        }
+
+        // Build additional layers in turn
+        for metabuilder in self.builders.iter_mut() {
+            metabuilder.build_map(&mut self.build_data);
+        }
+    }
+
+    pub fn spawn_entities(&mut self, world: &mut World) {
+        for entity in self.build_data.spawn_list.iter() {
+            spawner::spawn_entity(world, &(&entity.0, &entity.1));
+        }
+    }
+}
+
+pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
+    console::log(format!("Depth: {}", new_depth));
+    match new_depth {
+        _ => random_builder(new_depth, width, height),
     }
 }

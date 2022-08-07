@@ -1,4 +1,4 @@
-use bracket_terminal::prelude::Point;
+use crate::prelude::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TurnState {

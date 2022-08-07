@@ -1,15 +1,6 @@
-use self::systems::{RenderSystem, RenderTooltips};
-
-use super::InventoryMode;
 use super::*;
 
-mod dispatcher;
-mod effects;
 mod player;
-mod systems;
-
-pub use dispatcher::*;
-pub use effects::*;
 use player::player_input;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,8 +34,8 @@ impl std::fmt::Debug for DungeonMode {
 impl DungeonMode {
     pub fn new(world: &mut World) -> Self {
         // Dispatchers
-        let mut dispatcher = systems::new_dispatcher();
-        let mut ticking = systems::new_ticking();
+        let mut dispatcher = crate::ecs::new_dispatcher();
+        let mut ticking = crate::ecs::new_ticking();
 
         dispatcher.setup(world);
         ticking.setup(world);

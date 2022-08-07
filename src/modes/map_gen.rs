@@ -17,7 +17,7 @@ pub enum MapGenAction {
 /// Mode
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MapGenMode {
     mapgen_timer: f32,
     mapgen_index: usize,
@@ -27,26 +27,23 @@ pub struct MapGenMode {
 
 /// Show the title screen of the game with a menu that leads into the game proper.
 impl MapGenMode {
-    pub fn new_game(world: &mut World) -> Self {
-        let mut map_gen_mode = MapGenMode {
-            mapgen_index: 0,
+    pub fn new() -> Self {
+        Self {
             mapgen_timer: 0.0,
+            mapgen_index: 0,
             mapgen_history: Vec::new(),
             mapgen_next_state: Some(TurnState::PreRun),
-        };
+        }
+    }
 
+    pub fn new_game(world: &mut World) -> Self {
+        let mut map_gen_mode = MapGenMode::new();
         map_gen_mode.setup_new_game(world).expect("Failed to setup new game");
         map_gen_mode
     }
 
     pub fn next_level(world: &mut World) -> Self {
-        let mut map_gen_mode = MapGenMode {
-            mapgen_index: 0,
-            mapgen_timer: 0.0,
-            mapgen_history: Vec::new(),
-            mapgen_next_state: Some(TurnState::PreRun),
-        };
-
+        let mut map_gen_mode = MapGenMode::new();
         map_gen_mode.goto_level(world, 1);
         map_gen_mode
     }
@@ -108,7 +105,7 @@ impl MapGenMode {
                         let idx = map.point2d_to_index(pt);
 
                         if map.revealed.get_bit(pt) {
-                            let (glyph, color) = tile_glyph(idx, &*map);
+                            let (glyph, color) = map.tile_glyph(idx);
                             draw_batch.set(Point::new(x, y), color, glyph);
                         }
                     } else if SHOW_BOUNDARIES {

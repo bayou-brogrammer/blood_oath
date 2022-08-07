@@ -1,4 +1,4 @@
-mod components;
+mod ecs;
 mod events;
 mod map;
 mod modes;
@@ -6,6 +6,7 @@ mod random_table;
 mod resources;
 mod rex_assets;
 
+pub mod raws;
 pub mod render;
 pub mod saveload;
 pub mod spawner;
@@ -13,12 +14,7 @@ pub mod spawner;
 mod prelude {
     pub use lazy_static::*;
 
-    pub use bracket_color::prelude::*;
-    pub use bracket_geometry::prelude::*;
-    pub use bracket_noise::prelude::*;
-    pub use bracket_random::prelude::*;
-    pub use bracket_terminal::prelude::*;
-    pub use bracket_terminal::{embedded_resource, link_resource};
+    pub use bracket_lib::prelude::*;
 
     pub use specs::prelude::World;
     pub use specs::prelude::*;
@@ -31,18 +27,20 @@ mod prelude {
     pub use serde::{Deserialize, Serialize};
 
     pub use bo_logging::*;
-    pub use bo_pathfinding::prelude::*;
-    pub use bo_utils::prelude::*;
+    pub use bo_pathfinding::*;
+    pub use bo_utils::*;
 
+    pub use crate::raws;
     pub use crate::render;
     pub use crate::saveload;
     pub use crate::spawner;
 
-    pub use crate::components::*;
+    pub use crate::ecs::*;
     pub use crate::events::*;
     pub use crate::map::*;
     pub use crate::modes::*;
     pub use crate::random_table::*;
+    pub use crate::raws::*;
     pub use crate::render::gui::*;
     pub use crate::resources::*;
     pub use crate::rex_assets::*;
@@ -50,7 +48,9 @@ mod prelude {
 
     pub type NoError = Infallible;
 
-    pub const SHOW_BOUNDARIES: bool = false;
+    pub const MAP_GEN_TIMER: f32 = 100.0;
+    pub const SHOW_BOUNDARIES: bool = true;
+    pub const SHOW_MAPGEN_VISUALIZER: bool = false;
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
@@ -89,7 +89,9 @@ impl GameWorld {
     pub fn new() -> Self {
         let mut world = World::new();
 
+        raws::load_raws();
         GameWorld::register_components(&mut world);
+
         world.insert(modes::MenuMemory::new());
         world.insert(rex_assets::RexAssets::new());
 
@@ -103,6 +105,7 @@ impl GameWorld {
 
     pub fn register_components(world: &mut World) {
         // Tags
+        world.register::<Door>();
         world.register::<Item>();
         world.register::<Blood>();
         world.register::<Hidden>();
@@ -114,11 +117,12 @@ impl GameWorld {
         // Generics
         world.register::<Name>();
         world.register::<Glyph>();
-        world.register::<Position>();
+        world.register::<Point>();
         world.register::<FieldOfView>();
         world.register::<Description>();
         world.register::<CombatStats>();
         world.register::<EntityMoved>();
+        world.register::<BlocksVisibility>();
         world.register::<OtherLevelPosition>();
 
         // Intent
@@ -191,12 +195,6 @@ impl GameState for GameWorld {
 
         render_draw_buffer(ctx).expect("Render error");
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct MyStruct {
-    boolean: bool,
-    float: f32,
 }
 
 embedded_resource!(TERMINAL_FONT, "../resources/terminal8x8.png");

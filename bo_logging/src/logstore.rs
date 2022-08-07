@@ -1,7 +1,7 @@
 #![allow(dead_code)] //TODO: remove this
 
 use super::*;
-use bracket_terminal::prelude::*;
+use bracket_lib::prelude::*;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 

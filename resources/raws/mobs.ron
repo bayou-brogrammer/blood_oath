@@ -1,0 +1,30 @@
+[
+   RawMob(
+    name: "Orc",
+    vision_range: 8,
+    blocks_tile: true,
+    stats: RawMobStats(hp: 16, max_hp: 16, power: 4, defense: 1),
+    glyph: Some(RawGlyph(glyph: "o", fg: "#FF0000", bg: "#000000", order: Actor)),
+  ),
+  RawMob(
+    name: "Goblin",
+    vision_range: 8,
+    blocks_tile: true,
+    stats: RawMobStats(hp: 8, max_hp: 8, power: 3, defense: 1),
+    glyph: Some(RawGlyph(glyph: "o", fg: "#FF0000", bg: "#000000", order: Actor)),
+  ),
+  RawMob(
+    name: "Goblin",
+    vision_range: 8,
+    blocks_tile: true,
+    stats: RawMobStats(hp: 8, max_hp: 8, power: 3, defense: 1),
+    glyph: Some(RawGlyph(glyph: "o", fg: "#FF0000", bg: "#000000", order: Actor)),
+  ),
+  RawMob(
+    name: "Kobold",
+    vision_range: 4,
+    blocks_tile: true,
+    stats: RawMobStats(hp: 4, max_hp: 4, power: 0, defense: 2),
+    glyph: Some(RawGlyph(glyph: "k", fg: "#FF0000", bg: "#000000", order: Actor)),
+  ),
+]

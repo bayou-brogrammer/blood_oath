@@ -1,9 +1,13 @@
 use super::*;
-use std::collections::hash_map::Entry::Vacant;
-use std::{
-    cmp::{max, min},
-    collections::HashMap,
-};
+use std::cmp::{max, min};
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum Symmetry {
+    None,
+    Both,
+    Vertical,
+    Horizontal,
+}
 
 pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
     room.for_each(|pt| {
@@ -12,76 +16,128 @@ pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
     });
 }
 
-pub fn apply_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) {
+pub fn apply_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) -> Vec<usize> {
+    let mut corridor = Vec::new();
+
     for x in min(x1, x2)..=max(x1, x2) {
         let idx = map.point2d_to_index(Point::new(x, y));
         if map.tiles[idx as usize].tile_type == TileType::Wall {
             map.tiles[idx as usize] = GameTile::floor();
+            corridor.push(idx as usize);
         }
     }
+
+    corridor
 }
 
-pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) {
+pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) -> Vec<usize> {
+    let mut corridor = Vec::new();
+
     for y in min(y1, y2)..=max(y1, y2) {
         let idx = map.point2d_to_index(Point::new(x, y));
         if map.tiles[idx as usize].tile_type == TileType::Wall {
             map.tiles[idx as usize] = GameTile::floor();
+            corridor.push(idx as usize);
         }
     }
+
+    corridor
 }
 
-/// Searches a map, removes unreachable areas and returns the most distant tile.
-pub fn remove_unreachable_areas_returning_most_distant(map: &mut Map, start_idx: usize) -> usize {
-    map.populate_blocked();
-    let map_starts: Vec<usize> = vec![start_idx];
-    let dijkstra_map = DijkstraMap::new(map.width as usize, map.height as usize, &map_starts, map, 200.0);
-    let mut exit_tile = (0, 0.0f32);
+pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) -> Vec<usize> {
+    let mut corridor = Vec::new();
+    let mut x = x1;
+    let mut y = y1;
 
-    for (i, tile) in map.tiles.iter_mut().enumerate() {
-        if tile.tile_type == TileType::Floor {
-            let distance_to_start = dijkstra_map.map[i];
-            // We can't get to this tile - so we'll make it a wall
-            if distance_to_start == std::f32::MAX {
-                *tile = GameTile::wall();
+    while x != x2 || y != y2 {
+        if x < x2 {
+            x += 1;
+        } else if x > x2 {
+            x -= 1;
+        } else if y < y2 {
+            y += 1;
+        } else if y > y2 {
+            y -= 1;
+        }
+
+        let idx = map.xy_idx(x, y);
+        if map.tiles[idx].tile_type != TileType::Floor {
+            corridor.push(idx);
+            map.tiles[idx] = GameTile::floor();
+        }
+    }
+
+    corridor
+}
+
+pub fn place_stairs(stairs_idx: usize, stair_type: TileType, build_data: &mut BuilderMap) {
+    // Place a staircase
+    build_data.map.tiles[stairs_idx] = match stair_type {
+        TileType::DownStairs => GameTile::stairs_down(),
+        TileType::UpStairs => GameTile::stairs_up(),
+        _ => panic!("Invalid stair type"),
+    };
+    build_data.take_snapshot();
+}
+
+pub fn paint(map: &mut Map, mode: Symmetry, brush_size: i32, x: i32, y: i32) {
+    match mode {
+        Symmetry::None => apply_paint(map, brush_size, x, y),
+        Symmetry::Horizontal => {
+            let center_x = map.width / 2;
+            if x == center_x {
+                apply_paint(map, brush_size, x, y);
             } else {
-                // If it is further away than our current exit candidate, move the exit
-                if distance_to_start > exit_tile.1 {
-                    exit_tile.0 = i;
-                    exit_tile.1 = distance_to_start;
-                }
+                let dist_x = i32::abs(center_x - x);
+                apply_paint(map, brush_size, center_x + dist_x, y);
+                apply_paint(map, brush_size, center_x - dist_x, y);
+            }
+        }
+        Symmetry::Vertical => {
+            let center_y = map.height / 2;
+            if y == center_y {
+                apply_paint(map, brush_size, x, y);
+            } else {
+                let dist_y = i32::abs(center_y - y);
+                apply_paint(map, brush_size, x, center_y + dist_y);
+                apply_paint(map, brush_size, x, center_y - dist_y);
+            }
+        }
+        Symmetry::Both => {
+            let center_x = map.width / 2;
+            let center_y = map.height / 2;
+            if x == center_x && y == center_y {
+                apply_paint(map, brush_size, x, y);
+            } else {
+                let dist_x = i32::abs(center_x - x);
+                apply_paint(map, brush_size, center_x + dist_x, y);
+                apply_paint(map, brush_size, center_x - dist_x, y);
+                let dist_y = i32::abs(center_y - y);
+                apply_paint(map, brush_size, x, center_y + dist_y);
+                apply_paint(map, brush_size, x, center_y - dist_y);
             }
         }
     }
-
-    exit_tile.0
 }
 
-/// Generates a Voronoi/cellular noise map of a region, and divides it into spawn regions.
-pub fn generate_voronoi_spawn_regions(
-    map: &Map,
-    rng: &mut RandomNumberGenerator,
-) -> HashMap<i32, Vec<usize>> {
-    let mut noise_areas: HashMap<i32, Vec<usize>> = HashMap::new();
-    let mut noise = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
-    noise.set_noise_type(NoiseType::Cellular);
-    noise.set_frequency(0.08);
-    noise.set_cellular_distance_function(CellularDistanceFunction::Manhattan);
+fn apply_paint(map: &mut Map, brush_size: i32, x: i32, y: i32) {
+    match brush_size {
+        1 => {
+            let digger_idx = map.xy_idx(x, y);
+            map.tiles[digger_idx] = GameTile::floor();
+        }
 
-    for y in 1..map.height - 1 {
-        for x in 1..map.width - 1 {
-            let idx = map.xy_idx(x, y);
-            if map.tiles[idx].tile_type == TileType::Floor {
-                let cell_value_f = noise.get_noise(x as f32, y as f32) * 10240.0;
-                let cell_value = cell_value_f as i32;
-
-                if let Vacant(e) = noise_areas.entry(cell_value) {
-                    e.insert(vec![idx]);
-                } else {
-                    noise_areas.get_mut(&cell_value).unwrap().push(idx);
+        _ => {
+            let half_brush_size = brush_size / 2;
+            for brush_y in y - half_brush_size..y + half_brush_size {
+                for brush_x in x - half_brush_size..x + half_brush_size {
+                    if brush_x > 1 && brush_x < map.width - 1 && brush_y > 1 && brush_y < map.height - 1
+                    {
+                        let idx = map.xy_idx(brush_x, brush_y);
+                        map.tiles[idx] = GameTile::floor();
+                    }
                 }
             }
         }
     }
-
-    noise_areas
 }

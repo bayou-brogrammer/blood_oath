@@ -53,33 +53,42 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
 }
 
 pub fn try_move_player(delta_pt: Point, world: &mut World) {
-    let map = world.fetch::<Map>();
+    let map;
+    {
+        map = world.fetch::<Map>();
+    }
     let entities = world.entities();
-
     let players = world.read_storage::<Player>();
-    let mut positions = world.write_storage::<Position>();
+
+    let mut doors = world.write_storage::<Door>();
+    let mut positions = world.write_storage::<Point>();
     let mut fovs = world.write_storage::<FieldOfView>();
     let combat_stats = world.read_storage::<CombatStats>();
-    let mut wants_to_melee = world.write_storage::<WantsToMelee>();
     let mut entity_moved = world.write_storage::<EntityMoved>();
+    let mut wants_to_melee = world.write_storage::<WantsToMelee>();
 
     for (entity, _player, pos, fov) in (&entities, &players, &mut positions, &mut fovs).join() {
-        let destination = pos.0 + delta_pt;
+        let destination = *pos + delta_pt;
         let destination_idx = map.point2d_to_index(destination);
 
         crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
-            if let Some(_target) = combat_stats.get(potential_target) {
+            if combat_stats.get(potential_target).is_some() {
                 wants_to_melee
                     .insert(entity, WantsToMelee::new(potential_target))
                     .expect("Add target failed");
             }
+
+            if let Some(door) = doors.get_mut(potential_target) {
+                open_door(world, &potential_target, door);
+                fov.is_dirty = true;
+            }
         });
 
         if map.can_enter_tile(destination) {
-            let old_idx = map.point2d_to_index(pos.0);
+            let old_idx = map.point2d_to_index(*pos);
             let new_idx = map.point2d_to_index(destination);
 
-            pos.0 = destination;
+            *pos = destination;
             fov.is_dirty = true;
             entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
 
@@ -87,7 +96,7 @@ pub fn try_move_player(delta_pt: Point, world: &mut World) {
             camera.on_player_move(destination);
 
             let mut ppos = world.write_resource::<Point>();
-            *ppos = pos.0;
+            *ppos = *pos;
             crate::spatial::move_entity(entity, old_idx, new_idx);
         }
     }
@@ -99,11 +108,11 @@ fn get_item(world: &mut World) {
     let player_entity = world.fetch::<Entity>();
 
     let items = world.read_storage::<Item>();
-    let positions = world.read_storage::<Position>();
+    let positions = world.read_storage::<Point>();
 
     let mut target_item: Option<Entity> = None;
     for (item_entity, _item, position) in (&entities, &items, &positions).join() {
-        if position.0 == *player_pos {
+        if *position == *player_pos {
             target_item = Some(item_entity);
             break;
         }
@@ -165,4 +174,16 @@ fn skip_turn(world: &mut World) -> PlayerInputResult {
     }
 
     PlayerInputResult::TurnDone
+}
+
+fn open_door(world: &World, potential_target: &Entity, door: &mut Door) {
+    let mut glyphs = world.write_storage::<Glyph>();
+    let mut blocks_movement = world.write_storage::<BlocksTile>();
+    let mut blocks_visibility = world.write_storage::<BlocksVisibility>();
+    let glyph = glyphs.get_mut(*potential_target).unwrap();
+
+    door.0 = true;
+    glyph.glyph = to_cp437('/');
+    blocks_visibility.remove(*potential_target);
+    blocks_movement.remove(*potential_target);
 }

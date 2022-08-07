@@ -55,7 +55,7 @@ impl MasterDungeonMap {
         let map_depth = ecs.fetch::<Map>().depth;
         let player_entity = ecs.fetch::<Entity>();
 
-        let mut positions = ecs.write_storage::<Position>();
+        let mut positions = ecs.write_storage::<Point>();
         let mut other_level_positions = ecs.write_storage::<OtherLevelPosition>();
 
         // Find positions and make OtherLevelPosition
@@ -63,7 +63,7 @@ impl MasterDungeonMap {
         for (entity, pos) in (&entities, &positions).join().filter(|(e, _)| *e != *player_entity) {
             if entity != *player_entity {
                 other_level_positions
-                    .insert(entity, OtherLevelPosition::new(pos.0, map_depth))
+                    .insert(entity, OtherLevelPosition::new(*pos, map_depth))
                     .expect("Insert fail");
                 pos_to_delete.push(entity);
             }
@@ -95,7 +95,7 @@ impl MasterDungeonMap {
         let entities = ecs.entities();
         let map_depth = ecs.fetch::<Map>().depth;
         let player_entity = ecs.fetch::<Entity>();
-        let mut positions = ecs.write_storage::<Position>();
+        let mut positions = ecs.write_storage::<Point>();
         let mut other_level_positions = ecs.write_storage::<OtherLevelPosition>();
 
         // Find OtherLevelPosition
@@ -104,7 +104,7 @@ impl MasterDungeonMap {
             .join()
             .filter(|(entity, pos)| *entity != *player_entity && pos.depth == map_depth)
         {
-            positions.insert(entity, Position::new(pos.pt)).expect("Insert fail");
+            positions.insert(entity, pos.pt).expect("Insert fail");
             pos_to_delete.push(entity);
         }
 
@@ -176,33 +176,34 @@ impl MasterDungeonMap {
     }
 
     fn transition_to_new_map(world: &mut World, new_depth: i32) -> Vec<Map> {
-        let mut builder = map_builders::random_builder(1);
+        let mut builder = map_builders::level_builder(1, 80, 50);
         builder.build_map();
 
         // Add Up Stairs
         if new_depth > 1 {
-            let mut map = builder.get_map();
-            let up_idx = map.point2d_to_index(builder.get_starting_position());
-            map.tiles[up_idx] = GameTile::stairs_up();
+            if let Some(pos) = &builder.build_data.starting_position {
+                let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
+                builder.build_data.map.tiles[up_idx] = GameTile::stairs_up();
+            }
         }
 
         let player_start;
         {
             let mut worldmap_resource = world.write_resource::<Map>();
-            *worldmap_resource = builder.get_map();
-            player_start = builder.get_starting_position();
+            *worldmap_resource = builder.build_data.map.clone();
+            player_start = builder.build_data.starting_position.unwrap();
         }
 
         builder.spawn_entities(world);
 
-        // Setup Player Position / FOV
+        // Setup Player Point / FOV
         {
             let player_entity = world.fetch::<Entity>();
             let mut player_pt = world.write_resource::<Point>();
-            let mut position_components = world.write_storage::<Position>();
+            let mut position_components = world.write_storage::<Point>();
 
             *player_pt = player_start;
-            position_components.insert(*player_entity, Position::new(player_start)).expect("Insert fail");
+            position_components.insert(*player_entity, player_start).expect("Insert fail");
 
             // Mark the player's visibility as dirty
             let mut fov_components = world.write_storage::<FieldOfView>();
@@ -217,9 +218,9 @@ impl MasterDungeonMap {
 
         // Store the newly minted map
         let mut dungeon_master = world.write_resource::<MasterDungeonMap>();
-        dungeon_master.store_map(&builder.get_map());
+        dungeon_master.store_map(&builder.build_data.map);
 
-        builder.get_snapshot_history()
+        builder.build_data.history
     }
 
     fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {
@@ -236,13 +237,13 @@ impl MasterDungeonMap {
             let mut player_position = ecs.write_resource::<Point>();
             *player_position = map.index_to_point2d(idx);
 
-            let mut position_components = ecs.write_storage::<Position>();
+            let mut position_components = ecs.write_storage::<Point>();
             let player_pos_comp = position_components.get_mut(*player_entity);
 
             if let Some(player_pos_comp) = player_pos_comp {
-                player_pos_comp.0 = map.index_to_point2d(idx);
+                *player_pos_comp = map.index_to_point2d(idx);
                 if new_depth == 1 {
-                    player_pos_comp.0.x -= 1;
+                    player_pos_comp.x -= 1;
                 }
             }
         }
