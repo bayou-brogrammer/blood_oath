@@ -54,12 +54,12 @@ mod prelude {
 
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 60;
-
-    pub const UI_WIDTH: i32 = 80;
-    pub const UI_HEIGHT: i32 = 30;
+    pub const UI_WIDTH: i32 = SCREEN_WIDTH;
+    pub const UI_HEIGHT: i32 = SCREEN_HEIGHT / 2;
 
     pub const LAYER_ZERO: usize = 0;
-    pub const LAYER_TEXT: usize = 1;
+    pub const LAYER_LOG: usize = 1;
+    pub const LAYER_TEXT: usize = 2;
 
     pub const BATCH_ZERO: usize = 0;
     pub const BATCH_CHARS: usize = 1000;
@@ -202,15 +202,16 @@ fn main() -> BError {
     link_resource!(TERMINAL_FONT, "resources/terminal8x8.png");
     link_resource!(VGA_FONT, "resources/vga.png");
 
-    let mut context = BTermBuilder::simple(80, 60)
-        .unwrap()
+    let mut context = BTermBuilder::new()
         .with_title("BloodOath")
         .with_fps_cap(60.0)
-        .with_tile_dimensions(12, 12)
+        .with_tile_dimensions(14, 14)
         .with_dimensions(80, 60)
         .with_font("terminal8x8.png", 8, 8)
         .with_font("vga.png", 8, 16) // Load easy-to-read font
-        .with_sparse_console_no_bg(80, 30, "vga.png") // Console 2: Log
+        .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "terminal8x8.png")
+        .with_sparse_console_no_bg(UI_WIDTH, UI_HEIGHT, "vga.png") // Console 2: Log
+        .with_simple_console_no_bg(UI_WIDTH, UI_HEIGHT, "vga.png") // Console 2: Log
         .build()?;
 
     context.with_post_scanlines(true);

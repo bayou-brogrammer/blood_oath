@@ -156,7 +156,7 @@ impl DungeonMode {
             _ => {}
         }
 
-        render::gui::draw_ui(world, ctx);
+        render::gui::draw_ui(world);
         self.run_rendering(world);
     }
 }

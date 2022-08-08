@@ -1,14 +1,14 @@
 use super::*;
 
 fn random_start_position() -> (XStart, YStart) {
-    let xroll = bo_utils::rng::roll_dice(1, 3);
+    let xroll = crate::rng::roll_dice(1, 3);
     let x = match xroll {
         1 => XStart::LEFT,
         2 => XStart::CENTER,
         _ => XStart::RIGHT,
     };
 
-    let yroll = bo_utils::rng::roll_dice(1, 3);
+    let yroll = crate::rng::roll_dice(1, 3);
     let y = match yroll {
         1 => YStart::BOTTOM,
         2 => YStart::CENTER,
@@ -19,7 +19,7 @@ fn random_start_position() -> (XStart, YStart) {
 }
 
 fn random_shape_builder(builder: &mut BuilderChain) {
-    let builder_roll = bo_utils::rng::roll_dice(1, 16);
+    let builder_roll = crate::rng::roll_dice(1, 16);
     match builder_roll {
         1 => builder.start_with(CellularAutomataBuilder::new()),
         2 => builder.start_with(DrunkardsWalkBuilder::open_area()),
@@ -55,7 +55,7 @@ fn random_shape_builder(builder: &mut BuilderChain) {
 }
 
 fn random_room_builder(builder: &mut BuilderChain) {
-    let build_roll = bo_utils::rng::roll_dice(1, 3);
+    let build_roll = crate::rng::roll_dice(1, 3);
     match build_roll {
         1 => builder.start_with(SimpleMapBuilder::new()),
         2 => builder.start_with(BspDungeonBuilder::new()),
@@ -67,7 +67,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
     // BSP Interior still makes holes in the walls
     if build_roll != 3 {
         // Sort by one of the 5 available algorithms
-        let sort_roll = bo_utils::rng::roll_dice(1, 5);
+        let sort_roll = crate::rng::roll_dice(1, 5);
         match sort_roll {
             1 => builder.with(RoomSorter::new(RoomSort::LEFTMOST)),
             2 => builder.with(RoomSorter::new(RoomSort::RIGHTMOST)),
@@ -78,7 +78,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
 
         builder.with(RoomDrawer::new());
 
-        let corridor_roll = bo_utils::rng::roll_dice(1, 4);
+        let corridor_roll = crate::rng::roll_dice(1, 4);
         match corridor_roll {
             1 => builder.with(DoglegCorridors::new()),
             2 => builder.with(NearestCorridors::new()),
@@ -86,12 +86,12 @@ fn random_room_builder(builder: &mut BuilderChain) {
             _ => builder.with(BspCorridors::new()),
         }
 
-        let cspawn_roll = bo_utils::rng::roll_dice(1, 2);
+        let cspawn_roll = crate::rng::roll_dice(1, 2);
         if cspawn_roll == 1 {
             builder.with(CorridorSpawner::new());
         }
 
-        let modifier_roll = bo_utils::rng::roll_dice(1, 6);
+        let modifier_roll = crate::rng::roll_dice(1, 6);
         match modifier_roll {
             1 => builder.with(RoomExploder::new()),
             2 => builder.with(RoomCornerRounder::new()),
@@ -99,7 +99,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
         }
     }
 
-    let start_roll = bo_utils::rng::roll_dice(1, 2);
+    let start_roll = crate::rng::roll_dice(1, 2);
     match start_roll {
         1 => builder.with(RoomBasedStartingPosition::new()),
         _ => {
@@ -108,13 +108,13 @@ fn random_room_builder(builder: &mut BuilderChain) {
         }
     }
 
-    let exit_roll = bo_utils::rng::roll_dice(1, 2);
+    let exit_roll = crate::rng::roll_dice(1, 2);
     match exit_roll {
         1 => builder.with(RoomBasedStairs::new()),
         _ => builder.with(DistantExit::new()),
     }
 
-    let spawn_roll = bo_utils::rng::roll_dice(1, 2);
+    let spawn_roll = crate::rng::roll_dice(1, 2);
     match spawn_roll {
         1 => builder.with(RoomBasedSpawner::new()),
         _ => builder.with(VoronoiSpawning::new()),
@@ -126,13 +126,13 @@ fn random_room_builder(builder: &mut BuilderChain) {
 pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut builder = BuilderChain::new(new_depth, width, height, "New Map");
 
-    let type_roll = bo_utils::rng::roll_dice(1, 2);
+    let type_roll = crate::rng::roll_dice(1, 2);
     match type_roll {
-        _ => random_room_builder(&mut builder),
-        // _ => random_shape_builder(&mut builder),
+        1 => random_room_builder(&mut builder),
+        _ => random_shape_builder(&mut builder),
     }
 
-    if bo_utils::rng::roll_dice(1, 3) == 1 {
+    if crate::rng::roll_dice(1, 3) == 1 {
         builder.with(WaveformCollapseBuilder::new());
 
         // Now set the start to a random starting area

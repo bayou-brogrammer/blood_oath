@@ -40,7 +40,7 @@ impl BuilderMap {
     fn take_snapshot(&mut self) {
         if SHOW_MAPGEN_VISUALIZER {
             let mut snapshot = self.map.clone();
-            snapshot.revealed.apply_all_bits();
+            snapshot.revealed.apply_all_bits(true);
             self.history.push(snapshot);
         }
     }
@@ -101,9 +101,11 @@ impl BuilderChain {
     }
 }
 
+#[allow(clippy::match_single_binding)]
 pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     console::log(format!("Depth: {}", new_depth));
     match new_depth {
+        1 => town_builder(new_depth, width, height),
         _ => random_builder(new_depth, width, height),
     }
 }

@@ -2,7 +2,7 @@ use bo_utils::impl_new;
 
 use super::*;
 
-#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum EquipmentSlot {
     Melee,
     Shield,

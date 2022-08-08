@@ -67,7 +67,7 @@ impl DoorPlacement {
             for (i, tile) in tiles.iter_mut().enumerate() {
                 if tile.tile_type == TileType::Floor
                     && self.door_possible(build_data, i)
-                    && bo_utils::rng::roll_dice(1, 3) == 1
+                    && crate::rng::roll_dice(1, 3) == 1
                 {
                     build_data.spawn_list.push((i, DOOR.to_string()));
                 }

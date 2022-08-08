@@ -25,7 +25,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     None => Targets::Single(*player_entity),
                     Some(target) => {
                         if let Some(aoe) = aoe.get(useitem.item) {
-                            Targets::Tiles(aoe_tiles(&*map, target, aoe.radius))
+                            Targets::Tiles(aoe_tiles(&map, target, aoe.radius))
                         } else {
                             Targets::Tile(map.point2d_to_index(target))
                         }

@@ -27,11 +27,12 @@ impl<'a> System<'a> for RenderSystem {
                 if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                     let pt = Point::new(tx, ty);
                     let idx = map.point2d_to_index(pt);
-
                     if map.revealed.get_bit(pt) {
                         let (glyph, color) = map.tile_glyph(idx);
                         draw_batch.set(Point::new(x + 1, y + 1), color, glyph);
                     }
+                } else if SHOW_BOUNDARIES {
+                    draw_batch.set(Point::new(x + 1, y + 1), ColorPair::new(GRAY, BLACK), to_cp437('·'));
                 }
             }
         }

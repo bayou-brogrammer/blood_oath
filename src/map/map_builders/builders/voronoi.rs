@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 #[allow(dead_code)]
 pub enum DistanceAlgorithm {
     Pythagoras,
@@ -40,8 +40,8 @@ impl VoronoiCellBuilder {
         let mut voronoi_seeds: Vec<(usize, Point)> = Vec::new();
 
         while voronoi_seeds.len() < self.n_seeds {
-            let vx = bo_utils::rng::roll_dice(1, build_data.map.width - 1);
-            let vy = bo_utils::rng::roll_dice(1, build_data.map.height - 1);
+            let vx = crate::rng::roll_dice(1, build_data.map.width - 1);
+            let vy = crate::rng::roll_dice(1, build_data.map.height - 1);
             let vidx = build_data.map.xy_idx(vx, vy);
             let candidate = (vidx, Point::new(vx, vy));
             if !voronoi_seeds.contains(&candidate) {

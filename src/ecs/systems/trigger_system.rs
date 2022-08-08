@@ -41,7 +41,7 @@ impl<'a> System<'a> for TriggerSystem {
                                 Some(entity),
                                 EffectType::TriggerFire(entity_id),
                                 if let Some(aoe) = area_of_effect.get(entity_id) {
-                                    Targets::Tiles(aoe_tiles(&*map, *pos, aoe.radius))
+                                    Targets::Tiles(aoe_tiles(&map, *pos, aoe.radius))
                                 } else {
                                     Targets::Tile(idx)
                                 },

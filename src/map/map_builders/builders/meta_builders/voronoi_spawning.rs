@@ -13,7 +13,7 @@ impl VoronoiSpawning {
 
     fn build(&mut self, build_data: &mut BuilderMap) {
         let mut noise_areas: HashMap<i32, Vec<usize>> = HashMap::new();
-        let mut noise = FastNoise::seeded(bo_utils::rng::roll_dice(1, 65536) as u64);
+        let mut noise = FastNoise::seeded(crate::rng::roll_dice(1, 65536) as u64);
         noise.set_noise_type(NoiseType::Cellular);
         noise.set_frequency(0.08);
         noise.set_cellular_distance_function(CellularDistanceFunction::Manhattan);

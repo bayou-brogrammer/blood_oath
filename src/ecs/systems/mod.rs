@@ -44,6 +44,7 @@ pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
 
 pub fn new_ticking() -> Box<dyn UnifiedDispatcher + 'static> {
     construct_dispatcher!(
+        (FovSystem, "fov", &[]),
         (EndTurnSystem, "end_turn", &[]),
         (MonsterAISystem, "ai_system", &[]),
         (ParticleSpawnSystem, "particle_spawn", &[]),

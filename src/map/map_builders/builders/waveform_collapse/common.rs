@@ -1,6 +1,6 @@
 use super::GameTile;
 
-#[derive(PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct MapChunk {
     pub has_exits: bool,
     pub exits: [Vec<bool>; 4],

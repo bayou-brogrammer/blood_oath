@@ -7,7 +7,7 @@ use super::{ModeControl, ModeResult, *};
 #[derive(Debug)]
 pub enum MapGenModeResult {}
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum MapGenAction {
     NewGame,
     NextLevel,
