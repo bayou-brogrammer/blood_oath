@@ -123,7 +123,7 @@ impl MainMenuMode {
                                 return (
                                     ModeControl::Push(
                                         YesNoDialogMode::new(
-                                            "Save data already exists.  Delete it?".into(),
+                                            "Save data already exists. Delete it?".into(),
                                             false,
                                         )
                                         .into(),
@@ -190,7 +190,12 @@ impl MainMenuMode {
             (UI_WIDTH, UI_HEIGHT),
             BoxConfigWithTitle {
                 box_config: BoxConfig::new((30, 10), ColorPair::new(WHITE, BLACK), true, false),
-                text_config: TextConfig::new("BloodOath", ColorPair::new(RED, BLACK), Alignment::Center),
+                text_config: TextConfig::new(
+                    "BloodOath",
+                    ColorPair::new(RED, BLACK),
+                    Alignment::Center,
+                    true,
+                ),
             },
         );
 

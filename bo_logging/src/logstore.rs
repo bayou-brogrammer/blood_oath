@@ -1,5 +1,3 @@
-#![allow(dead_code)] //TODO: remove this
-
 use super::*;
 use bracket_lib::prelude::*;
 use lazy_static::lazy_static;
@@ -21,7 +19,12 @@ pub fn print_log(console: usize, pos: Point) {
     let mut x = pos.x;
     LOG.lock().iter().rev().take(6).for_each(|log| {
         log.iter().for_each(|frag| {
-            batch.print_color(Point::new(x, y), &frag.text, ColorPair::new(frag.color, BLACK));
+            batch.print_color_with_z(
+                Point::new(x, y),
+                &frag.text,
+                ColorPair::new(frag.color, BLACK),
+                100_000,
+            );
             x += frag.text.len() as i32;
             x += 1;
         });

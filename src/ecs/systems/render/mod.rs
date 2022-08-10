@@ -1,7 +1,7 @@
 use super::*;
 
 mod renderer;
-mod tooltips;
+// mod tooltips;
 
 pub use renderer::*;
-pub use tooltips::*;
+// pub use tooltips::*;

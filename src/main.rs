@@ -41,6 +41,7 @@ mod prelude {
     pub use crate::modes::*;
     pub use crate::random_table::*;
     pub use crate::raws::*;
+    pub use crate::render::camera::*;
     pub use crate::render::gui::*;
     pub use crate::resources::*;
     pub use crate::rex_assets::*;
@@ -52,14 +53,13 @@ mod prelude {
     pub const SHOW_BOUNDARIES: bool = true;
     pub const SHOW_MAPGEN_VISUALIZER: bool = false;
 
-    pub const SCREEN_WIDTH: i32 = 80;
-    pub const SCREEN_HEIGHT: i32 = 60;
-    pub const UI_WIDTH: i32 = SCREEN_WIDTH;
-    pub const UI_HEIGHT: i32 = SCREEN_HEIGHT / 2;
+    pub const SCREEN_WIDTH: i32 = 56;
+    pub const SCREEN_HEIGHT: i32 = 31;
+    pub const UI_WIDTH: i32 = (SCREEN_WIDTH as f32 * 2.) as i32;
+    pub const UI_HEIGHT: i32 = SCREEN_HEIGHT;
 
     pub const LAYER_ZERO: usize = 0;
-    pub const LAYER_LOG: usize = 1;
-    pub const LAYER_TEXT: usize = 2;
+    pub const LAYER_TEXT: usize = 1;
 
     pub const BATCH_ZERO: usize = 0;
     pub const BATCH_CHARS: usize = 1000;
@@ -195,23 +195,30 @@ impl GameState for GameWorld {
     }
 }
 
-embedded_resource!(TERMINAL_FONT, "../resources/terminal8x8.png");
+bracket_lib::prelude::add_wasm_support!();
+
 embedded_resource!(VGA_FONT, "../resources/vga.png");
+embedded_resource!(TERMINAL_8X8_FONT, "../resources/terminal8x8.png");
+embedded_resource!(TERMINAL_10X16_FONT, "../resources/terminal10x16.png");
 
 fn main() -> BError {
-    link_resource!(TERMINAL_FONT, "resources/terminal8x8.png");
     link_resource!(VGA_FONT, "resources/vga.png");
+    link_resource!(TERMINAL_8X8_FONT, "resources/terminal8x8.png");
+    link_resource!(TERMINAL_10X16_FONT, "resources/terminal10x16.png");
 
     let mut context = BTermBuilder::new()
-        .with_title("BloodOath")
-        .with_fps_cap(60.0)
-        .with_tile_dimensions(14, 14)
-        .with_dimensions(80, 60)
+        .with_title("Secbot - 2021 7DRL") // Set Window Title
+        .with_tile_dimensions(16, 16)
+        .with_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT) // ..Assuming a console of this size
+        .with_fps_cap(60.0) // Limit game speed
+        .with_font("terminal10x16.png", 10, 16)
         .with_font("terminal8x8.png", 8, 8)
         .with_font("vga.png", 8, 16) // Load easy-to-read font
-        .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "terminal8x8.png")
-        .with_sparse_console_no_bg(UI_WIDTH, UI_HEIGHT, "vga.png") // Console 2: Log
-        .with_simple_console_no_bg(UI_WIDTH, UI_HEIGHT, "vga.png") // Console 2: Log
+        ////////////////////////////////////////////////////////////////////
+        // Cosoles
+        ////////////////////////////////////////////////////////////////////
+        .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "terminal8x8.png") // Map + Char
+        .with_sparse_console(UI_WIDTH, UI_HEIGHT, "vga.png") // UI
         .build()?;
 
     context.with_post_scanlines(true);

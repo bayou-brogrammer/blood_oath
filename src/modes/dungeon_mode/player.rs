@@ -92,7 +92,7 @@ pub fn try_move_player(delta_pt: Point, world: &mut World) {
             fov.is_dirty = true;
             entity_moved.insert(entity, EntityMoved {}).expect("Unable to insert marker");
 
-            let mut camera = world.write_resource::<GameCamera>();
+            let mut camera = world.write_resource::<CameraView>();
             camera.on_player_move(destination);
 
             let mut ppos = world.write_resource::<Point>();

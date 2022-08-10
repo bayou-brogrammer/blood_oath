@@ -212,7 +212,7 @@ impl MasterDungeonMap {
         }
 
         // Setup Camera
-        world.insert(GameCamera::new(player_start));
+        world.insert(CameraView::new(player_start));
 
         // Store the newly minted map
         let mut dungeon_master = world.write_resource::<MasterDungeonMap>();

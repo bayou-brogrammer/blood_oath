@@ -53,7 +53,7 @@ impl DungeonMode {
 
     fn run_rendering(&mut self, world: &mut World) {
         RenderSystem.run_now(world);
-        RenderTooltips.run_now(world);
+        // RenderTooltips.run_now(world);
         world.maintain();
     }
 

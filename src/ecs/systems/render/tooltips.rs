@@ -34,7 +34,7 @@ pub struct RenderTooltips;
 impl<'a> System<'a> for RenderTooltips {
     type SystemData = (
         ReadExpect<'a, Map>,
-        ReadExpect<'a, GameCamera>,
+        ReadExpect<'a, CameraView>,
         ReadExpect<'a, (i32, i32)>,
         ReadStorage<'a, Hidden>,
         ReadStorage<'a, CombatStats>,

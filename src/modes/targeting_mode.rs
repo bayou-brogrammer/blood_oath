@@ -13,10 +13,10 @@ pub struct TargetingMode {
     item: Entity,
     warn_self: bool,
     item_name: String,
+    camera: CameraView,
     player_positon: Point,
     active_mouse_pt: Point,
     valid_cells: HashSet<Point>,
-    camera: GameCamera,
 }
 
 /// Pick a target position within a certain range of the player.
@@ -52,7 +52,7 @@ impl TargetingMode {
             valid_cells,
             player_positon,
             active_mouse_pt: ctx.mouse_point(),
-            camera: *world.fetch::<GameCamera>(),
+            camera: *world.fetch::<CameraView>(),
         }
     }
 
@@ -141,8 +141,8 @@ impl TargetingMode {
 
         // Draw potential valid cells
         self.valid_cells.iter().for_each(|pt| {
-            let screen_pt = self.camera.screen_to_world(*pt);
-            draw_batch.set_bg(screen_pt, BLUE);
+            // let screen_pt = self.camera.screen_to_world(*pt);
+            // draw_batch.set_bg(screen_pt, BLUE);
         });
 
         // Draw Blast Radius
@@ -155,8 +155,8 @@ impl TargetingMode {
                 .iter()
                 .filter(|pt| map.visible.get_bit(**pt))
                 .for_each(|pt| {
-                    let screen_pt = self.camera.screen_to_world(*pt);
-                    draw_batch.set_bg(screen_pt, LIGHT_RED);
+                    // let screen_pt = self.camera.screen_to_world(*pt);
+                    // draw_batch.set_bg(screen_pt, LIGHT_RED);
                 });
         }
 

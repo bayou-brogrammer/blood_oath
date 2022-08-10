@@ -5,7 +5,7 @@ pub struct RenderSystem;
 impl<'a> System<'a> for RenderSystem {
     type SystemData = (
         ReadExpect<'a, Map>,
-        ReadExpect<'a, GameCamera>,
+        ReadExpect<'a, CameraView>,
         ReadStorage<'a, Point>,
         ReadStorage<'a, Glyph>,
         ReadStorage<'a, Hidden>,
@@ -17,35 +17,28 @@ impl<'a> System<'a> for RenderSystem {
         let mut draw_batch = DrawBatch::new();
         draw_batch.target(LAYER_ZERO);
 
-        let (min_x, max_x, min_y, max_y) = camera.get_screen_bounds();
-        let map_width = map.width - 1;
-        let map_height = map.height - 1;
-
         // Render Map
-        for (y, ty) in (min_y..max_y).enumerate() {
-            for (x, tx) in (min_x..max_x).enumerate() {
-                if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
-                    let pt = Point::new(tx, ty);
-                    let idx = map.point2d_to_index(pt);
-                    if map.revealed.get_bit(pt) {
-                        let (glyph, color) = map.tile_glyph(idx);
-                        draw_batch.set(Point::new(x + 1, y + 1), color, glyph);
-                    }
-                } else if SHOW_BOUNDARIES {
-                    draw_batch.set(Point::new(x + 1, y + 1), ColorPair::new(GRAY, BLACK), to_cp437('·'));
+        camera.viewport.for_each(|pt| {
+            let screen_pt = camera.world_to_screen(pt);
+            if map.in_bounds(pt) {
+                let idx = map.point2d_to_index(pt);
+                if map.revealed.get_bit(pt) {
+                    let (glyph, color) = map.tile_glyph(idx);
+                    draw_batch.set(screen_pt, color, glyph);
                 }
+            } else if SHOW_BOUNDARIES {
+                draw_batch.set(screen_pt, ColorPair::new(GRAY, BLACK), to_cp437('·'));
             }
-        }
+        });
 
         // Render Entities
+        // draw_batch.target(LAYER_CHAR);
         let mut data = (&positions, &glyphs, !&hidden).join().collect::<Vec<_>>();
         data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
         for (pos, glyph, ()) in data.iter() {
             if map.visible.get_bit(**pos) {
-                let entity_pt = camera.screen_to_world(**pos);
-                if map.in_bounds(entity_pt) {
-                    draw_batch.set(entity_pt, glyph.color, glyph.glyph);
-                }
+                let screen_pt = camera.world_to_screen(**pos);
+                draw_batch.set(screen_pt, glyph.color, glyph.glyph);
             }
         }
 

@@ -57,12 +57,12 @@ impl YesNoDialogMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &mut World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(0);
+        draw_batch.target(LAYER_TEXT);
 
         let box_rect = center_box(
             &mut draw_batch,
-            (SCREEN_WIDTH, SCREEN_HEIGHT),
-            BoxConfig::new((self.prompt.len() as i32 + 3, 5), ColorPair::new(WHITE, BLACK), true, false),
+            (UI_WIDTH, UI_HEIGHT),
+            BoxConfig::new((self.prompt.len() as i32 + 4, 5), ColorPair::new(WHITE, BLACK), true, false),
         );
 
         let (x, y) = (box_rect.x1, box_rect.y1);
@@ -78,12 +78,12 @@ impl YesNoDialogMode {
         let yes_x = box_rect.width() - (YES_STR.len() + NO_STR.len() + 4) as i32;
         let no_x = box_rect.width() - NO_STR.len() as i32 - 2;
 
-        draw_batch.print_color_centered_at(
+        draw_batch.print_color(
             Point::new(x + yes_x, y + 3),
             YES_STR,
             ColorPair::new(WHITE, if self.yes_selected { bo_utils::SELECTED_BG } else { BLACK }),
         );
-        draw_batch.print_color_centered_at(
+        draw_batch.print_color(
             Point::new(x + no_x, y + 3),
             NO_STR,
             ColorPair::new(WHITE, if !self.yes_selected { bo_utils::SELECTED_BG } else { BLACK }),

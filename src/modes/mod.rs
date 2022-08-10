@@ -239,7 +239,7 @@ impl ModeStack {
                 let draw_from = self.stack.iter().rposition(|mode| !mode.draw_behind()).unwrap_or(0);
                 let top = self.stack.len().saturating_sub(1);
 
-                bo_utils::clear_all_consoles(ctx, [LAYER_ZERO, LAYER_LOG, LAYER_TEXT]);
+                bo_utils::clear_all_consoles(ctx, [LAYER_ZERO, LAYER_TEXT]);
 
                 // always draw dungeon
                 if top > 0 {

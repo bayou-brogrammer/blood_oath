@@ -22,7 +22,7 @@ pub use map_indexing_system::MapIndexingSystem;
 pub use melee_combat_system::MeleeCombatSystem;
 pub use monster_ai_system::MonsterAISystem;
 pub use particle_system::{ParticleSpawnSystem, ParticleUpdateSystem};
-pub use render::{RenderSystem, RenderTooltips};
+pub use render::RenderSystem;
 pub use trigger_system::TriggerSystem;
 
 pub fn new_dispatcher() -> Box<dyn UnifiedDispatcher + 'static> {
