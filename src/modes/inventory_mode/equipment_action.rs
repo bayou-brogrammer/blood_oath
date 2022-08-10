@@ -23,10 +23,10 @@ pub enum EquipmentAction {
 }
 
 impl EquipmentAction {
-    pub fn from_key(key: VirtualKeyCode) -> Option<Self> {
+    pub fn from_key(key: GameKey) -> Option<Self> {
         match key {
-            VirtualKeyCode::A => Some(EquipmentAction::RemoveEquipment),
-            VirtualKeyCode::D => Some(EquipmentAction::DropEquipment),
+            GameKey::Apply => Some(EquipmentAction::RemoveEquipment),
+            GameKey::Drop => Some(EquipmentAction::DropEquipment),
             _ => None,
         }
     }
@@ -100,15 +100,15 @@ impl EquipmentActionMode {
         _world: &mut World,
         _pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
-        if let Some(key) = ctx.key {
+        if let Some(key) = ctx.get_key() {
             match key {
-                VirtualKeyCode::Escape => {
+                GameKey::Escape => {
                     return (
                         ModeControl::Pop(EquipmentActionModeResult::Cancelled.into()),
                         ModeUpdate::Immediate,
                     )
                 }
-                VirtualKeyCode::Down => match self.subsection {
+                GameKey::Down => match self.subsection {
                     SubSection::Actions => {
                         if self.selection < self.actions.len() - 1 {
                             self.selection += 1;
@@ -123,7 +123,7 @@ impl EquipmentActionMode {
                         }
                     }
                 },
-                VirtualKeyCode::Up => match self.subsection {
+                GameKey::Up => match self.subsection {
                     SubSection::Actions => {
                         if self.selection > 0 {
                             self.selection -= 1;
@@ -138,8 +138,8 @@ impl EquipmentActionMode {
                         }
                     }
                 },
-                VirtualKeyCode::Return => return self.confirm_action(),
-                key @ VirtualKeyCode::R | key @ VirtualKeyCode::D => {
+                GameKey::Select => return self.confirm_action(),
+                key @ GameKey::Remove | key @ GameKey::Drop => {
                     if let Some(equip_action) = EquipmentAction::from_key(key) {
                         if let Some(action_pos) = self.actions.iter().position(|a| *a == equip_action) {
                             if matches!(self.subsection, SubSection::Actions) && self.selection == action_pos
@@ -161,7 +161,7 @@ impl EquipmentActionMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &mut World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(0);
+        draw_batch.target(LAYER_TEXT);
 
         let box_rect = center_box(
             &mut draw_batch,
@@ -179,7 +179,7 @@ impl EquipmentActionMode {
         y += 2;
         for (i, action) in self.actions.iter().enumerate() {
             let bg = if matches!(self.subsection, SubSection::Actions) && i == self.selection {
-                bo_utils::SELECTED_BG
+                crate::utils::SELECTED_BG
             } else {
                 BLACK
             };
@@ -196,7 +196,7 @@ impl EquipmentActionMode {
             CANCEL,
             ColorPair::new(
                 WHITE,
-                if matches!(self.subsection, SubSection::Cancel) { bo_utils::SELECTED_BG } else { BLACK },
+                if matches!(self.subsection, SubSection::Cancel) { crate::utils::SELECTED_BG } else { BLACK },
             ),
         );
 

@@ -115,12 +115,12 @@ impl MasterDungeonMap {
 
 impl MasterDungeonMap {
     fn _make_scroll_name(&self) -> String {
-        let length = 4 + bo_utils::rng::roll_dice(1, 4);
+        let length = 4 + crate::utils::rng::roll_dice(1, 4);
         let mut name = "Scroll of ".to_string();
 
         for i in 0..length {
             if i % 2 == 0 {
-                name += match bo_utils::rng::roll_dice(1, 5) {
+                name += match crate::utils::rng::roll_dice(1, 5) {
                     1 => "a",
                     2 => "e",
                     3 => "i",
@@ -128,7 +128,7 @@ impl MasterDungeonMap {
                     _ => "u",
                 }
             } else {
-                name += match bo_utils::rng::roll_dice(1, 21) {
+                name += match crate::utils::rng::roll_dice(1, 21) {
                     1 => "b",
                     2 => "c",
                     3 => "d",
@@ -160,10 +160,10 @@ impl MasterDungeonMap {
     fn _make_potion_name(&self, used_names: &mut HashSet<String>) -> String {
         loop {
             let mut name: String = POTION_ADJECTIVES
-                [bo_utils::rng::roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize - 1]
+                [crate::utils::rng::roll_dice(1, POTION_ADJECTIVES.len() as i32) as usize - 1]
                 .to_string();
             name += " ";
-            name += POTION_COLORS[bo_utils::rng::roll_dice(1, POTION_COLORS.len() as i32) as usize - 1];
+            name += POTION_COLORS[crate::utils::rng::roll_dice(1, POTION_COLORS.len() as i32) as usize - 1];
             name += " Potion";
 
             if !used_names.contains(&name) {
@@ -213,6 +213,19 @@ impl MasterDungeonMap {
 
         // Setup Camera
         world.insert(CameraView::new(player_start));
+
+        world
+            .create_entity()
+            .with(player_start)
+            .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
+            .with(Name::new("Fireball Scroll"))
+            .with(Item {})
+            .with(Consumable {})
+            .with(Ranged(6))
+            .with(InflictsDamage(20))
+            .with(AreaOfEffect::new(3))
+            .marked::<SimpleMarker<SerializeMe>>()
+            .build();
 
         // Store the newly minted map
         let mut dungeon_master = world.write_resource::<MasterDungeonMap>();

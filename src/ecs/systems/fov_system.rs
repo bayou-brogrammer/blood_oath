@@ -29,7 +29,7 @@ impl<'a> System<'a> for FovSystem {
                     crate::spatial::for_each_tile_content_pt(*pt, |e| {
                         let maybe_hidden = hidden.get(e);
                         if let Some(_maybe_hidden) = maybe_hidden {
-                            if bo_utils::rng::roll_dice(1, 24) == 1 {
+                            if crate::utils::rng::roll_dice(1, 24) == 1 {
                                 let name = names.get(e);
                                 if let Some(name) = name {
                                     bo_logging::Logger::new().append("You spotted:").npc_name(&name.0).log();

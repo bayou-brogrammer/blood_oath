@@ -15,35 +15,34 @@ pub enum PlayerInputResult {
 #[rustfmt::skip]
 pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
     // Player movement
-    match ctx.key {
+    match ctx.get_key() {
         None => return PlayerInputResult::NoResult, // Nothing happened
         Some(key) => match key {
-            VirtualKeyCode::Escape => return PlayerInputResult::AppQuit,
-            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H =>  try_move_player(Point::new(-1, 0), world) ,
-            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L =>  try_move_player(Point::new(1, 0), world),
-            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K =>  try_move_player(Point::new(0, -1), world),
-            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J =>  try_move_player(Point::new(0, 1), world),
+            GameKey::Escape => return PlayerInputResult::AppQuit,
+            GameKey::Left  =>  try_move_player(Point::new(-1, 0), world) ,
+            GameKey::Right  =>  try_move_player(Point::new(1, 0), world),
+            GameKey::Up  =>  try_move_player(Point::new(0, -1), world),
+            GameKey::Down  =>  try_move_player(Point::new(0, 1), world),
 
             // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::U => try_move_player(Point::new(1, -1), world),
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::Y =>  try_move_player(Point::new(-1, -1), world),
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N =>  try_move_player(Point::new(1, 1), world),
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B =>  try_move_player(Point::new(-1, 1), world),
+            GameKey::RightUp => try_move_player(Point::new(1, -1), world),
+            GameKey::LeftUp =>  try_move_player(Point::new(-1, -1), world),
+            GameKey::RightDown =>  try_move_player(Point::new(1, 1), world),
+            GameKey::LeftDown =>  try_move_player(Point::new(-1, 1), world),
 
             // Inventory
-            VirtualKeyCode::G => get_item(world),
-            VirtualKeyCode::I => return PlayerInputResult::ShowInventory,
-            VirtualKeyCode::D => return PlayerInputResult::ShowDrop,
-            VirtualKeyCode::R => return PlayerInputResult::ShowRemove,
+            GameKey::Pickup => get_item(world),
+            GameKey::Inventory => return PlayerInputResult::ShowInventory,
+            GameKey::Drop => return PlayerInputResult::ShowDrop,
+            GameKey::Remove => return PlayerInputResult::ShowRemove,
 
             // Stairs
-            VirtualKeyCode::Period | VirtualKeyCode::Return => {
+            GameKey::TakeStairs => {
                 if try_next_level(world) { return PlayerInputResult::Descend; }
             },
 
             // Skip Turn
-            VirtualKeyCode::Numpad5 => return skip_turn(world),
-            VirtualKeyCode::Space => return skip_turn(world),
+            GameKey::SkipTurn => return skip_turn(world),
 
             _ => { return PlayerInputResult::NoResult }
         },
@@ -53,10 +52,7 @@ pub fn player_input(ctx: &mut BTerm, world: &mut World) -> PlayerInputResult {
 }
 
 pub fn try_move_player(delta_pt: Point, world: &mut World) {
-    let map;
-    {
-        map = world.fetch::<Map>();
-    }
+    let map = world.fetch::<Map>();
     let entities = world.entities();
     let players = world.read_storage::<Player>();
 
@@ -71,22 +67,10 @@ pub fn try_move_player(delta_pt: Point, world: &mut World) {
         let destination = *pos + delta_pt;
         let destination_idx = map.point2d_to_index(destination);
 
-        crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
-            if combat_stats.get(potential_target).is_some() {
-                wants_to_melee
-                    .insert(entity, WantsToMelee::new(potential_target))
-                    .expect("Add target failed");
-            }
-
-            if let Some(door) = doors.get_mut(potential_target) {
-                open_door(world, &potential_target, door);
-                fov.is_dirty = true;
-            }
-        });
-
         if map.can_enter_tile(destination) {
             let old_idx = map.point2d_to_index(*pos);
             let new_idx = map.point2d_to_index(destination);
+            crate::spatial::move_entity(entity, old_idx, new_idx);
 
             *pos = destination;
             fov.is_dirty = true;
@@ -97,7 +81,19 @@ pub fn try_move_player(delta_pt: Point, world: &mut World) {
 
             let mut ppos = world.write_resource::<Point>();
             *ppos = *pos;
-            crate::spatial::move_entity(entity, old_idx, new_idx);
+        } else {
+            crate::spatial::for_each_tile_content(destination_idx, |potential_target| {
+                if combat_stats.get(potential_target).is_some() {
+                    wants_to_melee
+                        .insert(entity, WantsToMelee::new(potential_target))
+                        .expect("Add target failed");
+                }
+
+                if let Some(door) = doors.get_mut(potential_target) {
+                    open_door(world, &potential_target, door);
+                    fov.is_dirty = true;
+                }
+            });
         }
     }
 }

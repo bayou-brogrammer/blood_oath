@@ -96,7 +96,6 @@ dependencies = [
  "bitvec",
  "bo_logging",
  "bo_pathfinding",
- "bo_utils",
  "bracket-lib",
  "embed-resource",
  "getrandom",
@@ -124,6 +123,7 @@ dependencies = [
  "lazy_static",
  "parking_lot 0.12.1",
  "serde",
+ "textwrap",
 ]
 
 [[package]]
@@ -132,15 +132,6 @@ version = "0.1.0"
 dependencies = [
  "bracket-lib",
  "smallvec",
-]
-
-[[package]]
-name = "bo_utils"
-version = "0.1.0"
-dependencies = [
- "bracket-lib",
- "lazy_static",
- "parking_lot 0.12.1",
 ]
 
 [[package]]

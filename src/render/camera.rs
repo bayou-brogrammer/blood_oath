@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 pub const VIEWPORT_X_OFFSET: i32 = 20;
 pub const VIEWPORT_Y_OFFSET: i32 = 15;
-pub const VIEWPORT_WIDTH: i32 = 40;
+pub const VIEWPORT_WIDTH: i32 = 37;
 pub const VIEWPORT_HEIGHT: i32 = 31;
 
 #[derive(Debug, Copy, Clone)]
@@ -38,12 +38,12 @@ impl CameraView {
         bot + Point::new(VIEWPORT_X_OFFSET, VIEWPORT_Y_OFFSET)
     }
 
-    fn world_to_screen_text(&self, pt: Point) -> Point {
+    pub fn world_to_screen_text(&self, pt: Point) -> Point {
         let ws = self.world_to_screen(pt);
         ws * Point::new(2, 1)
     }
 
-    fn screen_to_world(&self, mouse_x: i32, mouse_y: i32) -> Point {
-        Point::new(mouse_x + self.viewport.x1, mouse_y + self.viewport.y1)
+    pub fn screen_to_world(&self, mouse_pt: Point) -> Point {
+        Point::new(mouse_pt.x + self.viewport.x1, mouse_pt.y + self.viewport.y1)
     }
 }

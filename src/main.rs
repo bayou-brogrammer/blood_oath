@@ -1,3 +1,4 @@
+mod actions;
 mod ecs;
 mod events;
 mod map;
@@ -5,6 +6,7 @@ mod modes;
 mod random_table;
 mod resources;
 mod rex_assets;
+mod utils;
 
 pub mod raws;
 pub mod render;
@@ -28,13 +30,15 @@ mod prelude {
 
     pub use bo_logging::*;
     pub use bo_pathfinding::*;
-    pub use bo_utils::*;
 
+    pub use crate::impl_default;
+    pub use crate::impl_new;
     pub use crate::raws;
     pub use crate::render;
     pub use crate::saveload;
     pub use crate::spawner;
 
+    pub use crate::actions::*;
     pub use crate::ecs::*;
     pub use crate::events::*;
     pub use crate::map::*;
@@ -46,6 +50,7 @@ mod prelude {
     pub use crate::resources::*;
     pub use crate::rex_assets::*;
     pub use crate::saveload::*;
+    pub use crate::utils::*;
 
     pub type NoError = Infallible;
 
@@ -55,7 +60,7 @@ mod prelude {
 
     pub const SCREEN_WIDTH: i32 = 56;
     pub const SCREEN_HEIGHT: i32 = 31;
-    pub const UI_WIDTH: i32 = (SCREEN_WIDTH as f32 * 2.) as i32;
+    pub const UI_WIDTH: i32 = (SCREEN_WIDTH as f32 * 1.6) as i32;
     pub const UI_HEIGHT: i32 = SCREEN_HEIGHT;
 
     pub const LAYER_ZERO: usize = 0;
@@ -218,7 +223,7 @@ fn main() -> BError {
         // Cosoles
         ////////////////////////////////////////////////////////////////////
         .with_simple_console(SCREEN_WIDTH, SCREEN_HEIGHT, "terminal8x8.png") // Map + Char
-        .with_sparse_console(UI_WIDTH, UI_HEIGHT, "vga.png") // UI
+        .with_sparse_console(UI_WIDTH, UI_HEIGHT, "terminal10x16.png") // UI
         .build()?;
 
     context.with_post_scanlines(true);

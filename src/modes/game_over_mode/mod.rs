@@ -32,12 +32,12 @@ impl GameOverMode {
         world: &mut World,
         _pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
-        if let Some(key) = ctx.key {
+        if let Some(key) = ctx.get_key() {
             match key {
-                VirtualKeyCode::Escape => {
+                GameKey::Escape => {
                     return (ModeControl::Pop(GameOverModeResult::AppQuit.into()), ModeUpdate::Immediate)
                 }
-                VirtualKeyCode::Return => {
+                GameKey::Select => {
                     assert!(self.selection < self.actions.len());
 
                     if let Err(e) = self.game_over_cleanup(world) {
@@ -55,6 +55,7 @@ impl GameOverMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, world: &World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
+        draw_batch.target(LAYER_TEXT);
 
         let assets = world.fetch::<RexAssets>();
         let sprite = MultiTileSprite::from_xp(&assets.skull);

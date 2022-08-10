@@ -25,8 +25,8 @@ impl MessageBoxMode {
         _world: &mut World,
         _pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
-        if let Some(key) = ctx.key {
-            if matches!(key, VirtualKeyCode::Return | VirtualKeyCode::Escape) {
+        if let Some(key) = ctx.get_key() {
+            if matches!(key, GameKey::Select | GameKey::Escape) {
                 return (ModeControl::Pop(MessageBoxModeResult::Done.into()), ModeUpdate::Immediate);
             }
         }
@@ -36,7 +36,7 @@ impl MessageBoxMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &mut World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(0);
+        draw_batch.target(LAYER_TEXT);
 
         center_box(
             &mut draw_batch,

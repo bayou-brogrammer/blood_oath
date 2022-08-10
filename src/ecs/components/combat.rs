@@ -1,5 +1,4 @@
 use super::*;
-use bo_utils::impl_new;
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct MeleePowerBonus {

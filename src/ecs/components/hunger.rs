@@ -1,5 +1,3 @@
-use bo_utils::impl_new;
-
 use super::*;
 
 #[derive(Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]

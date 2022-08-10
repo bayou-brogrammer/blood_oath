@@ -35,14 +35,14 @@ impl YesNoDialogMode {
         _world: &mut World,
         _pop_result: &Option<ModeResult>,
     ) -> (ModeControl, ModeUpdate) {
-        if let Some(key) = ctx.key {
+        if let Some(key) = ctx.get_key() {
             match key {
-                VirtualKeyCode::Escape => {
+                GameKey::Escape => {
                     return (ModeControl::Pop(YesNoDialogModeResult::No.into()), ModeUpdate::Update)
                 }
-                VirtualKeyCode::Left => self.yes_selected = true,
-                VirtualKeyCode::Right => self.yes_selected = false,
-                VirtualKeyCode::Return => {
+                GameKey::Left => self.yes_selected = true,
+                GameKey::Right => self.yes_selected = false,
+                GameKey::Select => {
                     return (
                         ModeControl::Pop(YesNoDialogModeResult::from(self.yes_selected).into()),
                         ModeUpdate::Update,
@@ -81,12 +81,12 @@ impl YesNoDialogMode {
         draw_batch.print_color(
             Point::new(x + yes_x, y + 3),
             YES_STR,
-            ColorPair::new(WHITE, if self.yes_selected { bo_utils::SELECTED_BG } else { BLACK }),
+            ColorPair::new(WHITE, if self.yes_selected { crate::utils::SELECTED_BG } else { BLACK }),
         );
         draw_batch.print_color(
             Point::new(x + no_x, y + 3),
             NO_STR,
-            ColorPair::new(WHITE, if !self.yes_selected { bo_utils::SELECTED_BG } else { BLACK }),
+            ColorPair::new(WHITE, if !self.yes_selected { crate::utils::SELECTED_BG } else { BLACK }),
         );
 
         draw_batch.submit(BATCH_UI_INV).expect("Batch error"); // On top of everything

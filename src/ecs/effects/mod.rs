@@ -103,8 +103,7 @@ fn tile_effect_hits_entities(effect: &EffectType) -> bool {
 
 fn affect_tile(ecs: &mut World, effect: &EffectSpawner, tile_idx: usize) {
     if tile_effect_hits_entities(&effect.effect_type) {
-        let content = crate::spatial::get_tile_content_clone(tile_idx as usize);
-        content.iter().for_each(|entity| affect_entity(ecs, effect, *entity));
+        crate::spatial::for_each_tile_content(tile_idx as usize, |entity| affect_entity(ecs, effect, entity));
     }
 
     match &effect.effect_type {

@@ -13,3 +13,4 @@ bracket-lib = { git = "https://github.com/lecoqjacob/bracket-lib", branch = "cus
 lazy_static = "^1"
 parking_lot = "^0.12"
 serde = { version = "^1", features = ["derive"] }
+textwrap = "^0.15"

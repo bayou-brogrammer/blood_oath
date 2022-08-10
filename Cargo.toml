@@ -21,7 +21,6 @@ web = ["getrandom", "wasm-bindgen"]
 # Internal Crates
 bo_logging = { path = "bo_logging/" }
 bo_pathfinding = { path = "bo_pathfinding/" }
-bo_utils = { path = "bo_utils/" }
 
 # Core Crates
 bracket-lib = { git = "https://github.com/lecoqjacob/bracket-lib", branch = "custom", features = ['serde', 'specs'] }
@@ -50,4 +49,4 @@ embed-resource = "1.7.3"
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
-members = ["bo_utils", "bo_logging", "bo_pathfinding"]
+members = ["bo_logging", "bo_pathfinding"]

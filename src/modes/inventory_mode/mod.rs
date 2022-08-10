@@ -9,6 +9,7 @@ pub use inventory_action::*;
 const INVENTORY_BASE_WIDTH: i32 = 25;
 const INVENTORY_BASE_HEIGHT: i32 = 4;
 const INVENTORY_EQUIPMENT_OFFSET: i32 = 9;
+const BASE_Y: i32 = 6;
 
 #[derive(Debug)]
 pub enum InventoryModeResult {
@@ -144,22 +145,22 @@ impl InventoryMode {
             };
         }
 
-        if let Some(key) = ctx.key {
+        if let Some(key) = ctx.get_key() {
             match (&self.subsection, key) {
-                (_, VirtualKeyCode::Escape) => {
+                (_, GameKey::Escape) => {
                     return (ModeControl::Pop(InventoryModeResult::DoNothing.into()), ModeUpdate::Update)
                 }
                 ////////////////////////////////////////////////////
                 // Sub Section Weapon
                 ////////////////////////////////////////////////////
-                (SubSection::EquipWeapon, VirtualKeyCode::Up) => {
+                (SubSection::EquipWeapon, GameKey::Up) => {
                     self.subsection = SubSection::Inventory;
                     self.inv_selection = if self.inventory.is_empty() { 0 } else { self.inventory.len() - 1 }
                 }
-                (SubSection::EquipWeapon, VirtualKeyCode::Down) => {
+                (SubSection::EquipWeapon, GameKey::Down) => {
                     self.subsection = SubSection::EquipArmor;
                 }
-                (SubSection::EquipWeapon, VirtualKeyCode::Return) => {
+                (SubSection::EquipWeapon, GameKey::Select) => {
                     if let Some(weapon) = &self.equipment.weapon {
                         return (
                             ModeControl::Push(EquipmentActionMode::new(world, weapon.0, None).into()),
@@ -170,14 +171,14 @@ impl InventoryMode {
                 ////////////////////////////////////////////////////
                 // Sub Section Armor
                 ////////////////////////////////////////////////////
-                (SubSection::EquipArmor, VirtualKeyCode::Up) => {
+                (SubSection::EquipArmor, GameKey::Up) => {
                     self.subsection = SubSection::EquipWeapon;
                 }
-                (SubSection::EquipArmor, VirtualKeyCode::Down) => {
+                (SubSection::EquipArmor, GameKey::Down) => {
                     self.subsection = SubSection::Inventory;
                     self.inv_selection = 0;
                 }
-                (SubSection::EquipArmor, VirtualKeyCode::Return) => {
+                (SubSection::EquipArmor, GameKey::Select) => {
                     if let Some(armor) = &self.equipment.armor {
                         return (
                             ModeControl::Push(EquipmentActionMode::new(world, armor.0, None).into()),
@@ -188,21 +189,21 @@ impl InventoryMode {
                 ////////////////////////////////////////////////////
                 // Sub Section Inventory
                 ////////////////////////////////////////////////////
-                (SubSection::Inventory, VirtualKeyCode::Up) => {
+                (SubSection::Inventory, GameKey::Up) => {
                     if self.inv_selection > 0 {
                         self.inv_selection -= 1;
                     } else {
                         self.subsection = SubSection::EquipArmor;
                     }
                 }
-                (SubSection::Inventory, VirtualKeyCode::Down) => {
+                (SubSection::Inventory, GameKey::Down) => {
                     if !self.inventory.is_empty() && self.inv_selection < self.inventory.len() - 1 {
                         self.inv_selection += 1;
                     } else {
                         self.subsection = SubSection::EquipWeapon;
                     }
                 }
-                (SubSection::Inventory, VirtualKeyCode::Return) => {
+                (SubSection::Inventory, GameKey::Select) => {
                     if !self.inventory.is_empty() {
                         let item = self.inventory[self.inv_selection as usize].0;
                         return (
@@ -212,7 +213,7 @@ impl InventoryMode {
                     }
                 }
                 (SubSection::Inventory, key)
-                    if matches!(key, VirtualKeyCode::E | VirtualKeyCode::A | VirtualKeyCode::D) =>
+                    if matches!(key, GameKey::Equip | GameKey::Apply | GameKey::Drop) =>
                 {
                     if let Some(item_id) = self.inventory.get(self.inv_selection as usize) {
                         if let Some(inv_action) = InventoryAction::from_key(key) {
@@ -236,7 +237,7 @@ impl InventoryMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
         let mut draw_batch = DrawBatch::new();
-        draw_batch.target(LAYER_ZERO);
+        draw_batch.target(LAYER_TEXT);
 
         let equipment_box = self.draw_equipment(&mut draw_batch);
         self.draw_inventory(&mut draw_batch, &equipment_box);
@@ -259,7 +260,7 @@ impl InventoryMode {
             if matches!(self.subsection, SubSection::EquipArmor) { SELECTED_BG } else { BLACK };
 
         let start_x = (MAP_PANEL_WIDTH / 2) - (inv_width / 2);
-        let start_y = (MAP_PANEL_HEIGHT / 2) - (inv_height / 2);
+        let start_y = (MAP_PANEL_HEIGHT / 2) - i32::max(BASE_Y, inv_height / 2);
         let equipment_box = box_with_title(
             draw_batch,
             Point::new(start_x, start_y),

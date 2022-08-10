@@ -89,26 +89,26 @@ impl MainMenuMode {
         // Main Input Handling
         //////////////////////////////////////////////////////////////////////////////
 
-        if let Some(key) = ctx.key {
+        if let Some(key) = ctx.get_key() {
             match key {
-                VirtualKeyCode::Escape => {
+                GameKey::Escape => {
                     return (ModeControl::Pop(MainMenuModeResult::AppQuit.into()), ModeUpdate::Immediate)
                 }
-                VirtualKeyCode::Down => {
+                GameKey::Down => {
                     if self.selection < self.actions.len().saturating_sub(1) {
                         self.selection += 1;
                     } else {
                         self.selection = 0;
                     }
                 }
-                VirtualKeyCode::Up => {
+                GameKey::Up => {
                     if self.selection > 0 {
                         self.selection -= 1;
                     } else {
                         self.selection = self.actions.len().saturating_sub(1);
                     }
                 }
-                VirtualKeyCode::Return => {
+                GameKey::Select => {
                     assert!(self.selection < self.actions.len());
 
                     match self.actions[self.selection] {

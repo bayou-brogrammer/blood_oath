@@ -39,7 +39,7 @@ impl TargetingMode {
                 .visible_tiles
                 .iter()
                 .filter(|pt| DistanceAlg::Pythagoras.distance2d(player_positon, **pt) < range as f32)
-                .filter(|pt| map.tiles[map.point2d_to_index(**pt)].tile_type == TileType::Floor)
+                .filter(|pt| map.tiles[map.point2d_to_index(**pt)].walkable)
                 .copied()
                 .collect::<HashSet<Point>>();
         }
@@ -58,7 +58,7 @@ impl TargetingMode {
 
     fn should_warn(&self) -> bool {
         if self.warn_self {
-            let map_mouse_pos = self.camera.world_to_screen(self.active_mouse_pt);
+            let map_mouse_pos = self.camera.screen_to_world(self.active_mouse_pt);
             let distance = DistanceAlg::Pythagoras.distance2d(self.player_positon, map_mouse_pos);
             if self.player_positon == map_mouse_pos || (self.radius > 0 && distance <= self.radius as f32) {
                 return true;
@@ -82,7 +82,7 @@ impl TargetingMode {
                         ModeControl::Pop(
                             TargetingModeResult::Target(
                                 self.item,
-                                self.camera.world_to_screen(self.active_mouse_pt),
+                                self.camera.screen_to_world(self.active_mouse_pt),
                             )
                             .into(),
                         ),
@@ -93,14 +93,16 @@ impl TargetingMode {
             };
         }
 
+        let game_key = ctx.get_key();
+
         // Handle Escaping
-        if ctx.key == Some(VirtualKeyCode::Escape) {
+        if game_key == Some(GameKey::Escape) {
             return (ModeControl::Pop(TargetingModeResult::Cancelled.into()), ModeUpdate::Update);
         }
 
         // Handle Left Mouse || Resturn Key Press
-        if ctx.key == Some(VirtualKeyCode::Return) || ctx.left_click {
-            let map_mouse_pos = self.camera.world_to_screen(self.active_mouse_pt);
+        if game_key == Some(GameKey::Select) || ctx.left_click {
+            let map_mouse_pos = self.camera.screen_to_world(self.active_mouse_pt);
 
             let result = if self.should_warn() {
                 ModeControl::Push(
@@ -133,6 +135,8 @@ impl TargetingMode {
         let mut draw_batch = DrawBatch::new();
         draw_batch.target(LAYER_ZERO);
 
+        draw_batch.set_bg(Point::new(0, 0), GREEN);
+
         draw_batch.print_color(
             Point::new(2, 2),
             format!("Select Target for {}", self.item_name),
@@ -141,13 +145,13 @@ impl TargetingMode {
 
         // Draw potential valid cells
         self.valid_cells.iter().for_each(|pt| {
-            // let screen_pt = self.camera.screen_to_world(*pt);
-            // draw_batch.set_bg(screen_pt, BLUE);
+            let screen_pt = self.camera.world_to_screen(*pt);
+            draw_batch.set_bg(screen_pt, BLUE);
         });
 
         // Draw Blast Radius
         self.active_mouse_pt = if active { ctx.mouse_point() } else { self.active_mouse_pt };
-        let mouse_map_pos = self.camera.world_to_screen(self.active_mouse_pt);
+        let mouse_map_pos = self.camera.screen_to_world(self.active_mouse_pt);
 
         if self.radius > 0 {
             let map = world.fetch::<Map>();
@@ -155,8 +159,8 @@ impl TargetingMode {
                 .iter()
                 .filter(|pt| map.visible.get_bit(**pt))
                 .for_each(|pt| {
-                    // let screen_pt = self.camera.screen_to_world(*pt);
-                    // draw_batch.set_bg(screen_pt, LIGHT_RED);
+                    let screen_pt = self.camera.world_to_screen(*pt);
+                    draw_batch.set_bg(screen_pt, LIGHT_RED);
                 });
         }
 
