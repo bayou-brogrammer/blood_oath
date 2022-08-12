@@ -118,10 +118,28 @@ pub fn spawn_named_item(raws: &RawMaster, world: &mut World, key: &str, pos: Spa
 pub fn spawn_named_mob(raws: &RawMaster, world: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     let (mut eb, mob_template) = spawn_base_entity(raws, world, &raws.raws.mobs, &raws.mob_index, key, pos);
 
-    eb = eb.with(Monster {});
+    // AI Type
+    match mob_template.ai {
+        Some(ai_type) => match ai_type {
+            AIType::Basic => {
+                eb = eb.with(Monster {});
+            }
+            AIType::Bystander => {
+                eb = eb.with(Bystander {});
+            }
+            AIType::Vendor => {
+                eb = eb.with(Vendor {});
+            }
+        },
+        None => {
+            eb = eb.with(Monster {});
+        }
+    }
+
     if mob_template.blocks_tile {
         eb = eb.with(BlocksTile {});
     }
+
     eb = eb.with(CombatStats {
         max_hp: mob_template.stats.max_hp,
         hp: mob_template.stats.hp,
@@ -165,13 +183,10 @@ pub fn spawn_named_prop(raws: &RawMaster, world: &mut World, key: &str, pos: Spa
 pub fn spawn_named_entity(world: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     let raws = RAWS.lock();
     if raws.item_index.contains_key(key) {
-        println!("Spawning item: {}", key);
         return spawn_named_item(&raws, world, key, pos);
     } else if raws.mob_index.contains_key(key) {
-        println!("Spawning mob: {}", key);
         return spawn_named_mob(&raws, world, key, pos);
     } else if raws.prop_index.contains_key(key) {
-        println!("Spawning prop: {}", key);
         return spawn_named_prop(&raws, world, key, pos);
     }
 

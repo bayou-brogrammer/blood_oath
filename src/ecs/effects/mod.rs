@@ -17,6 +17,15 @@ lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
 }
 
+#[derive(Debug, Default)]
+pub struct EffectQueue(pub VecDeque<EffectSpawner>);
+
+impl EffectQueue {
+    pub fn new() -> Self { Self(VecDeque::new()) }
+
+    pub fn add_effect(&mut self, effect: EffectSpawner) { self.0.push_back(effect) }
+}
+
 #[derive(Debug)]
 pub enum EffectType {
     WellFed,
@@ -27,7 +36,7 @@ pub enum EffectType {
     Confusion(i32),
     ItemUse(Entity),
     TriggerFire(Entity),
-    Particle { glyph: FontCharType, color: ColorPair, lifespan: f32 },
+    Particle(FontCharType, ColorPair, f32),
 }
 
 #[derive(Clone, Debug)]

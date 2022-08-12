@@ -22,3 +22,13 @@ macro_rules! impl_default {
         }
     };
 }
+
+#[macro_export]
+macro_rules! impl_default_with_params {
+    ($to:ty, $($t:literal),*)  => {
+        impl Default for $to {
+            fn default() -> Self { Self::new($($t),*) }
+        }
+    };
+
+}

@@ -61,7 +61,7 @@ impl YesNoDialogMode {
 
         let box_rect = center_box(
             &mut draw_batch,
-            (UI_WIDTH, UI_HEIGHT),
+            (UI_DISPLAY_WIDTH, UI_DISPLAY_HEIGHT),
             BoxConfig::new((self.prompt.len() as i32 + 4, 5), ColorPair::new(WHITE, BLACK), true, false),
         );
 

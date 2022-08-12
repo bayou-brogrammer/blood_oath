@@ -183,11 +183,11 @@ impl MainMenuMode {
 
     pub fn draw(&self, _ctx: &mut BTerm, _world: &World, _active: bool) {
         let mut batch = DrawBatch::new();
-        batch.target(LAYER_TEXT);
+        batch.target(LAYER_ZERO);
 
         let box_rect = center_box_with_title(
             &mut batch,
-            (UI_WIDTH, UI_HEIGHT),
+            (SCREEN_WIDTH, SCREEN_HEIGHT),
             BoxConfigWithTitle {
                 box_config: BoxConfig::new((30, 10), ColorPair::new(WHITE, BLACK), true, false),
                 text_config: TextConfig::new(
@@ -200,26 +200,14 @@ impl MainMenuMode {
         );
 
         let mut y = box_rect.y1 + 1;
-        batch.print_color_centered(
-            y + 1,
-            "by Jacob LeCoq",
-            ColorPair::new(RGB::named(CYAN), RGB::named(BLACK)),
-        );
-        batch.print_color_centered(
-            y + 2,
-            "Use Up/Down Arrows and Enter",
-            ColorPair::new(RGB::named(GRAY), RGB::named(BLACK)),
-        );
+        batch.print_color_centered(y + 1, "by Jacob LeCoq", ColorPair::new(CYAN, BLACK));
+        batch.print_color_centered(y + 2, "Use Up/Down Arrows and Enter", ColorPair::new(GRAY, BLACK));
 
         y = box_rect.center().y;
         for (i, action) in self.actions.iter().enumerate() {
-            let color = if i == self.selection { RGB::named(MAGENTA) } else { RGB::named(GRAY) };
+            let color = if i == self.selection { MAGENTA } else { GRAY };
 
-            batch.print_color_centered(
-                y + i as i32,
-                action.label(),
-                ColorPair::new(color, RGB::named(BLACK)),
-            );
+            batch.print_color_centered(y + i as i32, action.label(), ColorPair::new(color, BLACK));
         }
 
         batch.submit(0).expect("Error batching title");

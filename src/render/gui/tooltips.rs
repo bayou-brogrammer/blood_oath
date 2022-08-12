@@ -5,13 +5,9 @@ struct Tooltip {
 }
 
 impl Tooltip {
-    fn new() -> Tooltip {
-        Tooltip { lines: Vec::new() }
-    }
+    fn new() -> Tooltip { Tooltip { lines: Vec::new() } }
 
-    fn add<S: ToString>(&mut self, line: S) {
-        self.lines.push(line.to_string());
-    }
+    fn add<S: ToString>(&mut self, line: S) { self.lines.push(line.to_string()); }
 
     fn width(&self) -> i32 {
         let mut max = 0;
@@ -23,9 +19,7 @@ impl Tooltip {
         max as i32 + 2i32
     }
 
-    fn height(&self) -> i32 {
-        self.lines.len() as i32 + 2i32
-    }
+    fn height(&self) -> i32 { self.lines.len() as i32 + 2i32 }
 
     fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
         draw_batch.draw_box(
@@ -76,7 +70,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
         if hidden.get(entity).is_some() {
             return;
         }
-        
+
         let mut tip = Tooltip::new();
         tip.add(get_item_display_name(ecs, entity));
 
@@ -136,9 +130,6 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     if tip_boxes.is_empty() {
         return;
     }
-
-    let box_gray: RGB = RGB::from_hex("#999999").expect("Oops");
-    let white = RGB::named(rltk::WHITE);
 
     let arrow;
     let arrow_x;

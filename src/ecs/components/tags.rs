@@ -27,4 +27,12 @@ pub struct Hidden {}
 #[derive(Component, Debug, ConvertSaveload)]
 pub struct Door(pub bool);
 
+#[derive(Component, Default, Clone, Serialize, Deserialize)]
+#[storage(NullStorage)]
+pub struct Bystander {}
+
+#[derive(Component, Default, Serialize, Deserialize, Clone)]
+#[storage(NullStorage)]
+pub struct Vendor {}
+
 pub struct SerializeMe {}

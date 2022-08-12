@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
-embedded_resource!(DEAD_SKULL, "../resources/skull.xp");
-embedded_resource!(WFC_DEMO_IMAGE1, "../resources/wfc-demo1.xp");
-embedded_resource!(WFC_POPULATED, "../resources/wfc-populated.xp");
-embedded_resource!(SMALL_DUNGEON, "../resources/SmallDungeon_80x50.xp");
+embedded_resource!(DEAD_SKULL, "../resources/xp/skull.xp");
+embedded_resource!(WFC_DEMO_IMAGE1, "../resources/xp/wfc-demo1.xp");
+embedded_resource!(WFC_POPULATED, "../resources/xp/wfc-populated.xp");
+embedded_resource!(SMALL_DUNGEON, "../resources/xp/SmallDungeon_80x50.xp");
 
 #[derive(Debug)]
 pub struct RexAssets {

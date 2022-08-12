@@ -17,6 +17,7 @@ pub enum DungeonModeResult {
 pub struct DungeonMode {
     dispatcher: Box<dyn UnifiedDispatcher + 'static>,
     ticking: Box<dyn UnifiedDispatcher + 'static>,
+    rendering: Box<dyn UnifiedDispatcher + 'static>,
 }
 
 impl std::fmt::Debug for DungeonMode {
@@ -34,11 +35,13 @@ impl DungeonMode {
         // Dispatchers
         let mut dispatcher = crate::ecs::new_dispatcher();
         let mut ticking = crate::ecs::new_ticking();
+        let mut rendering = crate::ecs::new_rendering();
 
         dispatcher.setup(world);
         ticking.setup(world);
+        rendering.setup(world);
 
-        Self { dispatcher, ticking }
+        Self { dispatcher, ticking, rendering }
     }
 
     fn run_dispatcher(&mut self, world: &mut World) {
@@ -52,7 +55,8 @@ impl DungeonMode {
     }
 
     fn run_rendering(&mut self, world: &mut World) {
-        RenderSystem.run_now(world);
+        self.rendering.run_now(world, Box::new(run_effects_queue));
+        // RenderSystem.run_now(world);
         // RenderTooltips.run_now(world);
         world.maintain();
     }

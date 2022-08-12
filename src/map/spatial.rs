@@ -10,7 +10,7 @@ struct SpatialMap {
 }
 
 impl SpatialMap {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self { width: 0, height: 0, blocked: Vec::new(), tile_content: Vec::new(), opaque: Vec::new() }
     }
 
@@ -22,9 +22,7 @@ impl SpatialMap {
     }
 }
 
-lazy_static! {
-    static ref SPATIAL_MAP: Mutex<SpatialMap> = Mutex::new(SpatialMap::new());
-}
+static SPATIAL_MAP: Mutex<SpatialMap> = Mutex::new(SpatialMap::new());
 
 pub fn set_size(width: i32, height: i32) {
     let mut lock = SPATIAL_MAP.lock();

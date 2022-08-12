@@ -36,15 +36,6 @@ impl Raws {
             Err(e) => panic!("Unable to load template: {}", e),
         }
     }
-
-    fn _load_file<'a, T: serde::Deserialize<'a>>(file_path: &str) -> T {
-        // Retrieve the raw data as an array of u8 (8-bit unsigned chars)
-        let raw_data = EMBED.lock().get_resource(file_path.to_string()).unwrap();
-        match from_bytes::<T>(raw_data) {
-            Ok(template) => template,
-            Err(e) => panic!("Unable to load template: {}", e),
-        }
-    }
 }
 
 pub fn load_raws() {

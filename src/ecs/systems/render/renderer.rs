@@ -1,18 +1,12 @@
 use super::*;
 
-pub struct RenderSystem;
+pub struct RenderMapSystem;
 
-impl<'a> System<'a> for RenderSystem {
-    type SystemData = (
-        ReadExpect<'a, Map>,
-        ReadExpect<'a, CameraView>,
-        ReadStorage<'a, Point>,
-        ReadStorage<'a, Glyph>,
-        ReadStorage<'a, Hidden>,
-    );
+impl<'a> System<'a> for RenderMapSystem {
+    type SystemData = (ReadExpect<'a, Map>, ReadExpect<'a, CameraView>);
 
     fn run(&mut self, data: Self::SystemData) {
-        let (map, camera, positions, glyphs, hidden) = data;
+        let (map, camera) = data;
 
         let mut draw_batch = DrawBatch::new();
         draw_batch.target(LAYER_ZERO);
@@ -31,8 +25,28 @@ impl<'a> System<'a> for RenderSystem {
             }
         });
 
+        draw_batch.submit(BATCH_ZERO).expect("Failed to submit draw batch");
+    }
+}
+
+pub struct RenderGlyphsSystem;
+
+impl<'a> System<'a> for RenderGlyphsSystem {
+    type SystemData = (
+        ReadExpect<'a, Map>,
+        ReadExpect<'a, CameraView>,
+        ReadStorage<'a, Point>,
+        ReadStorage<'a, Glyph>,
+        ReadStorage<'a, Hidden>,
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (map, camera, positions, glyphs, hidden) = data;
+
+        let mut draw_batch = DrawBatch::new();
+        draw_batch.target(LAYER_ZERO);
+
         // Render Entities
-        // draw_batch.target(LAYER_CHAR);
         let mut data = (&positions, &glyphs, !&hidden).join().collect::<Vec<_>>();
         data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
         for (pos, glyph, ()) in data.iter() {
@@ -42,6 +56,6 @@ impl<'a> System<'a> for RenderSystem {
             }
         }
 
-        draw_batch.submit(BATCH_ZERO).expect("Failed to submit draw batch");
+        draw_batch.submit(BATCH_CHARS).expect("Failed to submit draw batch");
     }
 }

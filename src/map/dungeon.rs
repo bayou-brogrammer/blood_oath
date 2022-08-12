@@ -217,6 +217,16 @@ impl MasterDungeonMap {
         world
             .create_entity()
             .with(player_start)
+            .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN3, BLACK), RenderOrder::Item))
+            .with(Name::new("Scroll of Magic Mapping"))
+            .with(Item {})
+            .with(MagicMapper {})
+            .with(Consumable {})
+            .build();
+
+        world
+            .create_entity()
+            .with(player_start)
             .with(Glyph::new(to_cp437(')'), ColorPair::new(CYAN, BLACK), RenderOrder::Item))
             .with(Name::new("Fireball Scroll"))
             .with(Item {})
