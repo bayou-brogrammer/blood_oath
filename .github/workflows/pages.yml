@@ -54,7 +54,7 @@ jobs:
       - name: optimize Wasm
         uses: NiklasEi/wasm-opt-action@v2
         with:
-          file: web/*.wasm
+          file: web/wasm/*.wasm
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
