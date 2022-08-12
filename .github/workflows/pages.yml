@@ -51,6 +51,11 @@ jobs:
       - name: Build WASM
         run: ./webglbuild.sh
 
+      - name: optimize Wasm
+        uses: NiklasEi/wasm-opt-action@v2
+        with:
+          file: web/*.wasm
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
